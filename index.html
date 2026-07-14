@@ -12809,9 +12809,13 @@ const ZIWEI_AUTH_KEY='ziwei_auth_v2';
 const ZIWEI_SESSION_KEY='ziwei_session_v2';
 const ADMIN_INITIAL_HASH='880fc74acc84fef24612819e33e3e9ba0f73724ea7073a642d8ac07f0d6f8431';
 
+function _sha256Pure(s){const _b=Array.from(new TextEncoder().encode(s));function rr(v,n){return(v>>>n)|(v<<(32-n));}const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];let h0=0x6a09e667,h1=0xbb67ae85,h2=0x3c6ef372,h3=0xa54ff53a,h4=0x510e527f,h5=0x9b05688c,h6=0x1f83d9ab,h7=0x5be0cd19;const l=_b.length,bl=l*8;_b.push(0x80);while(_b.length%64!==56)_b.push(0);const _bh=Math.floor(bl/0x100000000),_bl=bl>>>0;_b.push((_bh>>>24)&0xff,(_bh>>>16)&0xff,(_bh>>>8)&0xff,_bh&0xff,(_bl>>>24)&0xff,(_bl>>>16)&0xff,(_bl>>>8)&0xff,_bl&0xff);for(let i=0;i<_b.length;i+=64){const w=new Array(64);for(let j=0;j<16;j++)w[j]=((_b[i+j*4]<<24)|(_b[i+j*4+1]<<16)|(_b[i+j*4+2]<<8)|_b[i+j*4+3])>>>0;for(let j=16;j<64;j++){const s0=(rr(w[j-15],7)^rr(w[j-15],18)^(w[j-15]>>>3))>>>0,s1=(rr(w[j-2],17)^rr(w[j-2],19)^(w[j-2]>>>10))>>>0;w[j]=(w[j-16]+s0+w[j-7]+s1)>>>0;}let a=h0,_b2=h1,c=h2,d=h3,e=h4,f=h5,g=h6,hh=h7;for(let j=0;j<64;j++){const S1=(rr(e,6)^rr(e,11)^rr(e,25))>>>0,ch=((e&f)^(~e&g))>>>0,t1=(hh+S1+ch+K[j]+w[j])>>>0,S0=(rr(a,2)^rr(a,13)^rr(a,22))>>>0,maj=((a&_b2)^(a&c)^(_b2&c))>>>0,t2=(S0+maj)>>>0;hh=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=_b2;_b2=a;a=(t1+t2)>>>0;}h0=(h0+a)>>>0;h1=(h1+_b2)>>>0;h2=(h2+c)>>>0;h3=(h3+d)>>>0;h4=(h4+e)>>>0;h5=(h5+f)>>>0;h6=(h6+g)>>>0;h7=(h7+hh)>>>0;}return[h0,h1,h2,h3,h4,h5,h6,h7].map(x=>x.toString(16).padStart(8,'0')).join('');}
 async function sha256(str){
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(window.crypto&&window.crypto.subtle){
+    const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  return _sha256Pure(str);
 }
 function getAuthData(){try{return JSON.parse(localStorage.getItem(ZIWEI_AUTH_KEY))||{};}catch{return{};}}
 function saveAuthData(d){localStorage.setItem(ZIWEI_AUTH_KEY,JSON.stringify(d));}
