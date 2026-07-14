@@ -843,6 +843,112 @@ section.active{display:block}
 .kekkon-sub-card-rows{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--border);padding-top:10px;}
 .kekkon-sub-row{font-size:.83rem;line-height:1.65;color:var(--text);}
 .kekkon-sub-row-label{display:inline-block;font-weight:700;color:var(--text2);min-width:100px;margin-right:4px;}
+
+/* ══════════════════════════════════════════
+   📱 モバイル対応 レスポンシブCSS
+   max-width:768px / max-width:480px
+══════════════════════════════════════════ */
+
+/* ── タブレット〜大きめスマホ (〜768px) ── */
+@media(max-width:768px){
+  /* ナビ：2段レイアウト */
+  nav{padding:0 1rem}
+  .nav-inner{flex-wrap:wrap;gap:.3rem;padding:.3rem 0}
+  .nav-logo{flex:1;font-size:1.1rem;padding:.45rem 0}
+  .nav-tabs{order:3;width:100%;border-top:1px solid var(--border);padding:.3rem 0;margin-top:.1rem;scrollbar-width:none}
+  .nav-tabs::-webkit-scrollbar{display:none}
+  .nav-actions{order:2;display:flex;align-items:center;gap:.4rem}
+  .nav-tab{padding:.45rem .65rem;font-size:.78rem}
+
+  /* コンテナ余白縮小 */
+  .container{padding:1.8rem 1rem}
+  .hero{padding:3rem 1rem 2rem}
+  .hero p{font-size:.95rem}
+
+  /* カード */
+  .card-grid{grid-template-columns:1fr}
+  .calc-form{padding:1.4rem 1.2rem}
+  .form-row{grid-template-columns:1fr 1fr}
+
+  /* 命盤 */
+  .meiban-info{grid-template-columns:repeat(3,1fr);padding:1rem 1.2rem}
+  .meiban-grid{gap:4px}
+  .palace{min-height:110px;padding:.5rem .4rem}
+  .palace-center{padding:.5rem .6rem}
+
+  /* モーダル */
+  .modal,.enc-modal{padding:1.4rem 1.2rem;border-radius:14px}
+
+  /* 結婚タブ */
+  .kekkon-sougo-card{padding:16px}
+  .kekkon-timing-card{padding:14px}
+  .kekkon-timing-now{flex-direction:column;gap:5px}
+}
+
+/* ── 小型スマホ (〜480px) ── */
+@media(max-width:480px){
+  /* ナビ */
+  nav{padding:0 .7rem}
+  .nav-logo{font-size:.98rem}
+  .nav-tab{padding:.4rem .5rem;font-size:.74rem}
+
+  /* コンテナ */
+  .container{padding:1.2rem .85rem}
+  .hero{padding:2.2rem .85rem 1.5rem}
+  .hero h1{font-size:clamp(1.6rem,7vw,2.6rem)}
+  .hero p{font-size:.88rem}
+  .hero-btn{padding:.75rem 1.6rem;font-size:.92rem}
+
+  /* 入力フォーム */
+  .calc-form{padding:1.2rem 1rem;border-radius:12px}
+  .form-row{grid-template-columns:1fr}
+  .form-group input,.form-group select{font-size:.92rem;padding:.55rem .8rem}
+  .calc-btn{width:100%;padding:.8rem 1rem}
+
+  /* 時辰ピッカー */
+  #shichen-picker{grid-template-columns:repeat(4,1fr)!important;gap:.25rem}
+  .shichen-btn{font-size:.65rem;padding:.35rem .15rem}
+
+  /* 命盤グリッド */
+  .meiban-info{grid-template-columns:repeat(2,1fr);gap:.5rem}
+  .meiban-grid{gap:2px}
+  .palace{min-height:85px;padding:.35rem .3rem;border-radius:7px}
+  .palace-center{padding:.4rem .35rem;border-radius:7px}
+  .palace-center h3{font-size:.72rem}
+  .palace-center p{font-size:.62rem}
+  .p-branch{font-size:.76rem}
+  .p-name{font-size:.62rem}
+  .p-stem{font-size:.6rem}
+  .star-main{font-size:.68rem;padding:1px 4px}
+  .star-sub,.star-kika{font-size:.58rem}
+  .info-item span{font-size:.88rem}
+  .info-item label{font-size:.67rem}
+
+  /* モーダル */
+  .modal,.enc-modal{padding:1rem .9rem;width:96%;border-radius:12px}
+  .modal-close{top:.6rem;right:.6rem;width:28px;height:28px}
+  .auth-modal{padding:1.2rem 1rem}
+
+  /* 宮詳細インラインパネル */
+  #palace-inline-panel{padding:1rem .9rem;border-radius:14px}
+
+  /* 結婚タブ */
+  .kekkon-sougo-card{padding:12px}
+  .kekkon-sougo-section-title{font-size:.82rem}
+  .kekkon-age-badge{font-size:.71rem;padding:3px 9px}
+  .kekkon-card{padding:12px}
+  .kekkon-timing-card{padding:12px}
+  .kekkon-timing-header{font-size:.95rem}
+  .kekkon-timing-block{padding:10px 12px}
+  .kekkon-result-wrap{gap:10px}
+
+  /* 星の解説 / 十二宮 */
+  .aisei-form{grid-template-columns:1fr!important;gap:1rem}
+
+  /* 共通カード */
+  .card{padding:1rem}
+  .card-grid{gap:.8rem}
+}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
