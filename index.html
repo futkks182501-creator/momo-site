@@ -558,6 +558,24 @@ section.active{display:block}
 .saved-del-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(190,18,60,.08);color:#9f1239;border:1px solid rgba(190,18,60,.15);border-radius:50%;font-size:.95rem;cursor:pointer;transition:.15s;flex-shrink:0}
 .saved-del-btn:hover{background:rgba(190,18,60,.18)}
 
+/* ── HAMBURGER / MOBILE MENU ── */
+.hamburger-btn{display:none;align-items:center;justify-content:center;background:none;border:1px solid rgba(180,130,80,.22);border-radius:8px;color:var(--gold);cursor:pointer;padding:.36rem .5rem;font-size:1.25rem;line-height:1;transition:.2s;flex-shrink:0}
+.hamburger-btn:hover{background:rgba(180,83,9,.08);border-color:rgba(180,83,9,.3)}
+.hamburger-btn.is-open{background:rgba(180,83,9,.08);color:var(--gold2)}
+#mobile-overlay{display:none;position:fixed;inset:0;background:rgba(45,26,8,.38);z-index:200;opacity:0;transition:opacity .32s ease;pointer-events:none}
+#mobile-overlay.open{display:block;opacity:1;pointer-events:auto}
+#mobile-menu{position:fixed;top:0;right:0;height:100%;width:min(290px,84vw);background:rgba(250,245,235,.93);backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);border-left:1px solid rgba(180,130,80,.22);z-index:201;transform:translateX(105%);transition:transform .36s cubic-bezier(.4,0,.2,1);box-shadow:-6px 0 48px rgba(100,60,20,.2);overflow-y:auto;overscroll-behavior:contain}
+#mobile-menu.open{transform:translateX(0)}
+.mm-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.15rem .8rem;border-bottom:1px solid rgba(180,130,80,.18);position:sticky;top:0;background:rgba(250,245,235,.96);backdrop-filter:blur(20px);z-index:1}
+.mm-logo{font-size:1rem;font-weight:700;color:var(--gold);letter-spacing:.05em}
+.mm-close{display:flex;align-items:center;justify-content:center;background:none;border:1px solid rgba(180,130,80,.2);border-radius:8px;color:var(--text2);cursor:pointer;width:34px;height:34px;font-size:1.1rem;line-height:1;transition:.2s}
+.mm-close:hover{color:var(--text3);background:rgba(180,83,9,.08);border-color:rgba(180,83,9,.25)}
+.mm-items{padding:.5rem 0 1.5rem}
+.mm-item{display:block;width:100%;text-align:left;background:none;border:none;border-left:3px solid transparent;padding:.82rem 1.3rem;font-size:.95rem;color:var(--text2);cursor:pointer;font-family:inherit;transition:.18s;letter-spacing:.01em}
+.mm-item:hover{color:var(--gold2);background:rgba(180,83,9,.05);border-left-color:rgba(180,83,9,.28)}
+.mm-item.active{color:var(--gold);font-weight:700;background:linear-gradient(90deg,rgba(180,83,9,.07) 0%,transparent 100%);border-left-color:var(--gold)}
+.mm-divider{height:1px;background:rgba(180,130,80,.14);margin:.4rem 1rem}
+
 /* ── RESPONSIVE ── */
 @media(max-width:640px){
   .palace{min-height:100px;padding:.4rem .5rem}
@@ -855,10 +873,10 @@ section.active{display:block}
   nav{padding:0 1rem}
   .nav-inner{flex-wrap:wrap;gap:.3rem;padding:.3rem 0}
   .nav-logo{flex:1;font-size:1.1rem;padding:.45rem 0}
-  .nav-tabs{order:3;width:100%;border-top:1px solid var(--border);padding:.3rem 0 .3rem .2rem;margin-top:.1rem;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,black 72%,transparent 100%);mask-image:linear-gradient(to right,black 72%,transparent 100%)}
-  .nav-tabs::-webkit-scrollbar{display:none}
+  .nav-tabs{display:none!important}
   .nav-actions{order:2;display:flex;align-items:center;gap:.4rem}
   .nav-tab{padding:.45rem .65rem;font-size:.78rem}
+  .hamburger-btn{display:flex}
 
   /* コンテナ余白縮小 */
   .container{padding:1.8rem 1rem}
@@ -979,9 +997,38 @@ section.active{display:block}
     <div class="nav-actions">
       <span id="role-badge" class="" onclick="if(isKante())showSection('kanteishi')" style="cursor:pointer;font-size:.75rem;padding:.22rem .6rem;border-radius:8px;font-weight:700;display:inline-block"></span>
       <button id="nav-login-btn" onclick="showLoginOverlay(null)" style="display:none;font-size:.76rem;padding:.28rem .8rem;background:linear-gradient(135deg,var(--purple3),var(--purple2));color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">ログイン</button>
+      <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="メニューを開く">☰</button>
     </div>
   </div>
 </nav>
+
+<!-- ── MOBILE SLIDE MENU ── -->
+<div id="mobile-overlay" onclick="closeMobileMenu()"></div>
+<div id="mobile-menu" role="dialog" aria-modal="true" aria-label="ナビゲーションメニュー">
+  <div class="mm-header">
+    <span class="mm-logo">☆ 紫微斗数</span>
+    <button class="mm-close" onclick="closeMobileMenu()" aria-label="閉じる">✕</button>
+  </div>
+  <div class="mm-items">
+    <button class="mm-item active" id="mm-home"       onclick="showSection('home');closeMobileMenu()">ホーム</button>
+    <button class="mm-item"        id="mm-calc"       onclick="showSection('calc');closeMobileMenu()">命盤計算</button>
+    <button class="mm-item"        id="mm-aisei"      onclick="showSection('aisei');closeMobileMenu()">相性</button>
+    <button class="mm-item"        id="mm-kekkon"     onclick="showSection('kekkon');closeMobileMenu()">結婚</button>
+    <button class="mm-item"        id="mm-shinkyu"    onclick="showSection('shinkyu');closeMobileMenu()">運気</button>
+    <div class="mm-divider"></div>
+    <button class="mm-item"        id="mm-stars"      onclick="showSection('stars');closeMobileMenu()">星の解説</button>
+    <button class="mm-item"        id="mm-palaces"    onclick="showSection('palaces');closeMobileMenu()">十二宮</button>
+    <button class="mm-item"        id="mm-basics"     onclick="showSection('basics');closeMobileMenu()">基礎知識</button>
+    <div class="mm-divider"></div>
+    <button class="mm-item"        id="mm-siteinfo"   onclick="showSection('siteinfo');closeMobileMenu()">サイト情報</button>
+    <button class="mm-item"        id="mm-blog"       onclick="showSection('blog');closeMobileMenu()">ブログ</button>
+    <button class="mm-item"        id="mm-contact"    onclick="showSection('contact');closeMobileMenu()">お問い合わせ</button>
+    <button class="mm-item"        id="mm-oshirase"   onclick="showSection('oshirase');closeMobileMenu()">お知らせ</button>
+    <div class="mm-divider"></div>
+    <button class="mm-item kt-only"  id="mm-kanteishi" onclick="showSection('kanteishi');closeMobileMenu()">🔐 鑑定士</button>
+    <button class="mm-item admin-only" id="mm-admin"  onclick="showSection('admin');closeMobileMenu()">⚙️ 管理</button>
+  </div>
+</div>
 
 <!-- ======== HOME ======== -->
 <section id="home" class="active">
@@ -2907,6 +2954,34 @@ function copyAiKanteiPrompt(){
 }
 
 
+/* ── MOBILE MENU ── */
+function toggleMobileMenu(){
+  var menu=document.getElementById('mobile-menu');
+  var overlay=document.getElementById('mobile-overlay');
+  var btn=document.getElementById('hamburger-btn');
+  var isOpen=menu.classList.contains('open');
+  if(isOpen){
+    menu.classList.remove('open');overlay.classList.remove('open');
+    btn.classList.remove('is-open');btn.setAttribute('aria-label','メニューを開く');
+    document.body.style.overflow='';
+  } else {
+    menu.classList.add('open');overlay.classList.add('open');
+    btn.classList.add('is-open');btn.setAttribute('aria-label','メニューを閉じる');
+    document.body.style.overflow='hidden';
+  }
+}
+function closeMobileMenu(){
+  var menu=document.getElementById('mobile-menu');
+  var overlay=document.getElementById('mobile-overlay');
+  var btn=document.getElementById('hamburger-btn');
+  if(!menu)return;
+  menu.classList.remove('open');overlay.classList.remove('open');
+  if(btn){btn.classList.remove('is-open');btn.setAttribute('aria-label','メニューを開く');}
+  document.body.style.overflow='';
+}
+// Escape key closes menu
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMobileMenu();});
+
 function showSection(id){
   // Role-based access control
   const proSections=['basics','kanteishi','profile','kekkon'];
@@ -2928,11 +3003,14 @@ function showSection(id){
   if(adminSec){adminSec.style.display='none';adminSec.classList.remove('active');}
   document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.mm-item').forEach(t=>t.classList.remove('active'));
   const sec=document.getElementById(id);
   if(sec)sec.classList.add('active');
   const tabs=['home','calc','aisei','kekkon','shinkyu','stars','palaces','basics','profile','siteinfo','blog','contact','oshirase','kanteishi'];
   const idx=tabs.indexOf(id);
   if(idx>=0)document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  var mmItem=document.getElementById('mm-'+id);
+  if(mmItem)mmItem.classList.add('active');
   if(id==='aisei') populateAiseiSelects();
     if(id==='kekkon') renderKekkon();
   if(id==='shinkyu'){
