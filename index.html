@@ -12806,7 +12806,9 @@ if(document.readyState==='loading'){
 ===================================================== */
 const KT_PIN_KEY='ziwei_admin_pin';
 const KT_PROFILE_KEY='ziwei_kanteishi_profile';
-const BAKED_PROFILE=/* PROFILE_DATA_START */{"name":"紫微の魔女もも","title":"紫微斗数鑑定士・占い講師・魂の設計図ナビゲーター","bio":"","sns":{"x":"","instagram":"https://www.instagram.com/momo_uzihara.0204/","line":"","youtube":"","tiktok":""},"sites":{"hp":"https://roseuranai.jimdofree.com/?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQPOTM2NjE5NzQzMzkyNDU5AAGnOdjrkODqdVZ3uRROh1RCgQcQLn1XJQ1KBIG3fR57w2FtxRTFZcJ2FDyrtos_aem_6ZLTFdloXjkc9LK-ahCJsQ","coconala":"","stores":"https://momos-magicalshop.stores.jp/?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQPOTM2NjE5NzQzMzkyNDU5AAGn9exxrGy-tbA_vmGRTDcnKBiP4DK9ld9oJWKGIzmirD5lMnMaBeTJwsBe2ao_aem_f4yvqE--Lg38f2xpR56lfQ&utm_id=97760_v0_s00_e0_tv3","note":"","mosh":"","minne":"","base":"","c1name":"","c1url":"","c2name":"","c2url":"","c3name":"","c3url":""}}/* PROFILE_DATA_END */;
+const BAKED_PROFILE=/* PROFILE_DATA_START */{}/* PROFILE_DATA_END */;
+const BAKED_ACCOUNTS=/* ACCOUNTS_DATA_START */{}/* ACCOUNTS_DATA_END */;
+const BAKED_OSHIRASE=/* OSHIRASE_DATA_START */[]/* OSHIRASE_DATA_END */;
 const KT_KARTE_KEY='ziwei_karte_list';
 const KT_SCHEDULE_KEY='ziwei_kt_schedule';
 
@@ -12827,7 +12829,7 @@ async function sha256(str){
   }
   return _sha256Pure(str);
 }
-function getAuthData(){try{return JSON.parse(localStorage.getItem(ZIWEI_AUTH_KEY))||{};}catch{return{};}}
+function getAuthData(){try{var d=JSON.parse(localStorage.getItem(ZIWEI_AUTH_KEY));return(d&&Object.keys(d).length>0)?d:(Object.keys(BAKED_ACCOUNTS).length>0?BAKED_ACCOUNTS:{});}catch{return Object.keys(BAKED_ACCOUNTS).length>0?BAKED_ACCOUNTS:{};}}
 function saveAuthData(d){localStorage.setItem(ZIWEI_AUTH_KEY,JSON.stringify(d));}
 function getSession(){
   try{
@@ -13004,7 +13006,7 @@ function changePin(){
 var OSHIRASE_KEY='ziwei_oshirase';
 var OSHIRASE_READ_KEY='ziwei_oshirase_read';
 
-function getOshirase(){try{return JSON.parse(localStorage.getItem(OSHIRASE_KEY)||'[]');}catch(e){return[];}}
+function getOshirase(){try{var d=JSON.parse(localStorage.getItem(OSHIRASE_KEY)||'[]');return d.length>0?d:(Array.isArray(BAKED_OSHIRASE)&&BAKED_OSHIRASE.length>0?BAKED_OSHIRASE:[]);}catch(e){return Array.isArray(BAKED_OSHIRASE)?BAKED_OSHIRASE:[];}}
 function saveOshirase(arr){localStorage.setItem(OSHIRASE_KEY,JSON.stringify(arr));}
 function getOshiraseRead(){try{return JSON.parse(localStorage.getItem(OSHIRASE_READ_KEY)||'[]');}catch(e){return[];}}
 
@@ -13738,20 +13740,34 @@ function _showProfileExportToast(){
 }
 async function _bakeAndDownloadHTML(){
   try{
+    // ── プロフィール ──
     var profile=getProfile();
     var bake=Object.assign({},profile);
     delete bake.photo;
     var profileJson=JSON.stringify(bake);
+    // ── 鑑定士アカウント・管理人PIN ──
+    var authData=getAuthData();
+    var authJson=JSON.stringify(authData);
+    // ── 公開済みお知らせ ──
+    var oshirase=getOshirase();
+    var oshiraseJson=JSON.stringify(oshirase);
+    // ── ソース取得 ──
     var src;
     if(location.protocol==='file:'){
       src='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
     }else{
       src=await fetch(location.origin+location.pathname).then(function(r){return r.text();});
     }
-    var updated=src.replace(/\/\* PROFILE_DATA_START \*\/[\s\S]*?\/\* PROFILE_DATA_END \*\//,
-      '/* PROFILE_DATA_START */'+profileJson+'/* PROFILE_DATA_END */');
+    // ── 3箇所書き換え ──
+    var updated=src
+      .replace(/\/\* PROFILE_DATA_START \*\/[\s\S]*?\/\* PROFILE_DATA_END \*\//,
+        '/* PROFILE_DATA_START */'+profileJson+'/* PROFILE_DATA_END */')
+      .replace(/\/\* ACCOUNTS_DATA_START \*\/[\s\S]*?\/\* ACCOUNTS_DATA_END \*\//,
+        '/* ACCOUNTS_DATA_START */'+authJson+'/* ACCOUNTS_DATA_END */')
+      .replace(/\/\* OSHIRASE_DATA_START \*\/[\s\S]*?\/\* OSHIRASE_DATA_END \*\//,
+        '/* OSHIRASE_DATA_START */'+oshiraseJson+'/* OSHIRASE_DATA_END */');
     if(updated===src){alert('書き出し失敗（マーカー未検出）');return;}
-    // GitHubにPATが設定されていれば自動プッシュ
+    // ── GitHubにPATが設定されていれば自動プッシュ ──
     var pat=localStorage.getItem(_GH_PAT_KEY);
     if(pat){
       var ok=await _pushToGitHub(updated);
@@ -13759,13 +13775,13 @@ async function _bakeAndDownloadHTML(){
         document.querySelectorAll('._pe-toast').forEach(function(el){el.remove();});
         var nt=document.createElement('div');
         nt.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#064e3b;border:1.5px solid #059669;border-radius:14px;padding:12px 22px;z-index:9999;color:#d1fae5;font-size:.84rem;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.4);white-space:nowrap';
-        nt.textContent='🐙 GitHubにプッシュしました！数分後に反映されます';
+        nt.textContent='🐙 GitHubにプッシュしました！プロフィール・鑑定士・お知らせを全機器に反映中…';
         document.body.appendChild(nt);
-        setTimeout(function(){if(nt.parentNode)nt.remove();},6000);
+        setTimeout(function(){if(nt.parentNode)nt.remove();},8000);
         return;
       }
     }
-    // PATなし or プッシュ失敗 → ダウンロード
+    // ── PATなし or プッシュ失敗 → ダウンロード ──
     var blob=new Blob([updated],{type:'text/html;charset=utf-8'});
     var a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
