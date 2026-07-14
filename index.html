@@ -2930,6 +2930,15 @@ section.active{display:block}
       <button class="admin-btn primary" onclick="openProfileModal()">✏️ プロフィールを編集する</button>
     </div>
 
+    <!-- GitHub自動プッシュ設定 -->
+    <div class="admin-section-card">
+      <h4 class="admin-section-title">🐙 GitHub自動プッシュ</h4>
+      <p style="font-size:.8rem;color:var(--text2);margin-bottom:.8rem">プロフィール保存時にGitHubへ自動反映します。Personal Access Token（PAT）を設定してください。</p>
+      <input class="admin-input" type="password" id="admin-gh-pat" placeholder="ghp_xxxx...（PATを貼り付け）" style="margin-bottom:.5rem;font-family:monospace">
+      <button class="admin-btn primary" onclick="_saveGhPat()" style="margin-bottom:.5rem">💾 PATを保存</button>
+      <p id="admin-gh-status" style="font-size:.75rem;margin-top:.2rem;color:var(--text2)"></p>
+    </div>
+
     <!-- ログアウト -->
     <div style="text-align:center;margin-top:1rem">
       <button onclick="doLogout()" style="padding:.45rem 1.2rem;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.25);border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer">ログアウト</button>
@@ -12797,6 +12806,7 @@ if(document.readyState==='loading'){
 ===================================================== */
 const KT_PIN_KEY='ziwei_admin_pin';
 const KT_PROFILE_KEY='ziwei_kanteishi_profile';
+const BAKED_PROFILE=/* PROFILE_DATA_START */{}/* PROFILE_DATA_END */;
 const KT_KARTE_KEY='ziwei_karte_list';
 const KT_SCHEDULE_KEY='ziwei_kt_schedule';
 
@@ -13354,6 +13364,7 @@ function renderAdminPage(){
   if(li)li.value=d.defaultLineUrl||localStorage.getItem('ziwei_line_url')||'';
   ['admin-cur-pin','admin-new-admin-pin'].forEach(function(id){const el=document.getElementById(id);if(el)el.value='';});
   ['admin-pin-msg','admin-add-msg','admin-line-msg'].forEach(function(id){const el=document.getElementById(id);if(el)el.textContent='';});
+  _loadGhStatus();
 }
 function renderAdminKanteList(){
   const d=getAuthData();
@@ -13488,8 +13499,8 @@ function initKtPanels(){
 
 // ─── プロフィール ────────────────────────
 function getProfile(){
-  try{return JSON.parse(localStorage.getItem(KT_PROFILE_KEY))||{};}
-  catch{return{};}
+  try{return JSON.parse(localStorage.getItem(KT_PROFILE_KEY))||BAKED_PROFILE||{};}
+  catch{return BAKED_PROFILE||{};}
 }
 
 function renderProfileView(){
@@ -13674,6 +13685,95 @@ function saveProfile(){
   localStorage.setItem(KT_PROFILE_KEY,JSON.stringify(profile));
   closeProfileModal();
   renderProfileView();
+  _showProfileExportToast();
+}
+
+// ─── GitHub自動プッシュ ───────────────────
+const _GH_REPO='futkks182501-creator/momo-site';
+const _GH_FILE='index.html';
+const _GH_BRANCH='main';
+const _GH_PAT_KEY='ziwei_gh_pat';
+function _saveGhPat(){
+  var pat=document.getElementById('admin-gh-pat').value.trim();
+  if(!pat){localStorage.removeItem(_GH_PAT_KEY);_loadGhStatus();return;}
+  localStorage.setItem(_GH_PAT_KEY,pat);
+  document.getElementById('admin-gh-pat').value='';
+  _loadGhStatus();
+}
+function _loadGhStatus(){
+  var el=document.getElementById('admin-gh-status');if(!el)return;
+  var pat=localStorage.getItem(_GH_PAT_KEY);
+  el.textContent=pat?'🔑 PAT設定済み（'+pat.slice(0,8)+'...）':'⚠️ PAT未設定 — 設定するとプロフィール保存時に自動プッシュされます';
+  el.style.color=pat?'#10b981':'#f59e0b';
+}
+async function _pushToGitHub(html){
+  var pat=localStorage.getItem(_GH_PAT_KEY);
+  if(!pat)return false;
+  try{
+    var hdrs={'Authorization':'Bearer '+pat,'Content-Type':'application/json','Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
+    var gr=await fetch('https://api.github.com/repos/'+_GH_REPO+'/contents/'+_GH_FILE+'?ref='+_GH_BRANCH,{headers:hdrs});
+    if(!gr.ok)throw new Error('SHA取得失敗 ('+gr.status+')。PATを確認してください。');
+    var gd=await gr.json();
+    var b64=btoa(unescape(encodeURIComponent(html)));
+    var pr=await fetch('https://api.github.com/repos/'+_GH_REPO+'/contents/'+_GH_FILE,{
+      method:'PUT',headers:hdrs,
+      body:JSON.stringify({message:'プロフィール更新（自動）',content:b64,sha:gd.sha,branch:_GH_BRANCH})
+    });
+    if(!pr.ok)throw new Error('プッシュ失敗 ('+pr.status+')');
+    return true;
+  }catch(e){alert('GitHubプッシュエラー: '+e.message);return false;}
+}
+
+// ─── プロフィールHTML書き出し ──────────────
+function _showProfileExportToast(){
+  document.querySelectorAll('._pe-toast').forEach(function(el){el.remove();});
+  var t=document.createElement('div');
+  t.className='_pe-toast';
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1840;border:1.5px solid #7c3aed;border-radius:14px;padding:12px 18px;z-index:9999;display:flex;align-items:center;gap:10px;box-shadow:0 4px 24px rgba(0,0,0,.5);white-space:nowrap';
+  t.innerHTML='<span style="color:#e8c9a0;font-size:.82rem">✅ 保存しました</span>'
+    +'<button onclick="_bakeAndDownloadHTML()" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:.78rem;cursor:pointer;font-weight:700">📥 HTMLに書き出す</button>'
+    +'<button onclick="this.closest(\'._pe-toast\').remove()" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:1.1rem;line-height:1;padding:0 2px">✕</button>';
+  document.body.appendChild(t);
+  setTimeout(function(){if(t.parentNode)t.remove();},15000);
+}
+async function _bakeAndDownloadHTML(){
+  try{
+    var profile=getProfile();
+    var bake=Object.assign({},profile);
+    delete bake.photo;
+    var profileJson=JSON.stringify(bake);
+    var src;
+    if(location.protocol==='file:'){
+      src='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+    }else{
+      src=await fetch(location.origin+location.pathname).then(function(r){return r.text();});
+    }
+    var updated=src.replace(/\/\* PROFILE_DATA_START \*\/[\s\S]*?\/\* PROFILE_DATA_END \*\//,
+      '/* PROFILE_DATA_START */'+profileJson+'/* PROFILE_DATA_END */');
+    if(updated===src){alert('書き出し失敗（マーカー未検出）');return;}
+    // GitHubにPATが設定されていれば自動プッシュ
+    var pat=localStorage.getItem(_GH_PAT_KEY);
+    if(pat){
+      var ok=await _pushToGitHub(updated);
+      if(ok){
+        document.querySelectorAll('._pe-toast').forEach(function(el){el.remove();});
+        var nt=document.createElement('div');
+        nt.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#064e3b;border:1.5px solid #059669;border-radius:14px;padding:12px 22px;z-index:9999;color:#d1fae5;font-size:.84rem;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.4);white-space:nowrap';
+        nt.textContent='🐙 GitHubにプッシュしました！数分後に反映されます';
+        document.body.appendChild(nt);
+        setTimeout(function(){if(nt.parentNode)nt.remove();},6000);
+        return;
+      }
+    }
+    // PATなし or プッシュ失敗 → ダウンロード
+    var blob=new Blob([updated],{type:'text/html;charset=utf-8'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='index.html';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+    document.querySelectorAll('._pe-toast').forEach(function(el){el.remove();});
+  }catch(e){alert('エラー: '+e.message);}
 }
 
 // ─── カルテ CRUD ─────────────────────────
