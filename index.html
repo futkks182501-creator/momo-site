@@ -855,7 +855,7 @@ section.active{display:block}
   nav{padding:0 1rem}
   .nav-inner{flex-wrap:wrap;gap:.3rem;padding:.3rem 0}
   .nav-logo{flex:1;font-size:1.1rem;padding:.45rem 0}
-  .nav-tabs{order:3;width:100%;border-top:1px solid var(--border);padding:.3rem 0;margin-top:.1rem;scrollbar-width:none}
+  .nav-tabs{order:3;width:100%;border-top:1px solid var(--border);padding:.3rem 0 .3rem .2rem;margin-top:.1rem;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,black 72%,transparent 100%);mask-image:linear-gradient(to right,black 72%,transparent 100%)}
   .nav-tabs::-webkit-scrollbar{display:none}
   .nav-actions{order:2;display:flex;align-items:center;gap:.4rem}
   .nav-tab{padding:.45rem .65rem;font-size:.78rem}
@@ -911,9 +911,9 @@ section.active{display:block}
 
   /* 命盤グリッド */
   .meiban-info{grid-template-columns:repeat(2,1fr);gap:.5rem}
-  .meiban-grid{gap:2px}
-  .palace{min-height:85px;padding:.35rem .3rem;border-radius:7px}
-  .palace-center{padding:.4rem .35rem;border-radius:7px}
+  .meiban-grid{gap:2px;grid-template-rows:repeat(4,20vw)!important}
+  .palace{height:20vw;min-height:unset!important;padding:.3rem .25rem;border-radius:7px;overflow:hidden}
+  .palace-center{height:calc(40vw + 2px);min-height:unset!important;padding:.35rem .3rem;border-radius:7px;overflow-y:auto}
   .palace-center h3{font-size:.72rem}
   .palace-center p{font-size:.62rem}
   .p-branch{font-size:.76rem}
