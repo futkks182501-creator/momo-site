@@ -862,6 +862,9 @@ section.active{display:block}
 .kekkon-sub-row{font-size:.83rem;line-height:1.65;color:var(--text);}
 .kekkon-sub-row-label{display:inline-block;font-weight:700;color:var(--text2);min-width:100px;margin-right:4px;}
 
+/* ── モバイルナビLINEボタン（デフォルト非表示） ── */
+.nav-line-mobile{display:none}
+
 /* ══════════════════════════════════════════
    📱 モバイル対応 レスポンシブCSS
    max-width:768px / max-width:480px
@@ -877,6 +880,28 @@ section.active{display:block}
   .nav-actions{order:2;display:flex;align-items:center;gap:.4rem}
   .nav-tab{padding:.45rem .65rem;font-size:.78rem}
   .hamburger-btn{display:flex}
+  /* モバイルナビ固定LINEボタン */
+  .nav-line-mobile{display:inline-flex;align-items:center;padding:.28rem .65rem;background:#06c755;color:#fff;border-radius:8px;font-size:.73rem;font-weight:800;text-decoration:none;flex-shrink:0;white-space:nowrap}
+  /* 命盤calcコンテンツ順序変更 */
+  #calc .container{display:flex;flex-direction:column}
+  #calc .section-header{order:1}
+  #calc .calc-form{order:2}
+  #calc .saved-panel{order:3}
+  #calc #meiban-wrapper{order:4}
+  #calc #free-ai-section{order:5}
+  #calc #today-unsei-section{order:6}
+  #calc #free-unsei-ai-section{order:7}
+  #calc #free-meiban-guide{order:8}
+  #calc #ai-kantei-btn{order:9}
+  #calc #kantei-section{order:10}
+  #calc #kantei-book-section{order:11}
+  #calc #unsei-section{order:12}
+  #calc #unsei-line-cta{order:13}
+  #calc #unsei-goto-btn{order:14}
+  #calc #zensei-section{order:15}
+  #calc #senzo-section{order:16}
+  #calc #line-cta-bar{display:none!important}
+  #calc #line-cta-section{display:none!important}
 
   /* コンテナ余白縮小 */
   .container{padding:1.8rem 1rem}
@@ -890,9 +915,13 @@ section.active{display:block}
 
   /* 命盤 */
   .meiban-info{grid-template-columns:repeat(3,1fr);padding:1rem 1.2rem}
-  .meiban-grid{gap:4px}
-  .palace{min-height:110px;padding:.5rem .4rem}
-  .palace-center{padding:.5rem .6rem}
+  .meiban-grid{gap:3px}
+  .palace{min-height:100px;padding:.4rem .35rem}
+  .palace-center{padding:.45rem .5rem}
+  .p-header{margin-bottom:.2rem;padding-bottom:.18rem}
+  .star-main{font-size:.76rem;padding:2px 5px}
+  .star-sub,.star-kika{font-size:.6rem}
+  .p-kika span{font-size:.5rem}
 
   /* モーダル */
   .modal,.enc-modal{padding:1.4rem 1.2rem;border-radius:14px}
@@ -930,15 +959,28 @@ section.active{display:block}
   /* 命盤グリッド */
   .meiban-info{grid-template-columns:repeat(2,1fr);gap:.5rem}
   .meiban-grid{gap:2px;grid-template-rows:repeat(4,20vw)!important}
-  .palace{height:20vw;min-height:unset!important;padding:.3rem .25rem;border-radius:7px;overflow:hidden}
-  .palace-center{height:calc(40vw + 2px);min-height:unset!important;padding:.35rem .3rem;border-radius:7px;overflow-y:auto}
-  .palace-center h3{font-size:.72rem}
-  .palace-center p{font-size:.62rem}
-  .p-branch{font-size:.76rem}
-  .p-name{font-size:.62rem}
-  .p-stem{font-size:.6rem}
-  .star-main{font-size:.68rem;padding:1px 4px}
-  .star-sub,.star-kika{font-size:.58rem}
+  .palace{height:20vw;min-height:unset!important;padding:.22rem .2rem;border-radius:7px;overflow:hidden;position:relative}
+  .palace-center{height:calc(40vw + 2px);min-height:unset!important;padding:.3rem .28rem;border-radius:7px;overflow-y:auto}
+  .palace-center h3{font-size:.66rem;margin-bottom:.1rem}
+  .palace-center p{font-size:.56rem;line-height:1.35}
+  /* ─ ヘッダー行：支・干・宮名 ─ */
+  .p-header{margin-bottom:.1rem;padding-bottom:.1rem;flex-wrap:nowrap;gap:1px}
+  .p-branch{font-size:.68rem;line-height:1.1}
+  .p-stem{font-size:.52rem;line-height:1.1}
+  .p-name{font-size:.52rem;line-height:1.1;letter-spacing:-.01em}
+  /* ─ バッジ ─ */
+  .p-badges{gap:1px;margin-bottom:.08rem;flex-wrap:nowrap}
+  .badge{font-size:.5rem;padding:0 2px;border-radius:3px;line-height:1.3}
+  .badge-daigen{font-size:.48rem}
+  /* ─ 主星・副星 ─ */
+  .p-stars{gap:1px;margin-bottom:.06rem;flex-wrap:wrap}
+  .star-main{font-size:.6rem;padding:1px 3px;letter-spacing:0;line-height:1.25}
+  .star-sub,.star-kika{font-size:.5rem;padding:0 2px;line-height:1.25}
+  /* ─ 四化は小さすぎるのでモバイルは非表示（タップで詳細確認） ─ */
+  .p-kika{display:none}
+  /* ─ 無料チップも非表示（ロックアイコンのみ残す） ─ */
+  .palace-free-chip{display:none}
+  .palace-locked-hint{font-size:.62rem;position:absolute;bottom:2px;right:3px;line-height:1}
   .info-item span{font-size:.88rem}
   .info-item label{font-size:.67rem}
 
@@ -997,6 +1039,7 @@ section.active{display:block}
     <div class="nav-actions">
       <span id="role-badge" class="" onclick="if(isKante())showSection('kanteishi')" style="cursor:pointer;font-size:.75rem;padding:.22rem .6rem;border-radius:8px;font-weight:700;display:inline-block"></span>
       <button id="nav-login-btn" onclick="showLoginOverlay(null)" style="display:none;font-size:.76rem;padding:.28rem .8rem;background:linear-gradient(135deg,var(--purple3),var(--purple2));color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">ログイン</button>
+      <a id="nav-line-mobile" href="#" target="_blank" rel="noopener" class="nav-line-mobile">📲 LINE</a>
       <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="メニューを開く">☰</button>
     </div>
   </div>
@@ -5667,6 +5710,7 @@ function calculate(){
     // LINE CTA: 鑑定士には1つだけ（unsei-line-ctaは非表示）
     const lineBar=document.getElementById('line-cta-bar');
     if(lineBar){lineBar.style.display='flex';const lbb=document.getElementById('line-cta-bar-btn');if(lbb)lbb.href=getLineUrl();}
+    var _nlm=document.getElementById('nav-line-mobile');if(_nlm)_nlm.href=getLineUrl();
     const unseiLineCta=document.getElementById('unsei-line-cta');
     if(unseiLineCta)unseiLineCta.style.display='none';
   }else{
@@ -5738,6 +5782,7 @@ function calculate(){
     // LINE CTA: 公開には1つだけ表示
     const lineBar2=document.getElementById('line-cta-bar');
     if(lineBar2){lineBar2.style.display='flex';const lbb2=document.getElementById('line-cta-bar-btn');if(lbb2)lbb2.href=getLineUrl();}
+    var _nlm2=document.getElementById('nav-line-mobile');if(_nlm2)_nlm2.href=getLineUrl();
     const unseiLineCta2=document.getElementById('unsei-line-cta');
     if(unseiLineCta2)unseiLineCta2.style.display='none';
     const freeLineBtn=document.getElementById('free-ai-line-btn');
@@ -14247,6 +14292,9 @@ async function _gcalDeleteEvent(gcalId){
 // 迷子読み込み待機後に初期化
 document.addEventListener('DOMContentLoaded', function(){
   setTimeout(function(){ _gcalInit(); _renderGcalStatus(); }, 2000);
+  // モバイルナビLINEボタンのhref初期化
+  var _nlmInit=document.getElementById('nav-line-mobile');
+  if(_nlmInit) _nlmInit.href=getLineUrl();
 });
 
 function gcalOsTab(os){
