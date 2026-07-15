@@ -2955,11 +2955,12 @@ section.active{display:block}
 <div class="force-pin-overlay" id="force-pin-overlay" style="display:none">
   <div class="force-pin-card">
     <h3 style="margin:0 0 .8rem;font-size:.9rem;font-weight:800;color:var(--text1)">🔑 初回パスワードを設定してください</h3>
-    <p style="font-size:.75rem;color:var(--text2);margin:0 0 1rem">安全のため、初回ログイン時にパスワードを変更してください（8文字以上）</p>
+    <p style="font-size:.75rem;color:var(--text2);margin:0 0 1rem">安全のため、管理人から渡された初期PINを入力し、新しいパスワードへ変更してください（8文字以上）</p>
+    <input class="auth-pin-inp" type="password" id="fp-pin-current" placeholder="現在の初期PIN（管理人から渡されたもの）" maxlength="128">
     <input class="auth-pin-inp" type="password" id="fp-pin-new" placeholder="新しいパスワード（8文字以上）" maxlength="128">
     <input class="auth-pin-inp" type="password" id="fp-pin-confirm" placeholder="もう一度入力" maxlength="128">
     <span class="auth-err" id="fp-pin-msg"></span>
-    <button class="auth-submit-btn" onclick="doForcePinChange()">PINを設定する</button>
+    <button class="auth-submit-btn" onclick="doForcePinChange()">パスワードを設定する</button>
   </div>
 </div>
 
@@ -3002,21 +3003,60 @@ section.active{display:block}
       <p>鑑定士アカウントの管理・設定を行います。</p>
     </div>
 
-    <!-- 鑑定士リスト -->
+    <!-- 鑑定士アカウント管理 -->
     <div class="admin-section-card">
-      <h4 class="admin-section-title">🔯 登録済み鑑定士</h4>
-      <div id="admin-kante-list"></div>
-    </div>
+      <h4 class="admin-section-title">👥 鑑定士アカウント管理</h4>
 
-    <!-- 鑑定士追加 -->
-    <div class="admin-section-card">
-      <h4 class="admin-section-title">➕ 鑑定士を追加</h4>
-      <input class="admin-input" type="text" id="admin-new-id" placeholder="ログインID（英数字・例: tanaka01）">
-      <input class="admin-input" type="text" id="admin-new-name" placeholder="表示名（例：田中先生）">
-      <input class="admin-input" type="password" id="admin-new-pin" placeholder="初期パスワード（8文字以上）">
-      <input class="admin-input" type="url" id="admin-new-line" placeholder="LINE公式アカウントURL（任意）">
-      <button class="admin-btn primary" onclick="adminAddKante()">追加する</button>
-      <div class="admin-msg" id="admin-add-msg"></div>
+      <!-- 登録済み鑑定士一覧 -->
+      <div id="admin-kante-list" style="margin-bottom:1rem"></div>
+
+      <!-- 新規登録フォーム -->
+      <details id="admin-kante-add-details" style="border-top:1px solid var(--border);padding-top:.8rem">
+        <summary style="font-size:.82rem;font-weight:700;color:var(--purple2);cursor:pointer;user-select:none;margin-bottom:.7rem">➕ 新しい鑑定士を登録する</summary>
+        <p style="font-size:.73rem;color:var(--text2);margin:0 0 .6rem">鑑定士IDはWorkerが自動発行します（KT-0001 形式）。登録後にIDを鑑定士へ伝えてください。</p>
+        <input class="admin-input" type="text" id="admin-new-name" placeholder="鑑定士名（例：田中先生）">
+        <input class="admin-input" type="password" id="admin-new-pin" placeholder="初期PIN（8文字以上）— 登録後に鑑定士へ伝える">
+        <input class="admin-input" type="url" id="admin-new-line" placeholder="LINE公式アカウントURL（任意）">
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2);margin:.4rem 0 .7rem;cursor:pointer">
+          <input type="checkbox" id="admin-new-must-change" checked>
+          初回ログイン時にPIN変更を必須にする（推奨）
+        </label>
+        <button class="admin-btn primary" onclick="adminAddKante()">登録する</button>
+        <div class="admin-msg" id="admin-add-msg"></div>
+      </details>
+
+      <!-- 登録完了パネル（登録後に表示） -->
+      <div id="admin-kante-result" style="display:none;margin-top:.8rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.3);border-radius:10px;padding:1rem">
+        <p style="font-size:.78rem;font-weight:700;color:#10b981;margin:0 0 .6rem">✅ 鑑定士を登録しました。以下の情報を鑑定士へ伝えてください。</p>
+        <div style="font-size:.8rem;color:var(--text1);line-height:1.9">
+          <div>🔖 鑑定士名：<strong id="res-kante-name"></strong></div>
+          <div>🆔 ログインID：<strong id="res-kante-id" style="font-family:monospace;color:var(--purple2)"></strong></div>
+          <div>🔑 初期PIN：<strong id="res-kante-pin" style="font-family:monospace;color:#f59e0b"></strong></div>
+          <div>🌐 ログインURL：<strong><a id="res-kante-url" href="" target="_blank" style="color:var(--purple2);word-break:break-all"></a></strong></div>
+        </div>
+        <p style="font-size:.7rem;color:#f59e0b;margin:.5rem 0 .7rem">⚠️ 初期PINはこの画面でのみ表示されます。忘れた場合はPINを再発行してください。</p>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="admin-btn secondary" style="font-size:.75rem" onclick="adminCopyKanteInfo()">📋 ログイン情報をまとめてコピー</button>
+          <button class="admin-btn secondary" style="font-size:.75rem" onclick="adminCopyText(document.getElementById('res-kante-id').textContent)">🔖 IDをコピー</button>
+          <button class="admin-btn secondary" style="font-size:.75rem" onclick="adminCopyText(document.getElementById('res-kante-pin').textContent)">🔑 PINをコピー</button>
+          <button class="admin-btn secondary" style="font-size:.75rem" onclick="document.getElementById('admin-kante-result').style.display='none'">閉じる</button>
+        </div>
+      </div>
+
+      <!-- PIN再発行完了パネル -->
+      <div id="admin-pin-reset-result" style="display:none;margin-top:.8rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:1rem">
+        <p style="font-size:.78rem;font-weight:700;color:#f59e0b;margin:0 0 .6rem">🔄 PINを再発行しました。以下の新しいPINを鑑定士へ伝えてください。</p>
+        <div style="font-size:.8rem;color:var(--text1);line-height:1.9">
+          <div>🆔 ログインID：<strong id="res-reset-id" style="font-family:monospace;color:var(--purple2)"></strong></div>
+          <div>🔑 新しい初期PIN：<strong id="res-reset-pin" style="font-family:monospace;color:#f59e0b"></strong></div>
+        </div>
+        <p style="font-size:.7rem;color:#f59e0b;margin:.5rem 0 .7rem">⚠️ この画面でのみ表示されます。既存セッションはすべて無効化されました。</p>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="admin-btn secondary" style="font-size:.75rem" onclick="adminCopyResetInfo()">📋 まとめてコピー</button>
+          <button class="admin-btn secondary" style="font-size:.75rem" onclick="adminCopyText(document.getElementById('res-reset-pin').textContent)">🔑 新PINをコピー</button>
+          <button class="admin-btn secondary" style="font-size:.75rem" onclick="document.getElementById('admin-pin-reset-result').style.display='none'">閉じる</button>
+        </div>
+      </div>
     </div>
 
     <!-- LINE設定 -->
@@ -13112,6 +13152,10 @@ async function _restoreSessionFromWorker(){
   if(r.ok&&r.data.authenticated){
     setSession(r.data.role,r.data.userId,r.data.displayName,r.data.lineUrl);
     if(isKante())_ktAuthed=true;
+    // 初回PIN変更が必要な場合はオーバーレイを表示
+    if(r.data.mustChangePassword){
+      document.getElementById('force-pin-overlay').style.display='flex';
+    }
   }
   updateRoleBadge();
   if(isKante())_ktAuthed=true;
@@ -13254,6 +13298,11 @@ async function doLogin(){
     _ktAuthed=true;
     syncUnseiLockByRole();
     updateRoleBadge();
+    // 初回PIN変更が必要な場合はオーバーレイを表示
+    if(r.data.mustChangePassword){
+      document.getElementById('force-pin-overlay').style.display='flex';
+      return;
+    }
     var _curSec=document.querySelector('section.active');
     if(_curSec){var _cid=_curSec.id;if(_cid==='stars')renderStars();else if(_cid==='palaces')renderPalaces();else if(_cid==='basics')renderBasics();else if(_cid==='calc'&&currentResult)renderMeiban(currentResult);}
     if(_authTargetSection){var t=_authTargetSection;_authTargetSection=null;showSection(t);}
@@ -13276,6 +13325,7 @@ async function doForcePinChange(){
   const r=await _workerFetch(endpoint,{method:'PUT',body:{currentPassword:curPw,newPassword:np}});
   if(!r.ok){msg.style.color='#ef4444';msg.textContent=r.data.error||'変更に失敗しました';return;}
   document.getElementById('force-pin-overlay').style.display='none';
+  document.getElementById('fp-pin-current').value='';
   document.getElementById('fp-pin-new').value='';
   document.getElementById('fp-pin-confirm').value='';
   msg.textContent='';
@@ -13688,49 +13738,129 @@ async function renderAdminKanteList(){
   el.innerHTML='<p style="font-size:.83rem;color:var(--text2)">読み込み中…</p>';
   var r=await _workerFetch('/api/admin/kantes',{method:'GET'});
   if(!r.ok){
-    el.innerHTML='<p style="font-size:.83rem;color:#ef4444">鑑定士一覧の取得に失敗しました: '+(r.data.error||r.status)+'</p>';
+    el.innerHTML='<p style="font-size:.83rem;color:#ef4444">取得失敗: '+(r.data.error||r.status)+'</p>';
     return;
   }
   var kantes=r.data.kantes||[];
   if(!kantes.length){
-    el.innerHTML='<p style="font-size:.83rem;color:var(--text2);padding:.3rem 0">鑑定士が登録されていません</p>';
+    el.innerHTML='<p style="font-size:.82rem;color:var(--text2);padding:.4rem 0">登録済みの鑑定士はいません</p>';
     return;
   }
-  el.innerHTML=kantes.map(function(k){return '<div class="kante-row" id="krow-'+k.id+'">'
-    +'<span class="kante-name-badge">🔯 '+k.display_name+'</span>'
-    +'<span style="font-size:.7rem;padding:.1rem .4rem;border-radius:6px;font-weight:700;'+(k.active?'background:#d1fae5;color:#065f46':'background:#fee2e2;color:#991b1b')+'">'+(k.active?'有効':'無効')+'</span>'
-    +'<span class="kante-line-url" title="'+(k.line_url||'')+'">LINE: '+(k.line_url?k.line_url.replace('https://',''):'未設定')+'</span>'
-    +'<div style="display:flex;gap:.4rem;flex-shrink:0">'
-    +'<button class="admin-btn warn" onclick="adminEditKante(\''+k.id+'\',\''+encodeURIComponent(k.display_name)+'\',\''+encodeURIComponent(k.line_url||'')+'\')">編集</button>'
-    +'<button class="admin-btn danger" onclick="adminDeleteKante(\''+k.id+'\')">'+(k.active?'無効化':'無効済み')+'</button>'
-    +'</div></div>';}).join('');
+  function fmtDate(iso){
+    if(!iso)return'—';
+    try{var d=new Date(iso);return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+(d.getDate())+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}catch{return iso;}
+  }
+  el.innerHTML=kantes.map(function(k){
+    var activeTag=k.active
+      ?'<span style="font-size:.68rem;padding:.1rem .4rem;border-radius:5px;font-weight:700;background:#d1fae5;color:#065f46">有効</span>'
+      :'<span style="font-size:.68rem;padding:.1rem .4rem;border-radius:5px;font-weight:700;background:#fee2e2;color:#991b1b">無効</span>';
+    var mcpTag=k.must_change_password
+      ?'<span style="font-size:.65rem;padding:.1rem .35rem;border-radius:5px;background:#fef3c7;color:#92400e;font-weight:700">PIN変更待ち</span>'
+      :'<span style="font-size:.65rem;padding:.1rem .35rem;border-radius:5px;background:#e0e7ff;color:#3730a3;font-weight:700">変更済み</span>';
+    return '<div id="krow-'+k.id+'" style="border:1px solid var(--border);border-radius:10px;padding:.7rem .8rem;margin-bottom:.6rem">'
+      // 1行目：名前・状態バッジ
+      +'<div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.35rem">'
+        +'<span style="font-weight:800;font-size:.87rem;color:var(--text1)">🔯 '+k.display_name+'</span>'
+        +activeTag+mcpTag
+      +'</div>'
+      // 2行目：ID・最終ログイン・パスワード変更日
+      +'<div style="font-size:.72rem;color:var(--text2);line-height:1.8">'
+        +'<div>🆔 ログインID: <code style="color:var(--purple2);font-size:.78rem">'+k.id+'</code>'
+          +'<button onclick="adminCopyText(\''+k.id+'\')" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:.72rem;padding:0 .3rem" title="IDをコピー">📋</button>'
+        +'</div>'
+        +'<div>🕐 最終ログイン: '+fmtDate(k.last_login_at)+'</div>'
+        +'<div>🔑 パスワード変更: '+fmtDate(k.password_changed_at)+'</div>'
+        +(k.line_url?'<div>💚 LINE: '+k.line_url.replace('https://','')+'</div>':'')
+      +'</div>'
+      // 3行目：操作ボタン
+      +'<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.5rem">'
+        +'<button class="admin-btn warn" style="font-size:.73rem" onclick="adminEditKante(\''+k.id+'\',\''+encodeURIComponent(k.display_name)+'\',\''+encodeURIComponent(k.line_url||'')+'\')">✏️ 編集</button>'
+        +'<button class="admin-btn secondary" style="font-size:.73rem" onclick="adminResetKantePin(\''+k.id+'\')">🔄 PIN再発行</button>'
+        +(k.active
+          ?'<button class="admin-btn danger" style="font-size:.73rem" onclick="adminToggleKante(\''+k.id+'\',false)">🚫 無効化</button>'
+          :'<button class="admin-btn primary" style="font-size:.73rem" onclick="adminToggleKante(\''+k.id+'\',true)">✅ 有効化</button>'
+        )
+      +'</div>'
+    +'</div>';
+  }).join('');
 }
 async function adminAddKante(){
-  var kanteId=document.getElementById('admin-new-id')?document.getElementById('admin-new-id').value.trim():'k'+Date.now();
   var name=document.getElementById('admin-new-name').value.trim();
   var pw=document.getElementById('admin-new-pin').value.trim();
   var lineUrl=document.getElementById('admin-new-line').value.trim();
+  var mustChange=document.getElementById('admin-new-must-change').checked;
   var msg=document.getElementById('admin-add-msg');
-  if(!name){msg.style.color='#ef4444';msg.textContent='名前を入力してください';return;}
-  if(!pw||pw.length<8){msg.style.color='#ef4444';msg.textContent='パスワードは8文字以上で入力してください';return;}
-  if(!kanteId||!/^[a-zA-Z0-9_-]+$/.test(kanteId)){msg.style.color='#ef4444';msg.textContent='IDは英数字・_・-のみで入力してください';return;}
+  if(!name){msg.style.color='#ef4444';msg.textContent='鑑定士名を入力してください';return;}
+  if(!pw||pw.length<8){msg.style.color='#ef4444';msg.textContent='初期PINは8文字以上で入力してください';return;}
   msg.style.color='var(--text2)';msg.textContent='登録中…';
-  var r=await _workerFetch('/api/admin/kantes',{method:'POST',body:{id:kanteId,displayName:name,password:pw,lineUrl:lineUrl}});
+  var r=await _workerFetch('/api/admin/kantes',{method:'POST',body:{displayName:name,password:pw,lineUrl:lineUrl,mustChangePassword:mustChange}});
   if(!r.ok){msg.style.color='#ef4444';msg.textContent=r.data.error||'登録に失敗しました';return;}
-  if(document.getElementById('admin-new-id'))document.getElementById('admin-new-id').value='';
+  // フォームをリセット
   document.getElementById('admin-new-name').value='';
   document.getElementById('admin-new-pin').value='';
   document.getElementById('admin-new-line').value='';
-  msg.style.color='#10b981';msg.textContent='✓ 追加しました';
+  document.getElementById('admin-new-must-change').checked=true;
+  msg.textContent='';
+  // 登録完了パネルに情報を表示
+  var newId=r.data.id;
+  var loginUrl=window.location.origin+window.location.pathname;
+  document.getElementById('res-kante-name').textContent=name;
+  document.getElementById('res-kante-id').textContent=newId;
+  document.getElementById('res-kante-pin').textContent=pw;
+  document.getElementById('res-kante-url').href=loginUrl;
+  document.getElementById('res-kante-url').textContent=loginUrl;
+  document.getElementById('admin-kante-result').style.display='block';
+  // フォームを閉じる
+  document.getElementById('admin-kante-add-details').removeAttribute('open');
   renderAdminKanteList();
-  setTimeout(function(){msg.textContent='';},3000);
   _showSaveToast(true,'鑑定士情報');
 }
-async function adminDeleteKante(id){
-  if(!confirm('この鑑定士を無効化しますか？\n（データは保持されます。再有効化は編集から行えます）'))return;
-  var r=await _workerFetch('/api/admin/kantes/'+encodeURIComponent(id),{method:'DELETE'});
+async function adminToggleKante(id,active){
+  var action=active?'有効化':'無効化';
+  if(!confirm('鑑定士を'+action+'しますか？'+(active?'':'\n（即時セッションが無効になります）')))return;
+  var r;
+  if(!active){
+    // 無効化はDELETEルートを使用（既存セッション即時削除）
+    r=await _workerFetch('/api/admin/kantes/'+encodeURIComponent(id),{method:'DELETE'});
+  }else{
+    // 再有効化はPUTで active:true
+    r=await _workerFetch('/api/admin/kantes/'+encodeURIComponent(id),{method:'PUT',body:{active:true}});
+  }
   _showSaveToast(r.ok,'鑑定士情報');
   renderAdminKanteList();
+}
+async function adminResetKantePin(id){
+  if(!confirm('このIDのPINを再発行しますか？\n既存のセッションはすべて無効になります。'))return;
+  var r=await _workerFetch('/api/admin/kantes/'+encodeURIComponent(id)+'/reset-pin',{method:'POST'});
+  if(!r.ok){alert('再発行に失敗しました: '+(r.data.error||r.status));return;}
+  document.getElementById('res-reset-id').textContent=r.data.kanteId;
+  document.getElementById('res-reset-pin').textContent=r.data.newPin;
+  document.getElementById('admin-pin-reset-result').style.display='block';
+  document.getElementById('admin-kante-result').style.display='none';
+  renderAdminKanteList();
+}
+function adminCopyText(text){
+  navigator.clipboard.writeText(text).then(function(){
+    var t=document.createElement('div');
+    t.style.cssText='position:fixed;bottom:70px;left:50%;transform:translateX(-50%);padding:.4rem .9rem;border-radius:8px;font-size:.78rem;font-weight:700;z-index:9999;background:#064e3b;color:#d1fae5;border:1px solid #059669;pointer-events:none';
+    t.textContent='✅ コピーしました';
+    document.body.appendChild(t);
+    setTimeout(function(){t.remove();},2000);
+  });
+}
+function adminCopyKanteInfo(){
+  var name=document.getElementById('res-kante-name').textContent;
+  var id=document.getElementById('res-kante-id').textContent;
+  var pin=document.getElementById('res-kante-pin').textContent;
+  var url=document.getElementById('res-kante-url').textContent;
+  var text='【紫微斗数 鑑定士ログイン情報】\n鑑定士名: '+name+'\nログインID: '+id+'\n初期PIN: '+pin+'\nログインURL: '+url+'\n※初回ログイン後にPINを変更してください。';
+  adminCopyText(text);
+}
+function adminCopyResetInfo(){
+  var id=document.getElementById('res-reset-id').textContent;
+  var pin=document.getElementById('res-reset-pin').textContent;
+  var text='【PIN再発行情報】\nログインID: '+id+'\n新しい初期PIN: '+pin+'\n※ログイン後にPINを変更してください。';
+  adminCopyText(text);
 }
 function adminEditKante(id,encodedName,encodedLine){
   var row=document.getElementById('krow-'+id);
