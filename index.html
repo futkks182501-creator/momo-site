@@ -2936,13 +2936,13 @@ section.active{display:block}
       <button class="auth-tab-btn active" id="auth-tab-kante" onclick="setAuthRole('kante')">鑑定士</button>
       <button class="auth-tab-btn" id="auth-tab-admin" onclick="setAuthRole('admin')">管理人</button>
     </div>
-    <div id="auth-kante-fields">
-      <label class="auth-label">アカウントを選択</label>
-      <select class="auth-select" id="auth-kante-select"></select>
-    </div>
     <label class="auth-label">PIN（4桁以上）</label>
-    <input class="auth-pin-inp" type="password" id="auth-pin-input" placeholder="••••" inputmode="numeric" maxlength="20">
+    <input class="auth-pin-inp" type="password" id="auth-pin-input" placeholder="••••" inputmode="numeric" maxlength="20" onkeydown="if(event.key==='Enter')doLogin()">
     <span class="auth-err" id="auth-err"></span>
+    <label style="display:flex;align-items:center;gap:.45rem;font-size:.76rem;color:var(--text2);margin:.6rem 0 0;cursor:pointer;user-select:none">
+      <input type="checkbox" id="auth-remember" style="accent-color:var(--purple3);width:14px;height:14px;cursor:pointer">
+      ログイン状態を保持する（次回から自動ログイン）
+    </label>
     <button class="auth-submit-btn" onclick="doLogin()">ログイン</button>
   </div>
 </div>
@@ -3017,9 +3017,9 @@ section.active{display:block}
     <!-- LINE設定 -->
     <div class="admin-section-card">
       <h4 class="admin-section-title">💚 デフォルトLINE URL</h4>
-      <input class="line-url-input" type="url" id="admin-line-default" placeholder="https://lin.ee/..." id="line-url-input">
+      <input class="line-url-input" type="url" id="admin-line-default" placeholder="https://lin.ee/...">
       <div style="display:flex;gap:.5rem;margin-top:.5rem">
-        <button class="admin-btn primary" onclick="adminSaveLineUrl()">保存</button>
+        <button class="admin-btn primary" onclick="adminSaveDefaultLine()">保存</button>
       </div>
       <div class="admin-msg" id="admin-line-msg"></div>
       <div id="line-url-status" style="font-size:.73rem;color:var(--text2);margin-top:.4rem"></div>
@@ -3030,7 +3030,7 @@ section.active{display:block}
       <h4 class="admin-section-title">🔑 管理PINの変更</h4>
       <input class="admin-input" type="password" id="admin-cur-pin" placeholder="現在の管理PIN" inputmode="numeric">
       <input class="admin-input" type="password" id="admin-new-admin-pin" placeholder="新しいPIN（4桁以上）" inputmode="numeric">
-      <button class="admin-btn primary" onclick="adminChangePin()">変更する</button>
+      <button class="admin-btn primary" onclick="adminChangeAdminPin()">変更する</button>
       <div class="admin-msg" id="admin-pin-msg"></div>
     </div>
 
@@ -3236,15 +3236,7 @@ function pinInput(d){}
 function pinDelete(){}
 function updatePinDots(){}
 
-function saveLineUrl(){
-  const inp=document.getElementById('line-url-input');
-  const val=inp?inp.value.trim():'';
-  if(val){
-    localStorage.setItem(ZIWEI_LINE_KEY,val);
-    const st=document.getElementById('line-url-status');
-    if(st){st.textContent='✓ 保存しました';setTimeout(()=>{st.textContent='';},2000);}
-  }
-}
+/* saveLineUrl() は廃止。adminSaveDefaultLine() に統一済み（v1.0.5） */
 
 function getLineUrl(){
   const s=getSession();
@@ -13044,9 +13036,28 @@ function doInit(){
     document.getElementById('rungetsu-note').style.display=this.checked?'block':'none';
   });
   renderSavedList();
+  // 自動ログイン（localStorage）- sessionStorageにセッションがない場合のみ
+  if(!getSession()){
+    try{
+      const rem=localStorage.getItem('_ktRemember');
+      if(rem){
+        const r=JSON.parse(rem);
+        if(r.role==='admin'){
+          setSession('admin',null,null);
+        }else if(r.role==='kante'&&r.kanteId&&r.kanteName){
+          // 鑑定士が現在もアクティブか確認
+          const d=getAuthData();
+          const k=(d.kantes||[]).find(function(k){return k.id===r.kanteId&&k.active!==false;});
+          if(k){setSession('kante',r.kanteId,r.kanteName);}
+          else{localStorage.removeItem('_ktRemember');}
+        }
+      }
+    }catch(e){localStorage.removeItem('_ktRemember');}
+  }
   updateRoleBadge();
   // Restore kante auth state from session
   if(isKante())_ktAuthed=true;
+  syncUnseiLockByRole();
   // 管理人プロフィールを初期描画
   renderProfileView();
 }
@@ -13148,8 +13159,8 @@ function showLoginOverlay(targetSection){
   document.getElementById('auth-err').textContent='';
   document.getElementById('auth-pin-input').value='';
   setAuthRole('kante');
-  populateKanteSelect();
   document.getElementById('auth-overlay').classList.add('open');
+  setTimeout(function(){document.getElementById('auth-pin-input').focus();},100);
 }
 function closeAuthOverlay(){
   document.getElementById('auth-overlay').classList.remove('open');
@@ -13160,31 +13171,21 @@ function setAuthRole(role){
   _authMode=role;
   document.getElementById('auth-tab-kante').classList.toggle('active',role==='kante');
   document.getElementById('auth-tab-admin').classList.toggle('active',role==='admin');
-  document.getElementById('auth-kante-fields').style.display=role==='kante'?'block':'none';
   document.getElementById('auth-err').textContent='';
 }
-function populateKanteSelect(){
-  const sel=document.getElementById('auth-kante-select');
-  const d=getAuthData();
-  const kantes=(d.kantes||[]).filter(k=>k.active!==false);
-  sel.innerHTML='<option value="">鑑定士を選択してください</option>';
-  kantes.forEach(k=>{
-    const opt=document.createElement('option');
-    opt.value=k.id;
-    opt.textContent=k.name;
-    sel.appendChild(opt);
-  });
-}
+function populateKanteSelect(){/* 廃止: PINコード自動検索方式に移行 */}
 async function doLogin(){
   const pin=document.getElementById('auth-pin-input').value.trim();
   const errEl=document.getElementById('auth-err');
-  if(!pin){errEl.textContent='ピンを入力してください';return;}
+  if(!pin){errEl.textContent='PINを入力してください';return;}
   const hash=await sha256(pin);
   const d=getAuthData();
+  const rememberMe=document.getElementById('auth-remember').checked;
   if(_authMode==='admin'){
     const adminHash=d.adminHash||ADMIN_INITIAL_HASH;
     if(hash===adminHash){
       setSession('admin',null,null);
+      if(rememberMe)localStorage.setItem('_ktRemember',JSON.stringify({role:'admin'}));
       document.getElementById('auth-overlay').classList.remove('open');
       _ktAuthed=true;
       syncUnseiLockByRole();  // ログイン直後にロックを権限同期（管理人→ロック全除去）
@@ -13193,28 +13194,24 @@ async function doLogin(){
       else{const cur=document.querySelector('section.active');if(cur){const cid=cur.id;if(cid==='stars')renderStars();else if(cid==='palaces')renderPalaces();else if(cid==='basics')renderBasics();else if(cid==='calc'&&currentResult)renderMeiban(currentResult);}}
       return;
     }
-    errEl.textContent='ピンが正しくありません';
+    errEl.textContent='PINが正しくありません';
     return;
   }
-  const kanteId=document.getElementById('auth-kante-select').value;
-  if(!kanteId){errEl.textContent='鑑定士を選択してください';return;}
-  const kante=(d.kantes||[]).find(k=>k.id===kanteId&&k.active!==false);
-  if(!kante){errEl.textContent='鑑定士が見つかりません';return;}
-  if(hash===kante.hash){
-    setSession('kante',kante.id,kante.name);
-    document.getElementById('auth-overlay').classList.remove('open');
-    _ktAuthed=true;
-    syncUnseiLockByRole();  // ログイン直後にロックを権限同期（鑑定士→ロック全除去）
-    updateRoleBadge();
-    const _curSec=document.querySelector('section.active');if(_curSec){const _cid=_curSec.id;if(_cid==='stars')renderStars();else if(_cid==='palaces')renderPalaces();else if(_cid==='basics')renderBasics();else if(_cid==='calc'&&currentResult)renderMeiban(currentResult);}
-    if(kante.mustChangePin){
-      document.getElementById('force-pin-overlay').style.display='flex';
-      return;
-    }
-    if(_authTargetSection){const t=_authTargetSection;_authTargetSection=null;showSection(t);}
+  // 鑑定士: 入力PINハッシュで全アクティブ鑑定士を自動検索
+  const kante=(d.kantes||[]).find(function(k){return k.active!==false&&k.hash===hash;});
+  if(!kante){errEl.textContent='PINが正しくありません';return;}
+  setSession('kante',kante.id,kante.name);
+  if(rememberMe)localStorage.setItem('_ktRemember',JSON.stringify({role:'kante',kanteId:kante.id,kanteName:kante.name}));
+  document.getElementById('auth-overlay').classList.remove('open');
+  _ktAuthed=true;
+  syncUnseiLockByRole();  // ログイン直後にロックを権限同期（鑑定士→ロック全除去）
+  updateRoleBadge();
+  const _curSec=document.querySelector('section.active');if(_curSec){const _cid=_curSec.id;if(_cid==='stars')renderStars();else if(_cid==='palaces')renderPalaces();else if(_cid==='basics')renderBasics();else if(_cid==='calc'&&currentResult)renderMeiban(currentResult);}
+  if(kante.mustChangePin){
+    document.getElementById('force-pin-overlay').style.display='flex';
     return;
   }
-  errEl.textContent='ピンが正しくありません';
+  if(_authTargetSection){const t=_authTargetSection;_authTargetSection=null;showSection(t);}
 }
 async function doForcePinChange(){
   const np=document.getElementById('fp-pin-new').value.trim();
@@ -13239,6 +13236,7 @@ async function doForcePinChange(){
 function showLogoutConfirm(){
   if(confirm('ログアウトしますか？')){
     clearSession();
+    localStorage.removeItem('_ktRemember');
     _ktAuthed=false;
     syncUnseiLockByRole();  // ログアウト直後にロックを権限同期（公開→ロック表示）
     updateRoleBadge();
@@ -13634,7 +13632,10 @@ function renderAdminPage(){
   renderAdminOshiraseList();
   const d=getAuthData();
   const li=document.getElementById('admin-line-default');
-  if(li)li.value=d.defaultLineUrl||localStorage.getItem('ziwei_line_url')||'';
+  const currentLineUrl=d.defaultLineUrl||localStorage.getItem('ziwei_line_url')||'';
+  if(li)li.value=currentLineUrl;
+  const st=document.getElementById('line-url-status');
+  if(st)st.textContent=currentLineUrl?'現在のURL: '+currentLineUrl:'（未設定 — デフォルトURLが使用されます）';
   ['admin-cur-pin','admin-new-admin-pin'].forEach(function(id){const el=document.getElementById(id);if(el)el.value='';});
   ['admin-pin-msg','admin-add-msg','admin-line-msg'].forEach(function(id){const el=document.getElementById(id);if(el)el.textContent='';});
   _loadGhStatus();
@@ -13674,7 +13675,6 @@ async function adminAddKante(){
   document.getElementById('admin-new-line').value='';
   msg.style.color='#10b981';msg.textContent='✓ 追加しました';
   renderAdminKanteList();
-  populateKanteSelect();
   setTimeout(function(){msg.textContent='';},3000);
 }
 function adminDeleteKante(id){
@@ -13735,8 +13735,19 @@ function adminSaveDefaultLine(){
   d.defaultLineUrl=url;
   saveAuthData(d);
   if(url)localStorage.setItem('ziwei_line_url',url);
+  // 保存後に即時DOM反映
+  _refreshAllLineUrls();
+  // 現在設定中URLをステータス欄に表示
+  const st=document.getElementById('line-url-status');
+  if(st)st.textContent=url?'現在のURL: '+url:'（未設定 — デフォルトURLが使用されます）';
   msg.style.color='#10b981';msg.textContent='✓ 保存しました';
   setTimeout(function(){msg.textContent='';},3000);
+}
+function _refreshAllLineUrls(){
+  var url=getLineUrl();
+  var ids=['line-cta-bar-btn','nav-line-mobile','si-line-btn','contact-line-btn','free-ai-line-btn','line-cta-unified-btn'];
+  ids.forEach(function(id){var el=document.getElementById(id);if(el)el.href=url;});
+  // gate-cta内のLINEリンクは動的生成のため、次回レンダリング時に自動反映
 }
 
 // ─── 内部タブ切り替え ────────────────────
@@ -13749,7 +13760,6 @@ function switchKtTab(tab){
   });
   if(tab==='karte') renderKarteList();
   if(tab==='history') renderHistoryList();
-  if(tab==='settings'){const lu=document.getElementById('line-url-input');if(lu)lu.value=getLineUrl();}
   if(tab==='cal') renderKtCalendar();
 }
 
