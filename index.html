@@ -2936,12 +2936,16 @@ section.active{display:block}
       <button class="auth-tab-btn active" id="auth-tab-kante" onclick="setAuthRole('kante')">鑑定士</button>
       <button class="auth-tab-btn" id="auth-tab-admin" onclick="setAuthRole('admin')">管理人</button>
     </div>
-    <label class="auth-label">PIN（4桁以上）</label>
-    <input class="auth-pin-inp" type="password" id="auth-pin-input" placeholder="••••" inputmode="numeric" maxlength="20" onkeydown="if(event.key==='Enter')doLogin()">
+    <div id="auth-kante-id-row" style="display:none;margin-bottom:.5rem">
+      <label class="auth-label" style="margin-bottom:.3rem;display:block">鑑定士ID</label>
+      <input class="auth-pin-inp" type="text" id="auth-kante-id" placeholder="例: kt001" autocomplete="username">
+    </div>
+    <label class="auth-label">パスワード（8文字以上）</label>
+    <input class="auth-pin-inp" type="password" id="auth-pin-input" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <span class="auth-err" id="auth-err"></span>
     <label style="display:flex;align-items:center;gap:.45rem;font-size:.76rem;color:var(--text2);margin:.6rem 0 0;cursor:pointer;user-select:none">
       <input type="checkbox" id="auth-remember" style="accent-color:var(--purple3);width:14px;height:14px;cursor:pointer">
-      ログイン状態を保持する（次回から自動ログイン）
+      ログイン状態を保持する（30日間）
     </label>
     <button class="auth-submit-btn" onclick="doLogin()">ログイン</button>
   </div>
@@ -2950,10 +2954,10 @@ section.active{display:block}
 <!-- FORCE PIN CHANGE OVERLAY -->
 <div class="force-pin-overlay" id="force-pin-overlay" style="display:none">
   <div class="force-pin-card">
-    <h3 style="margin:0 0 .8rem;font-size:.9rem;font-weight:800;color:var(--text1)">🔑 初回PINを設定してください</h3>
-    <p style="font-size:.75rem;color:var(--text2);margin:0 0 1rem">安全のため、初回ログイン時にPINを変更してください（4桁以上）</p>
-    <input class="auth-pin-inp" type="password" id="fp-pin-new" placeholder="新しいPIN" inputmode="numeric" maxlength="20">
-    <input class="auth-pin-inp" type="password" id="fp-pin-confirm" placeholder="もう一度入力" inputmode="numeric" maxlength="20">
+    <h3 style="margin:0 0 .8rem;font-size:.9rem;font-weight:800;color:var(--text1)">🔑 初回パスワードを設定してください</h3>
+    <p style="font-size:.75rem;color:var(--text2);margin:0 0 1rem">安全のため、初回ログイン時にパスワードを変更してください（8文字以上）</p>
+    <input class="auth-pin-inp" type="password" id="fp-pin-new" placeholder="新しいパスワード（8文字以上）" maxlength="128">
+    <input class="auth-pin-inp" type="password" id="fp-pin-confirm" placeholder="もう一度入力" maxlength="128">
     <span class="auth-err" id="fp-pin-msg"></span>
     <button class="auth-submit-btn" onclick="doForcePinChange()">PINを設定する</button>
   </div>
@@ -3007,8 +3011,9 @@ section.active{display:block}
     <!-- 鑑定士追加 -->
     <div class="admin-section-card">
       <h4 class="admin-section-title">➕ 鑑定士を追加</h4>
-      <input class="admin-input" type="text" id="admin-new-name" placeholder="名前（例：田中先生）">
-      <input class="admin-input" type="password" id="admin-new-pin" placeholder="初期PIN（4桁以上）" inputmode="numeric">
+      <input class="admin-input" type="text" id="admin-new-id" placeholder="ログインID（英数字・例: tanaka01）">
+      <input class="admin-input" type="text" id="admin-new-name" placeholder="表示名（例：田中先生）">
+      <input class="admin-input" type="password" id="admin-new-pin" placeholder="初期パスワード（8文字以上）">
       <input class="admin-input" type="url" id="admin-new-line" placeholder="LINE公式アカウントURL（任意）">
       <button class="admin-btn primary" onclick="adminAddKante()">追加する</button>
       <div class="admin-msg" id="admin-add-msg"></div>
@@ -3027,9 +3032,9 @@ section.active{display:block}
 
     <!-- 管理PINの変更 -->
     <div class="admin-section-card">
-      <h4 class="admin-section-title">🔑 管理PINの変更</h4>
-      <input class="admin-input" type="password" id="admin-cur-pin" placeholder="現在の管理PIN" inputmode="numeric">
-      <input class="admin-input" type="password" id="admin-new-admin-pin" placeholder="新しいPIN（4桁以上）" inputmode="numeric">
+      <h4 class="admin-section-title">🔑 管理パスワードの変更</h4>
+      <input class="admin-input" type="password" id="admin-cur-pin" placeholder="現在のパスワード">
+      <input class="admin-input" type="password" id="admin-new-admin-pin" placeholder="新しいパスワード（8文字以上）">
       <button class="admin-btn primary" onclick="adminChangeAdminPin()">変更する</button>
       <div class="admin-msg" id="admin-pin-msg"></div>
     </div>
@@ -3058,13 +3063,12 @@ section.active{display:block}
       <button class="admin-btn primary" onclick="openProfileModal()">✏️ プロフィールを編集する</button>
     </div>
 
-    <!-- GitHub自動プッシュ設定 -->
+    <!-- Cloudflare Worker連携 -->
     <div class="admin-section-card">
-      <h4 class="admin-section-title">🐙 GitHub自動プッシュ</h4>
-      <p style="font-size:.8rem;color:var(--text2);margin-bottom:.8rem">プロフィール保存時にGitHubへ自動反映します。Personal Access Token（PAT）を設定してください。</p>
-      <input class="admin-input" type="password" id="admin-gh-pat" placeholder="ghp_xxxx...（PATを貼り付け）" style="margin-bottom:.5rem;font-family:monospace">
-      <button class="admin-btn primary" onclick="_saveGhPat()" style="margin-bottom:.5rem">💾 PATを保存</button>
-      <p id="admin-gh-status" style="font-size:.75rem;margin-top:.2rem;color:var(--text2)"></p>
+      <h4 class="admin-section-title">☁️ サーバー連携状態</h4>
+      <p style="font-size:.8rem;color:var(--text2);margin-bottom:.8rem">管理画面での保存はCloudflare Worker経由でGitHubへ安全に反映されます。PATやPINはブラウザに保存されません。</p>
+      <p id="admin-worker-status" style="font-size:.78rem;color:var(--text2)">確認中…</p>
+      <button class="admin-btn secondary" onclick="_checkWorkerStatus()" style="font-size:.76rem;margin-top:.5rem">🔄 接続確認</button>
     </div>
 
     <!-- ログアウト -->
@@ -3239,14 +3243,11 @@ function updatePinDots(){}
 /* saveLineUrl() は廃止。adminSaveDefaultLine() に統一済み（v1.0.5） */
 
 function getLineUrl(){
-  const s=getSession();
-  if(s&&s.role==='kante'&&s.kanteId){
-    const d=getAuthData();
-    const k=(d.kantes||[]).find(function(k){return k.id===s.kanteId;});
-    if(k&&k.lineUrl)return k.lineUrl;
-  }
-  const d=getAuthData();
-  return d.defaultLineUrl||localStorage.getItem(ZIWEI_LINE_KEY)||'https://lin.ee/xxxxxxxx';
+  var s=getSession();
+  // 鑑定士の個人LINE URL（セッションに保存されている場合）
+  if(s&&s.role==='kante'&&s.lineUrl)return s.lineUrl;
+  // デフォルトLINE URL（config.jsonから_loadRemoteDataで取得・localStorageに保存済み）
+  return localStorage.getItem(ZIWEI_LINE_KEY)||'https://lin.ee/xxxxxxxx';
 }
 
 /* ── 今日の運勢 ────────────────────────────────────────────────────── */
@@ -13009,15 +13010,15 @@ function updateShichenBadge(){
 const KT_PIN_KEY='ziwei_admin_pin';
 const KT_PROFILE_KEY='ziwei_kanteishi_profile';
 const BAKED_PROFILE=/* PROFILE_DATA_START */{}/* PROFILE_DATA_END */;
-const BAKED_ACCOUNTS=/* ACCOUNTS_DATA_START */{}/* ACCOUNTS_DATA_END */;
+// BAKED_ACCOUNTS: v2.0.0で廃止（認証はCloudflare Workerへ移行）
 const BAKED_OSHIRASE=/* OSHIRASE_DATA_START */[]/* OSHIRASE_DATA_END */;
 const KT_KARTE_KEY='ziwei_karte_list';
 const KT_SCHEDULE_KEY='ziwei_kt_schedule';
 const BAKED_KARTE=/* KARTE_DATA_START */[]/* KARTE_DATA_END */;
 const BAKED_SCHEDULE=/* SCHEDULE_DATA_START */[]/* SCHEDULE_DATA_END */;
-const ZIWEI_AUTH_KEY='ziwei_auth_v2';
 const ZIWEI_SESSION_KEY='ziwei_session_v2';
-const ADMIN_INITIAL_HASH='880fc74acc84fef24612819e33e3e9ba0f73724ea7073a642d8ac07f0d6f8431';
+// ── Cloudflare Worker URL（デプロイ後に実際のURLへ変更）──
+const WORKER_BASE = 'https://momo-auth.YOUR_SUBDOMAIN.workers.dev';
 let _ktAuthed=false;
 let _authMode='kante';
 let _authTargetSection=null;
@@ -13036,28 +13037,21 @@ function doInit(){
     document.getElementById('rungetsu-note').style.display=this.checked?'block':'none';
   });
   renderSavedList();
-  // 自動ログイン（localStorage）- sessionStorageにセッションがない場合のみ
-  if(!getSession()){
-    try{
-      const rem=localStorage.getItem('_ktRemember');
-      if(rem){
-        const r=JSON.parse(rem);
-        if(r.role==='admin'){
-          setSession('admin',null,null);
-        }else if(r.role==='kante'&&r.kanteId&&r.kanteName){
-          // 鑑定士が現在もアクティブか確認
-          const d=getAuthData();
-          const k=(d.kantes||[]).find(function(k){return k.id===r.kanteId&&k.active!==false;});
-          if(k){setSession('kante',r.kanteId,r.kanteName);}
-          else{localStorage.removeItem('_ktRemember');}
-        }
-      }
-    }catch(e){localStorage.removeItem('_ktRemember');}
+  // GitHubのdata/config.jsonから最新の公開データを取得（非同期・バックグラウンド）
+  if(location.protocol!=='file:'){
+    _loadRemoteData().catch(function(e){console.warn('[doInit] _loadRemoteData失敗:',e);});
   }
-  updateRoleBadge();
-  // Restore kante auth state from session
-  if(isKante())_ktAuthed=true;
-  syncUnseiLockByRole();
+  // 旧 _ktRemember を完全に削除（v2.0.0: localStorageへの認証情報保存は廃止）
+  localStorage.removeItem('_ktRemember');
+  localStorage.removeItem('ziwei_auth_v2');
+  localStorage.removeItem('ziwei_gh_pat');
+  // Workerのセッションを確認（Cookieベース）
+  if(location.protocol!=='file:'){
+    _restoreSessionFromWorker().catch(function(e){console.warn('[doInit] セッション確認失敗:',e);});
+  }else{
+    updateRoleBadge();
+    syncUnseiLockByRole();
+  }
   // 管理人プロフィールを初期描画
   renderProfileView();
 }
@@ -13084,8 +13078,61 @@ async function sha256(str){
   }
   return _sha256Pure(str);
 }
-function getAuthData(){try{var d=JSON.parse(localStorage.getItem(ZIWEI_AUTH_KEY));return(d&&Object.keys(d).length>0)?d:(Object.keys(BAKED_ACCOUNTS).length>0?BAKED_ACCOUNTS:{});}catch{return Object.keys(BAKED_ACCOUNTS).length>0?BAKED_ACCOUNTS:{};}}
-function saveAuthData(d){localStorage.setItem(ZIWEI_AUTH_KEY,JSON.stringify(d));}
+// ── Worker API クライアント ──────────────────────────────────────────
+async function _workerFetch(path, opts){
+  var url=WORKER_BASE+path;
+  var defaults={credentials:'include',headers:{'Content-Type':'application/json'}};
+  var merged=Object.assign({},defaults,opts);
+  if(merged.body&&typeof merged.body==='object')merged.body=JSON.stringify(merged.body);
+  try{
+    var res=await fetch(url,merged);
+    var data=await res.json().catch(function(){return{};});
+    return{ok:res.ok,status:res.status,data:data};
+  }catch(e){
+    console.error('[Worker]',path,e.message);
+    return{ok:false,status:0,data:{error:'Workerへの接続に失敗しました: '+e.message}};
+  }
+}
+
+// Worker接続状態確認（管理画面用）
+async function _checkWorkerStatus(){
+  var el=document.getElementById('admin-worker-status');
+  if(el)el.textContent='確認中…';
+  var r=await _workerFetch('/api/session',{method:'GET'});
+  if(r.ok){
+    if(el)el.innerHTML='<span style="color:#10b981">✅ Worker接続OK</span>（認証済み: '+(r.data.authenticated?r.data.role:'未ログイン')+'）';
+  }else{
+    if(el)el.innerHTML='<span style="color:#ef4444">⚠️ Worker未接続</span> — WorkerのデプロイとWORKER_BASE URLを確認してください';
+  }
+}
+
+// Worker Cookieセッションを復元
+async function _restoreSessionFromWorker(){
+  var r=await _workerFetch('/api/session',{method:'GET'});
+  if(r.ok&&r.data.authenticated){
+    setSession(r.data.role,r.data.userId,r.data.displayName,r.data.lineUrl);
+    if(isKante())_ktAuthed=true;
+  }
+  updateRoleBadge();
+  if(isKante())_ktAuthed=true;
+  syncUnseiLockByRole();
+  renderProfileView();
+}
+
+// 保存成功/失敗トースト（旧_showGhSaveToast互換）
+function _showSaveToast(ok, label){
+  var msg=ok?'✅ '+label+'をWorker経由で保存しました':'⚠️ '+label+'の保存に失敗しました。Workerの接続を確認してください';
+  var toast=document.createElement('div');
+  toast.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:.65rem 1.2rem;border-radius:10px;font-size:.8rem;font-weight:700;z-index:9999;pointer-events:none;white-space:nowrap;box-shadow:0 3px 16px rgba(0,0,0,.4);'+(ok?'background:#064e3b;color:#d1fae5;border:1px solid #059669':'background:#450a0a;color:#fecaca;border:1px solid #ef4444');
+  toast.textContent=msg;
+  document.body.appendChild(toast);
+  setTimeout(function(){if(toast.parentNode)toast.remove();},4000);
+}
+
+// getAuthData / saveAuthData は廃止（v2.0.0）
+// 鑑定士一覧は GET /api/admin/kantes から取得
+// ─────────────────────────────────────────────────────────────────────
+
 function getSession(){
   try{
     const s=JSON.parse(sessionStorage.getItem(ZIWEI_SESSION_KEY));
@@ -13093,9 +13140,10 @@ function getSession(){
   }catch{}
   return null;
 }
-function setSession(role,kanteId,kanteName){
+function setSession(role,kanteId,kanteName,lineUrl){
   sessionStorage.setItem(ZIWEI_SESSION_KEY,JSON.stringify({
-    role,kanteId:kanteId||null,kanteName:kanteName||null,
+    role:role,kanteId:kanteId||null,kanteName:kanteName||null,
+    lineUrl:lineUrl||null,
     expires:Date.now()+8*60*60*1000
   }));
 }
@@ -13172,99 +13220,95 @@ function setAuthRole(role){
   document.getElementById('auth-tab-kante').classList.toggle('active',role==='kante');
   document.getElementById('auth-tab-admin').classList.toggle('active',role==='admin');
   document.getElementById('auth-err').textContent='';
+  // 鑑定士ログイン時はID入力欄を表示
+  var idRow=document.getElementById('auth-kante-id-row');
+  if(idRow)idRow.style.display=role==='kante'?'block':'none';
 }
-function populateKanteSelect(){/* 廃止: PINコード自動検索方式に移行 */}
 async function doLogin(){
-  const pin=document.getElementById('auth-pin-input').value.trim();
-  const errEl=document.getElementById('auth-err');
-  if(!pin){errEl.textContent='PINを入力してください';return;}
-  const hash=await sha256(pin);
-  const d=getAuthData();
-  const rememberMe=document.getElementById('auth-remember').checked;
-  if(_authMode==='admin'){
-    const adminHash=d.adminHash||ADMIN_INITIAL_HASH;
-    if(hash===adminHash){
-      setSession('admin',null,null);
-      if(rememberMe)localStorage.setItem('_ktRemember',JSON.stringify({role:'admin'}));
-      document.getElementById('auth-overlay').classList.remove('open');
-      _ktAuthed=true;
-      syncUnseiLockByRole();  // ログイン直後にロックを権限同期（管理人→ロック全除去）
-      updateRoleBadge();
-      if(_authTargetSection){const t=_authTargetSection;_authTargetSection=null;showSection(t);}
-      else{const cur=document.querySelector('section.active');if(cur){const cid=cur.id;if(cid==='stars')renderStars();else if(cid==='palaces')renderPalaces();else if(cid==='basics')renderBasics();else if(cid==='calc'&&currentResult)renderMeiban(currentResult);}}
+  var password=document.getElementById('auth-pin-input').value;
+  var errEl=document.getElementById('auth-err');
+  if(!password){errEl.textContent='パスワードを入力してください';return;}
+  if(password.length<8){errEl.textContent='パスワードは8文字以上で入力してください';return;}
+  var rememberMe=document.getElementById('auth-remember').checked;
+  var submitBtn=document.querySelector('.auth-submit-btn');
+  if(submitBtn){submitBtn.disabled=true;submitBtn.textContent='確認中…';}
+  errEl.textContent='';
+
+  try{
+    var body={role:_authMode,password:password,rememberMe:rememberMe};
+    if(_authMode==='kante'){
+      var kanteId=document.getElementById('auth-kante-id').value.trim();
+      if(!kanteId){errEl.textContent='鑑定士IDを入力してください';return;}
+      body.userId=kanteId;
+    }
+    var r=await _workerFetch('/api/login',{method:'POST',body:body});
+    if(!r.ok){
+      errEl.textContent=r.data.error||'ログインに失敗しました';
       return;
     }
-    errEl.textContent='PINが正しくありません';
-    return;
+    // Workerがセッション Cookieを発行済み
+    setSession(r.data.role,r.data.userId,r.data.displayName,r.data.lineUrl);
+    document.getElementById('auth-pin-input').value='';
+    if(document.getElementById('auth-kante-id'))document.getElementById('auth-kante-id').value='';
+    document.getElementById('auth-overlay').classList.remove('open');
+    _ktAuthed=true;
+    syncUnseiLockByRole();
+    updateRoleBadge();
+    var _curSec=document.querySelector('section.active');
+    if(_curSec){var _cid=_curSec.id;if(_cid==='stars')renderStars();else if(_cid==='palaces')renderPalaces();else if(_cid==='basics')renderBasics();else if(_cid==='calc'&&currentResult)renderMeiban(currentResult);}
+    if(_authTargetSection){var t=_authTargetSection;_authTargetSection=null;showSection(t);}
+  }finally{
+    if(submitBtn){submitBtn.disabled=false;submitBtn.textContent='ログイン';}
   }
-  // 鑑定士: 入力PINハッシュで全アクティブ鑑定士を自動検索
-  const kante=(d.kantes||[]).find(function(k){return k.active!==false&&k.hash===hash;});
-  if(!kante){errEl.textContent='PINが正しくありません';return;}
-  setSession('kante',kante.id,kante.name);
-  if(rememberMe)localStorage.setItem('_ktRemember',JSON.stringify({role:'kante',kanteId:kante.id,kanteName:kante.name}));
-  document.getElementById('auth-overlay').classList.remove('open');
-  _ktAuthed=true;
-  syncUnseiLockByRole();  // ログイン直後にロックを権限同期（鑑定士→ロック全除去）
-  updateRoleBadge();
-  const _curSec=document.querySelector('section.active');if(_curSec){const _cid=_curSec.id;if(_cid==='stars')renderStars();else if(_cid==='palaces')renderPalaces();else if(_cid==='basics')renderBasics();else if(_cid==='calc'&&currentResult)renderMeiban(currentResult);}
-  if(kante.mustChangePin){
-    document.getElementById('force-pin-overlay').style.display='flex';
-    return;
-  }
-  if(_authTargetSection){const t=_authTargetSection;_authTargetSection=null;showSection(t);}
 }
 async function doForcePinChange(){
   const np=document.getElementById('fp-pin-new').value.trim();
   const nc=document.getElementById('fp-pin-confirm').value.trim();
   const msg=document.getElementById('fp-pin-msg');
-  if(np.length<4){msg.style.color='#ef4444';msg.textContent='4桁以上で入力してください';return;}
-  if(np!==nc){msg.style.color='#ef4444';msg.textContent='PINが一致しません';return;}
+  if(np.length<8){msg.style.color='#ef4444';msg.textContent='8文字以上で入力してください';return;}
+  if(np!==nc){msg.style.color='#ef4444';msg.textContent='パスワードが一致しません';return;}
+  // Worker API経由でパスワード変更（現在のパスワードが必要なため管理人がリセットする）
+  msg.style.color='var(--text2)';msg.textContent='変更中…';
   const s=getSession();
-  if(!s||s.role!=='kante'){return;}
-  const d=getAuthData();
-  const k=(d.kantes||[]).find(function(k){return k.id===s.kanteId;});
-  if(!k){return;}
-  k.hash=await sha256(np);
-  k.mustChangePin=false;
-  saveAuthData(d);
+  const role=s?s.role:'';
+  const endpoint=role==='admin'?'/api/admin/password':'/api/kante/password';
+  const curPw=document.getElementById('fp-pin-current')?document.getElementById('fp-pin-current').value.trim():'';
+  const r=await _workerFetch(endpoint,{method:'PUT',body:{currentPassword:curPw,newPassword:np}});
+  if(!r.ok){msg.style.color='#ef4444';msg.textContent=r.data.error||'変更に失敗しました';return;}
   document.getElementById('force-pin-overlay').style.display='none';
   document.getElementById('fp-pin-new').value='';
   document.getElementById('fp-pin-confirm').value='';
-  msg.style.color='#10b981';msg.textContent='';
-  if(_authTargetSection){const t=_authTargetSection;_authTargetSection=null;showSection(t);}
+  msg.textContent='';
+  // パスワード変更後は再ログインが必要
+  clearSession();_ktAuthed=false;syncUnseiLockByRole();updateRoleBadge();showSection('home');
+  alert('パスワードを変更しました。再ログインしてください。');
 }
 function showLogoutConfirm(){
-  if(confirm('ログアウトしますか？')){
-    clearSession();
-    localStorage.removeItem('_ktRemember');
-    _ktAuthed=false;
-    syncUnseiLockByRole();  // ログアウト直後にロックを権限同期（公開→ロック表示）
-    updateRoleBadge();
-    showSection('home');
-  }
+  if(!confirm('ログアウトしますか？'))return;
+  _workerFetch('/api/logout',{method:'POST'}).catch(function(e){console.warn('logout error',e);});
+  clearSession();
+  _ktAuthed=false;
+  syncUnseiLockByRole();
+  updateRoleBadge();
+  showSection('home');
 }
 function getPin(){return null;}
-function changePin(){
+async function changePin(){
   const cur=document.getElementById('kt-pin-current').value;
   const nw=document.getElementById('kt-pin-new').value;
   const cf=document.getElementById('kt-pin-confirm').value;
   const msg=document.getElementById('kt-pin-msg');
-  if(nw.length<4){msg.style.color='#ef4444';msg.textContent='4桁以上で入力してください';return;}
-  if(nw!==cf){msg.style.color='#ef4444';msg.textContent='新PINが一致しません';return;}
-  sha256(cur).then(async function(curHash){
-    const d=getAuthData();
-    const s=getSession();
-    if(!s||s.role!=='kante'){msg.style.color='#ef4444';msg.textContent='ログインが必要です';return;}
-    const k=(d.kantes||[]).find(function(k){return k.id===s.kanteId;});
-    if(!k||curHash!==k.hash){msg.style.color='#ef4444';msg.textContent='現在のPINが違います';return;}
-    k.hash=await sha256(nw);
-    k.mustChangePin=false;
-    saveAuthData(d);
-    msg.style.color='#10b981';msg.textContent='PINを変更しました';
-    document.getElementById('kt-pin-current').value='';
-    document.getElementById('kt-pin-new').value='';
-    document.getElementById('kt-pin-confirm').value='';
-  });
+  if(nw.length<8){msg.style.color='#ef4444';msg.textContent='8文字以上で入力してください';return;}
+  if(nw!==cf){msg.style.color='#ef4444';msg.textContent='新パスワードが一致しません';return;}
+  msg.style.color='var(--text2)';msg.textContent='変更中…';
+  const r=await _workerFetch('/api/kante/password',{method:'PUT',body:{currentPassword:cur,newPassword:nw}});
+  if(!r.ok){msg.style.color='#ef4444';msg.textContent=r.data.error||'変更に失敗しました';return;}
+  msg.style.color='#10b981';msg.textContent='パスワードを変更しました。再ログインしてください。';
+  document.getElementById('kt-pin-current').value='';
+  document.getElementById('kt-pin-new').value='';
+  document.getElementById('kt-pin-confirm').value='';
+  // パスワード変更後は再ログインが必要
+  setTimeout(function(){clearSession();_ktAuthed=false;syncUnseiLockByRole();updateRoleBadge();showSection('home');},2000);
 }
 
 /* ── Admin page functions ── */
@@ -13361,29 +13405,30 @@ function renderOshirase(){
 }
 
 /* ── Admin: お知らせ管理 ── */
-window.adminAddOshirase=function(){
+window.adminAddOshirase=async function(){
   var title=document.getElementById('ao-title').value.trim();
   var body=document.getElementById('ao-body').value.trim();
   var type=document.getElementById('ao-type').value;
   var msg=document.getElementById('admin-oshirase-msg');
   if(!title){msg.style.color='#ef4444';msg.textContent='タイトルを入力してください';return;}
   if(!body){msg.style.color='#ef4444';msg.textContent='本文を入力してください';return;}
-  var items=getOshirase();
-  items.unshift({id:'n'+Date.now(),title:title,body:body,type:type,createdAt:new Date().toISOString()});
-  saveOshirase(items);
+  msg.style.color='var(--text2)';msg.textContent='投稿中…';
+  var r=await _workerFetch('/api/admin/notices',{method:'POST',body:{title:title,body:body,type:type}});
+  if(!r.ok){msg.style.color='#ef4444';msg.textContent=r.data.error||'投稿に失敗しました';return;}
   document.getElementById('ao-title').value='';
   document.getElementById('ao-body').value='';
   msg.style.color='#10b981';msg.textContent='✓ 投稿しました';
   setTimeout(function(){msg.textContent='';},3000);
+  await _loadRemoteData();
   renderAdminOshiraseList();
-  updateOshiraseBadge();
+  _showSaveToast(true,'お知らせ');
 };
 
-window.adminDeleteOshirase=function(id){
+window.adminDeleteOshirase=async function(id){
   if(!confirm('このお知らせを削除しますか？'))return;
-  saveOshirase(getOshirase().filter(function(n){return n.id!==id;}));
-  renderAdminOshiraseList();
-  updateOshiraseBadge();
+  var r=await _workerFetch('/api/admin/notices/'+encodeURIComponent(id),{method:'DELETE'});
+  _showSaveToast(r.ok,'お知らせ');
+  if(r.ok){await _loadRemoteData();renderAdminOshiraseList();}
 };
 
 window.adminDiscardDraft=function(id){
@@ -13392,7 +13437,7 @@ window.adminDiscardDraft=function(id){
   renderAdminOshiraseList();
 };
 
-window.adminPublishDraft=function(id){
+window.adminPublishDraft=async function(id){
   var drafts=getDrafts();
   var draft=drafts.find(function(d){return d.id===id;});
   if(!draft)return;
@@ -13403,12 +13448,12 @@ window.adminPublishDraft=function(id){
   var body=bodyEl?bodyEl.value.trim():draft.body;
   var type=typeEl?typeEl.value:'all';
   if(!title||!body){alert('タイトルと本文を入力してください');return;}
-  var items=getOshirase();
-  items.unshift({id:'n'+Date.now(),title:title,body:body,type:type,createdAt:new Date().toISOString()});
-  saveOshirase(items);
+  var r=await _workerFetch('/api/admin/notices',{method:'POST',body:{title:title,body:body,type:type}});
+  if(!r.ok){alert(r.data.error||'公開に失敗しました');return;}
   saveDrafts(drafts.filter(function(d){return d.id!==id;}));
+  await _loadRemoteData();
   renderAdminOshiraseList();
-  updateOshiraseBadge();
+  _showSaveToast(true,'お知らせ');
 };
 
 window.adminEditOshirase=function(id){
@@ -13439,16 +13484,14 @@ window.adminEditOshirase=function(id){
   card.innerHTML='';card.appendChild(wrap);
 };
 
-window.adminSaveOshiraseEdit=function(id){
+window.adminSaveOshiraseEdit=async function(id){
   var title=document.getElementById('edit-title-'+id).value.trim();
   var body=document.getElementById('edit-body-'+id).value.trim();
   var type=document.getElementById('edit-type-'+id).value;
   if(!title||!body){alert('タイトルと本文を入力してください');return;}
-  saveOshirase(getOshirase().map(function(n){
-    return n.id===id?Object.assign({},n,{title:title,body:body,type:type}):n;
-  }));
-  renderAdminOshiraseList();
-  updateOshiraseBadge();
+  var r=await _workerFetch('/api/admin/notices/'+encodeURIComponent(id),{method:'PUT',body:{title:title,body:body,type:type}});
+  _showSaveToast(r.ok,'お知らせ');
+  if(r.ok){await _loadRemoteData();renderAdminOshiraseList();}
 };
 
 function renderAdminOshiraseList(){
@@ -13630,118 +13673,119 @@ function renderAdminPage(){
   if(!isAdmin()){showSection('home');return;}
   renderAdminKanteList();
   renderAdminOshiraseList();
-  const d=getAuthData();
-  const li=document.getElementById('admin-line-default');
-  const currentLineUrl=d.defaultLineUrl||localStorage.getItem('ziwei_line_url')||'';
-  if(li)li.value=currentLineUrl;
-  const st=document.getElementById('line-url-status');
-  if(st)st.textContent=currentLineUrl?'現在のURL: '+currentLineUrl:'（未設定 — デフォルトURLが使用されます）';
-  ['admin-cur-pin','admin-new-admin-pin'].forEach(function(id){const el=document.getElementById(id);if(el)el.value='';});
-  ['admin-pin-msg','admin-add-msg','admin-line-msg'].forEach(function(id){const el=document.getElementById(id);if(el)el.textContent='';});
-  _loadGhStatus();
+  var lineUrl=localStorage.getItem('ziwei_line_url')||'';
+  var li=document.getElementById('admin-line-default');
+  if(li)li.value=lineUrl;
+  var st=document.getElementById('line-url-status');
+  if(st)st.textContent=lineUrl?'現在のURL: '+lineUrl:'（未設定 — デフォルトURLが使用されます）';
+  ['admin-cur-pin','admin-new-admin-pin'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['admin-pin-msg','admin-add-msg','admin-line-msg'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='';});
+  _checkWorkerStatus();
 }
-function renderAdminKanteList(){
-  const d=getAuthData();
-  const kantes=d.kantes||[];
-  const el=document.getElementById('admin-kante-list');
+async function renderAdminKanteList(){
+  var el=document.getElementById('admin-kante-list');
   if(!el)return;
+  el.innerHTML='<p style="font-size:.83rem;color:var(--text2)">読み込み中…</p>';
+  var r=await _workerFetch('/api/admin/kantes',{method:'GET'});
+  if(!r.ok){
+    el.innerHTML='<p style="font-size:.83rem;color:#ef4444">鑑定士一覧の取得に失敗しました: '+(r.data.error||r.status)+'</p>';
+    return;
+  }
+  var kantes=r.data.kantes||[];
   if(!kantes.length){
     el.innerHTML='<p style="font-size:.83rem;color:var(--text2);padding:.3rem 0">鑑定士が登録されていません</p>';
     return;
   }
   el.innerHTML=kantes.map(function(k){return '<div class="kante-row" id="krow-'+k.id+'">'
-    +'<span class="kante-name-badge">🔯 '+k.name+'</span>'
-    +(k.mustChangePin?'<span style="font-size:.68rem;background:#fef3c7;color:#b45309;padding:.1rem .45rem;border-radius:8px;font-weight:700;margin-left:.3rem">初期PIN未変更</span>':'')
-    +'<span class="kante-line-url" title="'+(k.lineUrl||'')+'">LINE: '+(k.lineUrl?k.lineUrl.replace('https://',''):'未設定')+'</span>'
+    +'<span class="kante-name-badge">🔯 '+k.display_name+'</span>'
+    +'<span style="font-size:.7rem;padding:.1rem .4rem;border-radius:6px;font-weight:700;'+(k.active?'background:#d1fae5;color:#065f46':'background:#fee2e2;color:#991b1b')+'">'+(k.active?'有効':'無効')+'</span>'
+    +'<span class="kante-line-url" title="'+(k.line_url||'')+'">LINE: '+(k.line_url?k.line_url.replace('https://',''):'未設定')+'</span>'
     +'<div style="display:flex;gap:.4rem;flex-shrink:0">'
-    +'<button class="admin-btn warn" onclick="adminEditKante(\''+k.id+'\')">編集</button>'
-    +'<button class="admin-btn danger" onclick="adminDeleteKante(\''+k.id+'\')">削除</button>'
+    +'<button class="admin-btn warn" onclick="adminEditKante(\''+k.id+'\',\''+encodeURIComponent(k.display_name)+'\',\''+encodeURIComponent(k.line_url||'')+'\')">編集</button>'
+    +'<button class="admin-btn danger" onclick="adminDeleteKante(\''+k.id+'\')">'+(k.active?'無効化':'無効済み')+'</button>'
     +'</div></div>';}).join('');
 }
 async function adminAddKante(){
-  const name=document.getElementById('admin-new-name').value.trim();
-  const pin=document.getElementById('admin-new-pin').value.trim();
-  const lineUrl=document.getElementById('admin-new-line').value.trim();
-  const msg=document.getElementById('admin-add-msg');
+  var kanteId=document.getElementById('admin-new-id')?document.getElementById('admin-new-id').value.trim():'k'+Date.now();
+  var name=document.getElementById('admin-new-name').value.trim();
+  var pw=document.getElementById('admin-new-pin').value.trim();
+  var lineUrl=document.getElementById('admin-new-line').value.trim();
+  var msg=document.getElementById('admin-add-msg');
   if(!name){msg.style.color='#ef4444';msg.textContent='名前を入力してください';return;}
-  if(!pin||pin.length<4){msg.style.color='#ef4444';msg.textContent='PINは4桁以上で入力してください';return;}
-  const hash=await sha256(pin);
-  const d=getAuthData();
-  if(!d.kantes)d.kantes=[];
-  d.kantes.push({id:'k'+Date.now(),name:name,hash:hash,lineUrl:lineUrl,active:true,mustChangePin:true});
-  saveAuthData(d);
+  if(!pw||pw.length<8){msg.style.color='#ef4444';msg.textContent='パスワードは8文字以上で入力してください';return;}
+  if(!kanteId||!/^[a-zA-Z0-9_-]+$/.test(kanteId)){msg.style.color='#ef4444';msg.textContent='IDは英数字・_・-のみで入力してください';return;}
+  msg.style.color='var(--text2)';msg.textContent='登録中…';
+  var r=await _workerFetch('/api/admin/kantes',{method:'POST',body:{id:kanteId,displayName:name,password:pw,lineUrl:lineUrl}});
+  if(!r.ok){msg.style.color='#ef4444';msg.textContent=r.data.error||'登録に失敗しました';return;}
+  if(document.getElementById('admin-new-id'))document.getElementById('admin-new-id').value='';
   document.getElementById('admin-new-name').value='';
   document.getElementById('admin-new-pin').value='';
   document.getElementById('admin-new-line').value='';
   msg.style.color='#10b981';msg.textContent='✓ 追加しました';
   renderAdminKanteList();
   setTimeout(function(){msg.textContent='';},3000);
+  _showSaveToast(true,'鑑定士情報');
 }
-function adminDeleteKante(id){
-  if(!confirm('この鑑定士を削除しますか？'))return;
-  const d=getAuthData();
-  d.kantes=(d.kantes||[]).filter(function(k){return k.id!==id;});
-  saveAuthData(d);
+async function adminDeleteKante(id){
+  if(!confirm('この鑑定士を無効化しますか？\n（データは保持されます。再有効化は編集から行えます）'))return;
+  var r=await _workerFetch('/api/admin/kantes/'+encodeURIComponent(id),{method:'DELETE'});
+  _showSaveToast(r.ok,'鑑定士情報');
   renderAdminKanteList();
 }
-function adminEditKante(id){
-  const d=getAuthData();
-  const k=(d.kantes||[]).find(function(k){return k.id===id;});
-  if(!k)return;
-  const row=document.getElementById('krow-'+id);
+function adminEditKante(id,encodedName,encodedLine){
+  var row=document.getElementById('krow-'+id);
   if(!row)return;
+  var name=decodeURIComponent(encodedName);
+  var line=decodeURIComponent(encodedLine);
   row.innerHTML='<div style="width:100%;display:flex;flex-wrap:wrap;gap:.5rem;align-items:flex-end;padding:.2rem 0">'
-    +'<input type="text" class="admin-input" id="edit-name-'+id+'" value="'+k.name+'" placeholder="名前" style="width:120px">'
-    +'<input type="password" class="admin-input" id="edit-pin-'+id+'" placeholder="新PIN（変更する場合）" style="width:155px" maxlength="8" inputmode="numeric">'
-    +'<input type="url" class="admin-input" id="edit-line-'+id+'" value="'+(k.lineUrl||'')+'" placeholder="LINE URL" style="flex:1;min-width:180px">'
+    +'<input type="text" class="admin-input" id="edit-name-'+id+'" value="'+name+'" placeholder="名前" style="width:120px">'
+    +'<input type="password" class="admin-input" id="edit-pin-'+id+'" placeholder="新パスワード（変更する場合・8文字以上）" style="width:200px">'
+    +'<input type="url" class="admin-input" id="edit-line-'+id+'" value="'+line+'" placeholder="LINE URL" style="flex:1;min-width:180px">'
     +'<button class="admin-btn primary" onclick="adminSaveKante(\''+id+'\')">保存</button>'
     +'<button class="admin-btn secondary" onclick="renderAdminKanteList()">取消</button>'
     +'</div>';
 }
 async function adminSaveKante(id){
-  const d=getAuthData();
-  const k=(d.kantes||[]).find(function(k){return k.id===id;});
-  if(!k)return;
-  const name=document.getElementById('edit-name-'+id).value.trim();
-  const pin=document.getElementById('edit-pin-'+id).value.trim();
-  const lineUrl=document.getElementById('edit-line-'+id).value.trim();
+  var name=document.getElementById('edit-name-'+id).value.trim();
+  var pw=document.getElementById('edit-pin-'+id).value.trim();
+  var lineUrl=document.getElementById('edit-line-'+id).value.trim();
   if(!name)return;
-  k.name=name;k.lineUrl=lineUrl;
-  if(pin&&pin.length>=4){k.hash=await sha256(pin);k.mustChangePin=true;}
-  saveAuthData(d);
+  var body={displayName:name,lineUrl:lineUrl};
+  if(pw){
+    if(pw.length<8){alert('新しいパスワードは8文字以上で入力してください');return;}
+    body.password=pw;
+  }
+  var r=await _workerFetch('/api/admin/kantes/'+encodeURIComponent(id),{method:'PUT',body:body});
+  _showSaveToast(r.ok,'鑑定士情報');
   renderAdminKanteList();
 }
 async function adminChangeAdminPin(){
-  const cur=document.getElementById('admin-cur-pin').value.trim();
-  const nw=document.getElementById('admin-new-admin-pin').value.trim();
-  const msg=document.getElementById('admin-pin-msg');
+  var cur=document.getElementById('admin-cur-pin').value.trim();
+  var nw=document.getElementById('admin-new-admin-pin').value.trim();
+  var msg=document.getElementById('admin-pin-msg');
   if(!cur||!nw){msg.style.color='#ef4444';msg.textContent='入力してください';return;}
-  if(nw.length<4){msg.style.color='#ef4444';msg.textContent='PINは4桁以上で入力してください';return;}
-  const d=getAuthData();
-  const adminHash=d.adminHash||ADMIN_INITIAL_HASH;
-  const curHash=await sha256(cur);
-  if(curHash!==adminHash){msg.style.color='#ef4444';msg.textContent='現在のPINが正しくありません';return;}
-  d.adminHash=await sha256(nw);
-  saveAuthData(d);
+  if(nw.length<8){msg.style.color='#ef4444';msg.textContent='パスワードは8文字以上で入力してください';return;}
+  msg.style.color='var(--text2)';msg.textContent='変更中…';
+  var r=await _workerFetch('/api/admin/password',{method:'PUT',body:{currentPassword:cur,newPassword:nw}});
+  if(!r.ok){msg.style.color='#ef4444';msg.textContent=r.data.error||'変更に失敗しました';return;}
+  msg.style.color='#10b981';msg.textContent='✓ パスワードを変更しました。再ログインしてください。';
   document.getElementById('admin-cur-pin').value='';
   document.getElementById('admin-new-admin-pin').value='';
-  msg.style.color='#10b981';msg.textContent='✓ PINを変更しました';
-  setTimeout(function(){msg.textContent='';},3000);
+  setTimeout(function(){clearSession();_ktAuthed=false;syncUnseiLockByRole();updateRoleBadge();showSection('home');},2000);
 }
-function adminSaveDefaultLine(){
-  const url=document.getElementById('admin-line-default').value.trim();
-  const msg=document.getElementById('admin-line-msg');
-  const d=getAuthData();
-  d.defaultLineUrl=url;
-  saveAuthData(d);
+async function adminSaveDefaultLine(){
+  var url=document.getElementById('admin-line-default').value.trim();
+  var msg=document.getElementById('admin-line-msg');
+  msg.style.color='var(--text2)';msg.textContent='保存中…';
+  var r=await _workerFetch('/api/admin/line-url',{method:'PUT',body:{lineUrl:url}});
+  if(!r.ok){msg.style.color='#ef4444';msg.textContent=r.data.error||'保存に失敗しました';return;}
   if(url)localStorage.setItem('ziwei_line_url',url);
-  // 保存後に即時DOM反映
   _refreshAllLineUrls();
-  // 現在設定中URLをステータス欄に表示
-  const st=document.getElementById('line-url-status');
+  var st=document.getElementById('line-url-status');
   if(st)st.textContent=url?'現在のURL: '+url:'（未設定 — デフォルトURLが使用されます）';
   msg.style.color='#10b981';msg.textContent='✓ 保存しました';
   setTimeout(function(){msg.textContent='';},3000);
+  _showSaveToast(true,'LINE URL');
 }
 function _refreshAllLineUrls(){
   var url=getLineUrl();
@@ -13933,10 +13977,10 @@ function clearProfileImg(){
   window._pendingPhoto='';
   document.getElementById('pm-img-file').value='';
 }
-function saveProfile(){
-  const prev=getProfile();
+async function saveProfile(){
+  var prev=getProfile();
   var photo=window._pendingPhoto!==undefined?window._pendingPhoto:(prev.photo||'');
-  const profile={
+  var profile={
     photo:photo,
     name:document.getElementById('pm-name').value.trim(),
     title:document.getElementById('pm-title').value.trim(),
@@ -13965,46 +14009,35 @@ function saveProfile(){
     }
   };
   window._pendingPhoto=undefined;
+  // まずlocalStorageに保存（即時描画）
   localStorage.setItem(KT_PROFILE_KEY,JSON.stringify(profile));
   closeProfileModal();
   renderProfileView();
-  _showProfileExportToast();
+  // Workerを通してconfig.jsonを更新（全デバイスに反映）
+  var r=await _workerFetch('/api/admin/profile',{method:'PUT',body:{profile:profile}});
+  _showSaveToast(r.ok,'プロフィール');
 }
 
-// ─── GitHub自動プッシュ ───────────────────
-const _GH_REPO='futkks182501-creator/momo-site';
-const _GH_FILE='index.html';
-const _GH_BRANCH='main';
-const _GH_PAT_KEY='ziwei_gh_pat';
-function _saveGhPat(){
-  var pat=document.getElementById('admin-gh-pat').value.trim();
-  if(!pat){localStorage.removeItem(_GH_PAT_KEY);_loadGhStatus();return;}
-  localStorage.setItem(_GH_PAT_KEY,pat);
-  document.getElementById('admin-gh-pat').value='';
-  _loadGhStatus();
-}
-function _loadGhStatus(){
-  var el=document.getElementById('admin-gh-status');if(!el)return;
-  var pat=localStorage.getItem(_GH_PAT_KEY);
-  el.textContent=pat?'🔑 PAT設定済み（'+pat.slice(0,8)+'...）':'⚠️ PAT未設定 — 設定するとプロフィール保存時に自動プッシュされます';
-  el.style.color=pat?'#10b981':'#f59e0b';
-}
-async function _pushToGitHub(html){
-  var pat=localStorage.getItem(_GH_PAT_KEY);
-  if(!pat)return false;
+// ── 起動時：GitHubのdata/config.jsonを読み込んでlocalStorageを更新 ──
+// 公開JSONを直接fetchする（認証不要）
+async function _loadRemoteData(){
+  var rawBase='https://raw.githubusercontent.com/futkks182501-creator/momo-site/main/';
   try{
-    var hdrs={'Authorization':'Bearer '+pat,'Content-Type':'application/json','Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
-    var gr=await fetch('https://api.github.com/repos/'+_GH_REPO+'/contents/'+_GH_FILE+'?ref='+_GH_BRANCH,{headers:hdrs});
-    if(!gr.ok)throw new Error('SHA取得失敗 ('+gr.status+')。PATを確認してください。');
-    var gd=await gr.json();
-    var b64=btoa(unescape(encodeURIComponent(html)));
-    var pr=await fetch('https://api.github.com/repos/'+_GH_REPO+'/contents/'+_GH_FILE,{
-      method:'PUT',headers:hdrs,
-      body:JSON.stringify({message:'プロフィール更新（自動）',content:b64,sha:gd.sha,branch:_GH_BRANCH})
-    });
-    if(!pr.ok)throw new Error('プッシュ失敗 ('+pr.status+')');
-    return true;
-  }catch(e){alert('GitHubプッシュエラー: '+e.message);return false;}
+    var cfgRes=await fetch(rawBase+'data/config.json?_='+Date.now(),{cache:'no-store'});
+    if(cfgRes.ok){
+      var cfg=await cfgRes.json();
+      if(cfg.profile&&Object.keys(cfg.profile).length>0)
+        localStorage.setItem(KT_PROFILE_KEY,JSON.stringify(cfg.profile));
+      if(cfg.oshirase&&cfg.oshirase.length>0)
+        localStorage.setItem(OSHIRASE_KEY,JSON.stringify(cfg.oshirase));
+      if(cfg.lineUrl)
+        localStorage.setItem('ziwei_line_url',cfg.lineUrl);
+    }
+  }catch(e){console.warn('[_loadRemoteData] config.json読み込み失敗:',e.message);}
+  // 読み込み後にUIを再描画
+  renderProfileView();
+  updateOshiraseBadge();
+  _refreshAllLineUrls();
 }
 
 // ─── プロフィールHTML書き出し ──────────────
@@ -14021,22 +14054,11 @@ function _showProfileExportToast(){
 }
 async function _bakeAndDownloadHTML(){
   try{
-    // ── プロフィール ──
-    var profile=getProfile();
-    var bake=Object.assign({},profile);
-    var profileJson=JSON.stringify(bake);
-    // ── 鑑定士アカウント・管理人PIN ──
-    var authData=getAuthData();
-    var authJson=JSON.stringify(authData);
-    // ── 公開済みお知らせ ──
-    var oshirase=getOshirase();
-    var oshiraseJson=JSON.stringify(oshirase);
-    // ── カルテデータ ──
-    var karteData=getKarteList();
-    var karteJson=JSON.stringify(karteData);
-    // ── 鑑定スケジュール ──
-    var scheduleData=getSchedule();
-    var scheduleJson=JSON.stringify(scheduleData);
+    // ── ローカルデータ（認証情報は含めない） ──
+    var profileJson=JSON.stringify(getProfile());
+    var oshiraseJson=JSON.stringify(getOshirase());
+    var karteJson=JSON.stringify(getKarteList());
+    var scheduleJson=JSON.stringify(getSchedule());
     // ── ソース取得 ──
     var src;
     if(location.protocol==='file:'){
@@ -14044,34 +14066,17 @@ async function _bakeAndDownloadHTML(){
     }else{
       src=await fetch(location.origin+location.pathname).then(function(r){return r.text();});
     }
-    // ── 5箇所書き換え ──
+    // ── 書き換え（プロフィール・お知らせ・カルテ・スケジュールのみ。認証情報は書き込まない） ──
     var updated=src
       .replace(/\/\* PROFILE_DATA_START \*\/[\s\S]*?\/\* PROFILE_DATA_END \*\//,
         '/* PROFILE_DATA_START */'+profileJson+'/* PROFILE_DATA_END */')
-      .replace(/\/\* ACCOUNTS_DATA_START \*\/[\s\S]*?\/\* ACCOUNTS_DATA_END \*\//,
-        '/* ACCOUNTS_DATA_START */'+authJson+'/* ACCOUNTS_DATA_END */')
       .replace(/\/\* OSHIRASE_DATA_START \*\/[\s\S]*?\/\* OSHIRASE_DATA_END \*\//,
         '/* OSHIRASE_DATA_START */'+oshiraseJson+'/* OSHIRASE_DATA_END */')
       .replace(/\/\* KARTE_DATA_START \*\/[\s\S]*?\/\* KARTE_DATA_END \*\//,
         '/* KARTE_DATA_START */'+karteJson+'/* KARTE_DATA_END */')
       .replace(/\/\* SCHEDULE_DATA_START \*\/[\s\S]*?\/\* SCHEDULE_DATA_END \*\//,
         '/* SCHEDULE_DATA_START */'+scheduleJson+'/* SCHEDULE_DATA_END */');
-    if(updated===src){alert('書き出し失敗（マーカー未検出）');return;}
-    // ── GitHubにPATが設定されていれば自動プッシュ ──
-    var pat=localStorage.getItem(_GH_PAT_KEY);
-    if(pat){
-      var ok=await _pushToGitHub(updated);
-      if(ok){
-        document.querySelectorAll('._pe-toast').forEach(function(el){el.remove();});
-        var nt=document.createElement('div');
-        nt.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#064e3b;border:1.5px solid #059669;border-radius:14px;padding:12px 22px;z-index:9999;color:#d1fae5;font-size:.84rem;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.4);white-space:nowrap';
-        nt.textContent='🐙 GitHubにプッシュしました！プロフィール・鑑定士・お知らせ・カルテ・スケジュールを全機器に反映中…';
-        document.body.appendChild(nt);
-        setTimeout(function(){if(nt.parentNode)nt.remove();},8000);
-        return;
-      }
-    }
-    // ── PATなし or プッシュ失敗 → ダウンロード ──
+    // ── ダウンロード ──
     var blob=new Blob([updated],{type:'text/html;charset=utf-8'});
     var a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
