@@ -15520,4 +15520,220 @@ window.showAiKanteiPrompt = function(){
     var gogyoStr = GOGYO_NAMES[r.gogyoIdx];
 
     // ── 3ヶ月の流月データ ──
+    var months3 = [];
+    for(var md=-1; md<=1; md++){
+      var tm = nowMonth + md;
+      var ty = nowYear;
+      if(tm<1){tm+=12;ty--;}
+      if(tm>12){tm-=12;ty++;}
+      var kAge = ty - r.year + 1;
+      var xxBrM = getXiaoXianBranchAtAge(r, kAge);
+      var dirM = _dgDir(r);
+      var yStM = yearStem(ty);
+      var _WUHU=[2,4,6,8,0];
+      var m1St = _WUHU[yStM%5];
+      var mSt = (m1St+tm-1)%10;
+      var mBr = ((xxBrM+dirM*(tm-1))%12+12)%12;
+      var palIdxM = (r.meiPos-mBr+12)%12;
+      var sc = calcPeriodScores(r, mSt, mBr);
+      // 四化
+      var kikaList = [];
+      var _kn=['化禄','化権','化科','化忌'];
+      (SHIHUA[mSt]||[]).forEach(function(sname,ki){
+        var inM=(r.mainStars[sname]&&r.mainStars[sname].pos===mBr)||((r.subStars[mBr]||[]).some(function(s){return s.name===sname;}));
+        if(inM) kikaList.push(_kn[ki]+'（'+sname+'）');
+      });
+      // 主星
+      var mStars = Object.entries(r.mainStars).filter(function(e){return e[1].pos===mBr;}).map(function(e){return e[0];});
+      months3.push({
+        label: md===-1?'先月':(md===0?'今月':'来月'),
+        year:ty, month:tm,
+        stem:ST[mSt], branch:BR[mBr],
+        palName:PALACE_NAMES[palIdxM],
+        stars: mStars.join('・')||'（空宮）',
+        kika: kikaList.join('、')||'なし',
+        total:sc.total, love:sc.love, wealth:sc.wealth, career:sc.career, health:sc.health
+      });
+    }
+
+    // ── 人物情報パネル ──
+    var personEl = document.getElementById('ai-person-info');
+    personEl.innerHTML =
+      '<span style="font-weight:700;color:#059669">対象者：</span>'+name+' さん　'+
+      '<span style="font-weight:700;color:#059669">生年月日：</span>'+birthInfo+'<br>'+
+      '<span style="font-weight:700;color:#059669">命宮主星：</span>'+meiStarStr+'　'+
+      '<span style="font-weight:700;color:#059669">五行局：</span>'+gogyoStr+'<br>'+
+      '<span style="font-weight:700;color:#059669">現在の大限：</span>'+dgRange+' '+dgStemStr+'大限（'+dgPalName+'）<br>'+
+      '<span style="font-weight:700;color:#059669">今年（'+nowYear+'年）：</span>'+
+      '数え年'+kazoeNow+'歳　小限：'+BR[xxBrNow]+'（'+xxPalNow+'）　太歳：'+tzStemNow+tzBrStr+'年';
+
+    // ── プロンプト本文 ──
+    var p = '';
+    p += '# 紫微斗数 簡易AI鑑定\n\n';
+    p += '以下のデータを使って、紫微斗数の観点から簡易鑑定してください。\n\n';
+    p += '---\n';
+    p += '## 対象者情報\n';
+    p += '- 名前：'+name+' さん\n';
+    p += '- 生年月日：'+birthInfo+'\n';
+    p += '- 命宮主星：'+meiStarStr+'\n';
+    p += '- 五行局：'+gogyoStr+'\n\n';
+    p += '---\n';
+    p += '## 今年（'+nowYear+'年）の大限・流年データ\n';
+    p += '- 現在の大限：'+dgRange+' '+dgStemStr+'大限（'+dgPalName+'宮）\n';
+    p += '- 今年の数え年：'+kazoeNow+'歳\n';
+    p += '- 今年の小限：'+BR[xxBrNow]+'（'+xxPalNow+'宮）\n';
+    p += '- 今年の太歳：'+tzStemNow+tzBrStr+'年（'+nowYear+'年）\n\n';
+    p += '---\n';
+    p += '## 前後3ヶ月の流月データ\n';
+    months3.forEach(function(m){
+      p += '\n### '+m.label+'（'+m.year+'年'+m.month+'月）\n';
+      p += '- 流月宮：'+m.branch+'（'+m.palName+'宮）\n';
+      p += '- 流月干：'+m.stem+'月\n';
+      p += '- 流月の主星：'+m.stars+'\n';
+      p += '- 流月四化：'+m.kika+'\n';
+      p += '- 運気スコア：総合'+m.total+'点（恋愛'+m.love+'・金運'+m.wealth+'・仕事'+m.career+'・健康'+m.health+'）\n';
+    });
+    p += '\n---\n';
+    p += '## 鑑定指示\n\n';
+    p += '上記データをもとに、以下の構成で鑑定メッセージを作成してください。\n\n';
+    p += '### 1. 今年の大限×流年総括（200〜300字）\n';
+    p += '- 現在の大限（'+dgRange+' '+dgStemStr+'大限・'+dgPalName+'宮）が'+nowYear+'年のテーマにどう影響するか\n';
+    p += '- 今年の小限（'+BR[xxBrNow]+'・'+xxPalNow+'宮）と太歳（'+tzStemNow+tzBrStr+'年）の組み合わせによる年全体のエネルギー\n';
+    p += '- この年が「攻め」か「守り」か、どんな行動が実りやすいか\n\n';
+    p += '### 2. 前後3ヶ月の流月解説\n';
+    months3.forEach(function(m){
+      p += '- **'+m.label+'（'+m.year+'年'+m.month+'月・'+m.stem+'月・'+m.branch+'/'+m.palName+'宮）**：この月のエネルギーと過ごし方（100字程度）\n';
+    });
+    p += '\n### 3. ラッキー行動リスト（3〜5項目）\n';
+    p += '- 今の運気の流れに乗るために、具体的にやると良いこと\n\n';
+    p += '### 4. 注意行動リスト（3〜5項目）\n';
+    p += '- 今の運気で避けたほうが良いこと・気をつけること\n\n';
+    p += '### 5. 今の運気への総合メッセージ（200字前後）\n';
+    p += '- '+name+'さんへの応援・励ましを込めた、温かく前向きなメッセージ\n\n';
+    p += '---\n';
+    p += '※ 紫微斗数の専門用語（宮名・星名・四化など）は必要に応じて簡単な説明を添えてください。\n';
+    p += '※ 断定的な予言は避け、「〜しやすい」「〜な傾向があります」などの表現を使ってください。\n';
+
+    document.getElementById('ai-prompt-text').value = p;
+    document.getElementById('ai-kantei-overlay').style.display = 'block';
+    document.getElementById('ai-copy-btn').textContent = '📋 コピーする';
+  };
+
+  window.copyAiPrompt = function(){
+    var ta = document.getElementById('ai-prompt-text');
+    ta.select();
+    ta.setSelectionRange(0,99999);
+    try {
+      if(navigator.clipboard){
+        navigator.clipboard.writeText(ta.value).then(function(){
+          var btn = document.getElementById('ai-copy-btn');
+          btn.textContent = '✅ コピーしました！';
+          btn.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+          setTimeout(function(){ btn.textContent='📋 コピーする'; btn.style.background=''; },2500);
+        });
+      } else {
+        document.execCommand('copy');
+        var btn = document.getElementById('ai-copy-btn');
+        btn.textContent = '✅ コピーしました！';
+        setTimeout(function(){ btn.textContent='📋 コピーする'; },2500);
+      }
+    } catch(e){ alert('コピーに失敗しました。テキストを手動で選択してコピーしてください。'); }
+  };
+  // ── お問い合わせフォーム送信 ──────────────────────────
+  window.submitContactForm=function(){
+    var name=document.getElementById('cf-name').value.trim();
+    var email=document.getElementById('cf-email').value.trim();
+    var type=document.getElementById('cf-type').value;
+    var msg=document.getElementById('cf-message').value.trim();
+    if(!name){alert('お名前を入力してください');return;}
+    if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){alert('正しいメールアドレスを入力してください');return;}
+    if(!msg){alert('お問い合わせ内容を入力してください');return;}
+    var subject=encodeURIComponent('[紫微の魔女もも] '+type+'（'+name+' 様より）');
+    var body=encodeURIComponent(
+      'お名前：'+name+'\n'+
+      '返信先：'+email+'\n'+
+      '種別：'+type+'\n\n'+
+      '《お問い合わせ内容》\n'+msg+'\n\n'+
+      '---\n紫微斗数命盤サイトのお問い合わせフォームより送信'
+    );
+    window.location.href='mailto:momo.uzihara@gmail.com?subject='+subject+'&body='+body;
+  };
+
+
+
+
+/* ══════════════════════════════════════════════════
+   PHASE 1: ACCORDION & NEXT-STEPS JS
+   ══════════════════════════════════════════════════ */
+function toggleAcc(id){
+  var body=document.getElementById('acc-body-'+id);
+  var chevron=document.getElementById('acc-chevron-'+id);
+  var header=document.getElementById('acc-btn-'+id);
+  if(!body)return;
+  var isOpen=body.style.display!=='none';
+  body.style.display=isOpen?'none':'block';
+  if(chevron)chevron.style.transform=isOpen?'':'rotate(180deg)';
+  if(header){header.setAttribute('aria-expanded',String(!isOpen));header.classList.toggle('acc-open',!isOpen);}
+}
+function openAcc(id){
+  var body=document.getElementById('acc-body-'+id);
+  if(!body||body.style.display==='block')return;
+  var chevron=document.getElementById('acc-chevron-'+id);
+  var header=document.getElementById('acc-btn-'+id);
+  body.style.display='block';
+  if(chevron)chevron.style.transform='rotate(180deg)';
+  if(header){header.setAttribute('aria-expanded','true');header.classList.add('acc-open');}
+}
+function openAndScrollAcc(id){
+  openAcc(id);
+  setTimeout(function(){
+    var el=document.getElementById('acc-'+id);
+    if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+  },60);
+}
+/* meiban-wrapper が display:block になったら line-cta-unified を表示 */
+(function(){
+  function initMeibanObs(){
+    var mw=document.getElementById('meiban-wrapper');
+    if(!mw)return;
+    function syncLine(){
+      var vis=mw.style.display==='block';
+      var lcu=document.getElementById('line-cta-unified');
+      if(!lcu)return;
+      lcu.style.display=vis?'block':'none';
+      if(vis){
+        var btn=document.getElementById('line-cta-unified-btn');
+        if(btn&&typeof getLineUrl==='function')btn.href=getLineUrl();if(!isLineUrlSet())_refreshAllLineUrls();
+      }
+    }
+    new MutationObserver(syncLine).observe(mw,{attributes:true,attributeFilter:['style']});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initMeibanObs);
+  else initMeibanObs();
+})();
+
+/* free-ai-bodyをwindow._freeAiPromptで自動更新 */
+(function(){
+  function populateFreeAiBody(){
+    var body=document.getElementById('free-ai-body');
+    if(!body)return;
+    var txt=window._freeAiPrompt||'';
+    if(txt)body.textContent=txt;
+  }
+  function initFreeAiObs(){
+    var sec=document.getElementById('free-ai-section');
+    if(!sec)return;
+    new MutationObserver(function(ml){
+      ml.forEach(function(m){
+        if(m.attributeName==='style'&&sec.style.display&&sec.style.display!=='none')
+          populateFreeAiBody();
+      });
+    }).observe(sec,{attributes:true,attributeFilter:['style']});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initFreeAiObs);
+  else initFreeAiObs();
+})();
+</script>
+</body>
+</html>
   
