@@ -13058,7 +13058,27 @@ let _ktAuthed=false;
 let _authMode='kante';
 let _authTargetSection=null;
 let _pendingLoginPw='';/* 初回PIN変更用（メモリのみ・永続化しない） */
-/* Worker APIヘルパー: Cookieセッションを常に送信 */
+/* ── セッショントークン管理 ──
+ * アクセストークン: sessionStorage（タブ限り・サーバー側24時間期限）
+ * リフレッシュトークン: 「ログイン状態を保持する」選択時のみ localStorage（30日）
+ * どちらもD1のセッションIDで、ログアウト・パスワード変更時にサーバー側で即失効する。
+ * サードパーティCookieがブロックされる環境（シークレット・Safari等）でも動作させるための方式。 */
+var _TOK_AT='ziwei_at';
+var _TOK_RT='ziwei_rt';
+function _getAT(){try{return sessionStorage.getItem(_TOK_AT);}catch(e){return null;}}
+function _getRT(){try{return localStorage.getItem(_TOK_RT);}catch(e){return null;}}
+function _setTokens(at,rt,remember){
+  try{if(at)sessionStorage.setItem(_TOK_AT,at);}catch(e){}
+  try{
+    if(remember&&rt)localStorage.setItem(_TOK_RT,rt);
+    else if(!remember)localStorage.removeItem(_TOK_RT);
+  }catch(e){}
+}
+function _clearTokens(){
+  try{sessionStorage.removeItem(_TOK_AT);}catch(e){}
+  try{localStorage.removeItem(_TOK_RT);}catch(e){}
+}
+/* Worker APIヘルパー: Bearerトークン優先＋Cookie併用 */
 async function _api(path,opts){
   opts=opts||{};
   var init={
@@ -13066,6 +13086,8 @@ async function _api(path,opts){
     credentials:'include',
     headers:{}
   };
+  var _at=_getAT();
+  if(_at)init.headers['Authorization']='Bearer '+_at;
   if(opts.body!==undefined){
     init.headers['Content-Type']='application/json';
     init.body=JSON.stringify(opts.body);
@@ -13130,12 +13152,32 @@ if(document.readyState==='loading'){
  * 有効ならUIロールを復元、無効ならリフレッシュトークンで再取得を試みる。 */
 async function _restoreWorkerSession(){
   try{
+    // アクセストークンが無く、保持用リフレッシュトークンがあれば先に更新
+    if(!_getAT()&&_getRT()){
+      try{
+        var rj=await fetch(_AUTH_API+'/api/refresh',{method:'POST',credentials:'include',headers:{'Authorization':'Bearer '+_getRT()}});
+        if(rj.ok){
+          var rd=await rj.json();
+          if(rd&&rd.accessToken){try{sessionStorage.setItem(_TOK_AT,rd.accessToken);}catch(e){}}
+        }else if(rj.status===401){
+          // リフレッシュトークン失効 → 破棄
+          try{localStorage.removeItem(_TOK_RT);}catch(e){}
+        }
+      }catch(e){}
+    }
     var s=await _api('/api/session');
     if(!s.authenticated){
       // アクセストークン切れ → リフレッシュ試行（rememberMe時のみ成功する）
       try{
-        var r=await _api('/api/refresh',{method:'POST'});
-        if(r&&r.ok)s=await _api('/api/session');
+        var rt2=_getRT();
+        var init2={method:'POST',credentials:'include'};
+        if(rt2)init2.headers={'Authorization':'Bearer '+rt2};
+        var rr=await fetch(_AUTH_API+'/api/refresh',init2);
+        if(rr.ok){
+          var r=await rr.json();
+          if(r&&r.accessToken){try{sessionStorage.setItem(_TOK_AT,r.accessToken);}catch(e){}}
+          if(r&&r.ok)s=await _api('/api/session');
+        }
       }catch(e){}
     }
     if(s&&s.authenticated){
@@ -13145,7 +13187,8 @@ async function _restoreWorkerSession(){
         document.getElementById('force-pin-overlay').style.display='flex';
       }
     }else{
-      // サーバー側セッションなし → ローカルUIセッションも破棄
+      // サーバー側セッションなし → ローカルUIセッション・失効トークンも破棄
+      _clearTokens();
       if(getSession())clearSession();
       _ktAuthed=false;
     }
@@ -13319,6 +13362,8 @@ async function _doLogin(){
     return;
   }
   if(btn){btn.disabled=false;btn.textContent='ログイン';}
+  // トークン保存（sessionStorage基本／ログイン保持選択時のみlocalStorageにリフレッシュトークン）
+  if(res.accessToken)_setTokens(res.accessToken,res.refreshToken,rememberMe);
   // UIセッション（サーバーセッションのミラー）
   setSession(res.role,res.userId||null,res.displayName||null,res.lineUrl||null);
   _ktAuthed=true;
@@ -13357,7 +13402,8 @@ async function doForcePinChange(){
   document.getElementById('fp-pin-new').value='';
   document.getElementById('fp-pin-confirm').value='';
   document.getElementById('force-pin-overlay').style.display='none';
-  // Worker側は変更後に全セッションを無効化するため、新パスワードで再ログインを促す
+  // Worker側は変更後に全セッションを無効化するため、旧トークンを破棄して再ログインを促す
+  _clearTokens();
   clearSession();
   _ktAuthed=false;
   updateRoleBadge();
@@ -13367,7 +13413,10 @@ async function doForcePinChange(){
 }
 function showLogoutConfirm(){
   if(confirm('ログアウトしますか？')){
-    _api('/api/logout',{method:'POST'}).catch(function(){});
+    // サーバー側セッション破棄（アクセス+リフレッシュ両方）
+    _api('/api/logout',{method:'POST',body:{refreshToken:_getRT()||undefined}}).catch(function(){});
+    // ブラウザ側トークンを必ず削除
+    _clearTokens();
     clearSession();
     _pendingLoginPw='';
     _ktAuthed=false;
@@ -13399,8 +13448,9 @@ function changePin(){
       document.getElementById('kt-pin-current').value='';
       document.getElementById('kt-pin-new').value='';
       document.getElementById('kt-pin-confirm').value='';
-      // Worker側で全セッション無効化されるため再ログインへ誘導
+      // Worker側で全セッション無効化されるため旧トークン破棄→再ログインへ誘導
       setTimeout(function(){
+        _clearTokens();
         clearSession();_ktAuthed=false;updateRoleBadge();syncUnseiLockByRole();
         showLoginOverlay(null);
       },1500);
@@ -14110,8 +14160,9 @@ async function adminChangeAdminPin(){
   document.getElementById('admin-cur-pin').value='';
   document.getElementById('admin-new-admin-pin').value='';
   msg.style.color='#10b981';msg.textContent='✓ パスワードを変更しました。新しいパスワードで再ログインしてください。';
-  // Worker側で全セッションが無効化されるため再ログインへ誘導
+  // Worker側で全セッションが無効化されるため旧トークン破棄→再ログインへ誘導
   setTimeout(function(){
+    _clearTokens();
     clearSession();_ktAuthed=false;updateRoleBadge();syncUnseiLockByRole();
     showSection('home');
     showLoginOverlay(null);
