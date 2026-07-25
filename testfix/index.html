@@ -5959,6 +5959,54 @@ function renderResultByRole(){
   saveBtn.disabled=false;
 }
 
+/* ── 修正②：スマホの命盤画像保存（共有シート対応）─────────────
+ * PCは従来どおり <a download>（処理内容は _legacyDownloadMeiban に移設・無変更）。
+ * スマホのみ Web Share API のファイル共有を試み、共有シートから
+ * 「画像を保存」「ファイルに保存」「LINEへ共有」等を選べるようにする。
+ * 非対応・失敗・blob取得失敗時は必ず従来ダウンロード＋保存先案内にフォールバック。
+ * キャンセル(AbortError)はエラー扱いにしない。
+ * 画像生成（html2canvas・©透かし・ファイル名・MIME=image/png）は変更しない。 */
+function _isMobileDevice(){
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    ||(navigator.maxTouchPoints>1&&/Mac/.test(navigator.userAgent)); // iPadOS 13+
+}
+function _meibanToast(msg){
+  var t=document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(60,35,10,.92);color:#fff;padding:.6rem 1.1rem;border-radius:10px;font-size:.8rem;z-index:99999;max-width:88vw;text-align:center;line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.25)';
+  document.body.appendChild(t);
+  setTimeout(function(){if(t.parentNode)t.remove();},6000);
+}
+function _legacyDownloadMeiban(canvas,name,showGuide){
+  var link=document.createElement('a');
+  link.download=name;
+  link.href=canvas.toDataURL('image/png');
+  link.click();
+  if(showGuide)_meibanToast('画像を保存しました。iPhoneは「ファイル」アプリ内のダウンロード、Androidは「ダウンロード」フォルダをご確認ください。');
+}
+function _deliverMeibanImage(canvas,name){
+  if(!_isMobileDevice()){_legacyDownloadMeiban(canvas,name,false);return;} // PCは従来どおり（案内なし）
+  if(!(navigator.share&&navigator.canShare&&window.File&&canvas.toBlob)){
+    _legacyDownloadMeiban(canvas,name,true);return; // 共有API非対応スマホ
+  }
+  canvas.toBlob(function(blob){
+    if(!blob){_legacyDownloadMeiban(canvas,name,true);return;} // blob生成失敗
+    var file=null;
+    try{file=new File([blob],name,{type:'image/png'});}catch(e){}
+    var ok=false;
+    if(file){try{ok=navigator.canShare({files:[file]});}catch(e){ok=false;}}
+    if(!ok){_legacyDownloadMeiban(canvas,name,true);return;} // ファイル共有非対応（iOS15未満等）
+    navigator.share({files:[file],title:'命盤画像'}).then(function(){
+      /* 共有完了：保存先は共有先アプリ側のため案内不要 */
+    }).catch(function(err){
+      if(err&&err.name==='AbortError'){
+        _meibanToast('保存または共有がキャンセルされました'); // エラー扱いにしない・再操作可
+      }else{
+        _legacyDownloadMeiban(canvas,name,true); // NotAllowedError等 → 従来保存＋案内
+      }
+    });
+  },'image/png');
+}
 function downloadMeiban(){
   var grid=document.getElementById('meiban-grid');
   var info=document.getElementById('meiban-info');
@@ -5992,11 +6040,8 @@ function downloadMeiban(){
   html2canvas(wrap,{scale:2,useCORS:true,backgroundColor:'#faf5eb'}).then(function(canvas){
     wrap.remove();
     wm.remove();
-    var link=document.createElement('a');
     var name=currentResult?('meiban_'+currentResult.year+'_'+currentResult.month+'_'+currentResult.day+'.png'):'meiban.png';
-    link.download=name;
-    link.href=canvas.toDataURL('image/png');
-    link.click();
+    _deliverMeibanImage(canvas,name);
   }).catch(function(){
     wrap.remove();
     wm.remove();
