@@ -1084,6 +1084,9 @@ section.active{display:block}
       <span id="role-badge" class="" onclick="if(isKante())showSection('kanteishi')" style="cursor:pointer;font-size:.75rem;padding:.22rem .6rem;border-radius:8px;font-weight:700;display:inline-block"></span>
       <button id="nav-login-btn" onclick="showLoginOverlay(null)" style="display:none;font-size:.76rem;padding:.28rem .8rem;background:linear-gradient(135deg,var(--purple3),var(--purple2));color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">ログイン</button>
       <button id="nav-logout-btn" onclick="showLogoutConfirm()" style="display:none;font-size:.76rem;padding:.28rem .8rem;background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.28);border-radius:8px;cursor:pointer;font-weight:700">ログアウト</button>
+      <!-- _TESTFIX_VERIFY_START 一時確認ボタン（testfix限定・本番には入れない） -->
+      <button id="_testfix_expire_btn" onclick="_testfixExpireSession()" style="font-size:.72rem;padding:.28rem .7rem;background:#f59e0b;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">🧪 セッション失効テスト</button>
+      <!-- _TESTFIX_VERIFY_END -->
       <a id="nav-line-mobile" href="#" target="_blank" rel="noopener" class="nav-line-mobile">📲 LINE</a>
       <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="メニューを開く">☰</button>
     </div>
@@ -13326,6 +13329,19 @@ function _watchSessionUI(){
     syncUnseiLockByRole();           // 運気グラフのロック表示を再適用
   }catch(e){}
 }
+/* _TESTFIX_VERIFY_START 一時確認関数（testfix限定・本番には入れない）
+ * UIセッションの有効期限だけを過去にして「セッション失効」を再現する。
+ * トークン・サーバー・認証ロジックは一切変更しない。8時間待たずに確認するため。 */
+function _testfixExpireSession(){
+  try{
+    var s=JSON.parse(sessionStorage.getItem('ziwei_session_v2')||'null');
+    if(!s){alert('先に管理人または鑑定士でログインしてください。');return;}
+    s.expires=Date.now()-1000; // 1秒前に失効させる（有効期限の設定自体は変えていない）
+    sessionStorage.setItem('ziwei_session_v2',JSON.stringify(s));
+    alert('セッションを失効させました。\n約30秒待つか、別のアプリ/タブに切り替えて戻ると、\n右上のボタンが「ログイン」に切り替わります。');
+  }catch(e){alert('エラー: '+e.message);}
+}
+/* _TESTFIX_VERIFY_END */
 function showLoginOverlay(targetSection){
   _authTargetSection=targetSection||null;
   document.getElementById('auth-err').textContent='';
