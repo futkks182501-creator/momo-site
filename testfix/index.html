@@ -13324,23 +13324,50 @@ function _watchSessionUI(){
   try{
     var role=getCurrentRole(); // 期限切れなら 'public' を返す
     if(role===_lastUIRole)return;   // 変化なし＝何もしない（正常セッションを誤操作しない）
+    console.log('[TESTFIX] ロール変化検知 '+_lastUIRole+' → '+role+' 表示を更新します'); // _TESTFIX_VERIFY 一時ログ
     _lastUIRole=role;
     updateRoleBadge();               // ヘッダーのバッジ・ログイン/ログアウトボタンを再判定
     syncUnseiLockByRole();           // 運気グラフのロック表示を再適用
   }catch(e){}
 }
 /* _TESTFIX_VERIFY_START 一時確認関数（testfix限定・本番には入れない）
- * UIセッションの有効期限だけを過去にして「セッション失効」を再現する。
- * トークン・サーバー・認証ロジックは一切変更しない。8時間待たずに確認するため。 */
+ * 「完全なセッション失効」を再現する：
+ *  - UIセッション(ziwei_session_v2)の期限を過去に
+ *  - アクセストークン(ziwei_at)・リフレッシュトークン(ziwei_rt)を削除
+ * これでリロード/アプリ切替後の自動再ログイン（_restoreWorkerSession）も発生しない。
+ * サーバー・Worker・D1・認証ロジックは一切変更しない。 */
 function _testfixExpireSession(){
   try{
     var s=JSON.parse(sessionStorage.getItem('ziwei_session_v2')||'null');
     if(!s){alert('先に管理人または鑑定士でログインしてください。');return;}
-    s.expires=Date.now()-1000; // 1秒前に失効させる（有効期限の設定自体は変えていない）
+    s.expires=Date.now()-1000;
     sessionStorage.setItem('ziwei_session_v2',JSON.stringify(s));
-    alert('セッションを失効させました。\n約30秒待つか、別のアプリ/タブに切り替えて戻ると、\n右上のボタンが「ログイン」に切り替わります。');
+    sessionStorage.removeItem('ziwei_at');   // アクセストークンも失効扱い
+    localStorage.removeItem('ziwei_rt');     // 自動再ログイン用トークンも失効扱い
+    console.log('[TESTFIX] 失効実行',{role:getCurrentRole(),_lastUIRole:_lastUIRole});
+    alert('セッションを完全に失効させました。\nこのまま何もせず30秒待つと、右上が「ログイン」に切り替わります。\n（画面下の黄色い診断表示でも確認できます）');
   }catch(e){alert('エラー: '+e.message);}
 }
+/* 診断表示（testfix限定）：Consoleを見られないスマホ用に画面下へ状態を常時表示 */
+function _testfixDebugTick(){
+  try{
+    var d=document.getElementById('_testfix_debug');
+    if(!d){
+      d=document.createElement('div');d.id='_testfix_debug';
+      d.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#fef3c7;color:#92400e;font-size:11px;padding:4px 8px;font-family:monospace;border-top:1px solid #f59e0b';
+      document.body.appendChild(d);
+    }
+    var lb=document.getElementById('nav-login-btn'),lob=document.getElementById('nav-logout-btn');
+    var msg=new Date().toTimeString().slice(0,8)
+      +' role='+getCurrentRole()
+      +' lastUI='+_lastUIRole
+      +' login='+(lb?getComputedStyle(lb).display:'-')
+      +' logout='+(lob?getComputedStyle(lob).display:'-');
+    d.textContent='🧪診断: '+msg;
+    console.log('[TESTFIX] '+msg);
+  }catch(e){}
+}
+setInterval(_testfixDebugTick,5000);
 /* _TESTFIX_VERIFY_END */
 function showLoginOverlay(targetSection){
   _authTargetSection=targetSection||null;
