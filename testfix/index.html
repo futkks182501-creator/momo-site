@@ -13291,6 +13291,7 @@ function getCurrentKante(){const s=getSession();return s?{id:s.kanteId,name:s.ka
 
 function updateRoleBadge(){
   const role=getCurrentRole();
+  _lastUIRole=role; // 修正①追補：表示更新のたびに「表示中ロール」を同期（非同期ログイン復元後のズレ防止）
   const badge=document.getElementById('role-badge');
   const body=document.body;
   body.classList.remove('is-kante','is-admin');
