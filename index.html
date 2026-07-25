@@ -1084,6 +1084,7 @@ section.active{display:block}
       <span id="role-badge" class="" onclick="if(isKante())showSection('kanteishi')" style="cursor:pointer;font-size:.75rem;padding:.22rem .6rem;border-radius:8px;font-weight:700;display:inline-block"></span>
       <button id="nav-login-btn" onclick="showLoginOverlay(null)" style="display:none;font-size:.76rem;padding:.28rem .8rem;background:linear-gradient(135deg,var(--purple3),var(--purple2));color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">ログイン</button>
       <button id="nav-logout-btn" onclick="showLogoutConfirm()" style="display:none;font-size:.76rem;padding:.28rem .8rem;background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.28);border-radius:8px;cursor:pointer;font-weight:700">ログアウト</button>
+      
       <a id="nav-line-mobile" href="#" target="_blank" rel="noopener" class="nav-line-mobile">📲 LINE</a>
       <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="メニューを開く">☰</button>
     </div>
@@ -13130,6 +13131,12 @@ function doInit(){
   syncUnseiLockByRole();
   // 管理人プロフィールを初期描画
   renderProfileView();
+  // 修正①：セッション失効を表示に反映する監視を開始（表示専用）
+  _lastUIRole=getCurrentRole();
+  setInterval(_watchSessionUI,30000);                         // 30秒ごとに表示同期
+  document.addEventListener('visibilitychange',function(){    // タブ復帰時は即座に同期
+    if(!document.hidden)_watchSessionUI();
+  });
 }
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',doInit);
@@ -13282,6 +13289,7 @@ function getCurrentKante(){const s=getSession();return s?{id:s.kanteId,name:s.ka
 
 function updateRoleBadge(){
   const role=getCurrentRole();
+  _lastUIRole=role; // 修正①追補：表示更新のたびに「表示中ロール」を同期（非同期ログイン復元後のズレ防止）
   const badge=document.getElementById('role-badge');
   const body=document.body;
   body.classList.remove('is-kante','is-admin');
@@ -13304,6 +13312,23 @@ function updateRoleBadge(){
   const lob=document.getElementById('nav-logout-btn');
   if(lob)lob.style.display=role!=='public'?'inline-block':'none';
 }
+/* ── 修正①：セッション失効時の表示同期（表示専用・認証処理は変更しない）──
+ * updateRoleBadge はログイン/ログアウト/読込時しか呼ばれないため、
+ * タブを開いたままUIセッション(8時間)が失効しても「ログアウト」ボタンが残る。
+ * getCurrentRole() は getSession() 経由で期限切れを自動検知するので、
+ * 定期的に現在ロールを確認し、表示中の状態とズレたら表示だけ更新する。
+ * トークン・ネットワーク・認証ロジックには一切触れない。 */
+var _lastUIRole=null;
+function _watchSessionUI(){
+  try{
+    var role=getCurrentRole(); // 期限切れなら 'public' を返す
+    if(role===_lastUIRole)return;   // 変化なし＝何もしない（正常セッションを誤操作しない）
+    _lastUIRole=role;
+    updateRoleBadge();               // ヘッダーのバッジ・ログイン/ログアウトボタンを再判定
+    syncUnseiLockByRole();           // 運気グラフのロック表示を再適用
+  }catch(e){}
+}
+
 function showLoginOverlay(targetSection){
   _authTargetSection=targetSection||null;
   document.getElementById('auth-err').textContent='';
