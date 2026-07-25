@@ -1084,9 +1084,7 @@ section.active{display:block}
       <span id="role-badge" class="" onclick="if(isKante())showSection('kanteishi')" style="cursor:pointer;font-size:.75rem;padding:.22rem .6rem;border-radius:8px;font-weight:700;display:inline-block"></span>
       <button id="nav-login-btn" onclick="showLoginOverlay(null)" style="display:none;font-size:.76rem;padding:.28rem .8rem;background:linear-gradient(135deg,var(--purple3),var(--purple2));color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">ログイン</button>
       <button id="nav-logout-btn" onclick="showLogoutConfirm()" style="display:none;font-size:.76rem;padding:.28rem .8rem;background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.28);border-radius:8px;cursor:pointer;font-weight:700">ログアウト</button>
-      <!-- _TESTFIX_VERIFY_START 一時確認ボタン（testfix限定・本番には入れない） -->
-      <button id="_testfix_expire_btn" onclick="_testfixExpireSession()" style="font-size:.72rem;padding:.28rem .7rem;background:#f59e0b;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">🧪 セッション失効テスト</button>
-      <!-- _TESTFIX_VERIFY_END -->
+      
       <a id="nav-line-mobile" href="#" target="_blank" rel="noopener" class="nav-line-mobile">📲 LINE</a>
       <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="メニューを開く">☰</button>
     </div>
@@ -13325,51 +13323,12 @@ function _watchSessionUI(){
   try{
     var role=getCurrentRole(); // 期限切れなら 'public' を返す
     if(role===_lastUIRole)return;   // 変化なし＝何もしない（正常セッションを誤操作しない）
-    console.log('[TESTFIX] ロール変化検知 '+_lastUIRole+' → '+role+' 表示を更新します'); // _TESTFIX_VERIFY 一時ログ
     _lastUIRole=role;
     updateRoleBadge();               // ヘッダーのバッジ・ログイン/ログアウトボタンを再判定
     syncUnseiLockByRole();           // 運気グラフのロック表示を再適用
   }catch(e){}
 }
-/* _TESTFIX_VERIFY_START 一時確認関数（testfix限定・本番には入れない）
- * 「完全なセッション失効」を再現する：
- *  - UIセッション(ziwei_session_v2)の期限を過去に
- *  - アクセストークン(ziwei_at)・リフレッシュトークン(ziwei_rt)を削除
- * これでリロード/アプリ切替後の自動再ログイン（_restoreWorkerSession）も発生しない。
- * サーバー・Worker・D1・認証ロジックは一切変更しない。 */
-function _testfixExpireSession(){
-  try{
-    var s=JSON.parse(sessionStorage.getItem('ziwei_session_v2')||'null');
-    if(!s){alert('先に管理人または鑑定士でログインしてください。');return;}
-    s.expires=Date.now()-1000;
-    sessionStorage.setItem('ziwei_session_v2',JSON.stringify(s));
-    sessionStorage.removeItem('ziwei_at');   // アクセストークンも失効扱い
-    localStorage.removeItem('ziwei_rt');     // 自動再ログイン用トークンも失効扱い
-    console.log('[TESTFIX] 失効実行',{role:getCurrentRole(),_lastUIRole:_lastUIRole});
-    alert('セッションを完全に失効させました。\nこのまま何もせず30秒待つと、右上が「ログイン」に切り替わります。\n（画面下の黄色い診断表示でも確認できます）');
-  }catch(e){alert('エラー: '+e.message);}
-}
-/* 診断表示（testfix限定）：Consoleを見られないスマホ用に画面下へ状態を常時表示 */
-function _testfixDebugTick(){
-  try{
-    var d=document.getElementById('_testfix_debug');
-    if(!d){
-      d=document.createElement('div');d.id='_testfix_debug';
-      d.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#fef3c7;color:#92400e;font-size:11px;padding:4px 8px;font-family:monospace;border-top:1px solid #f59e0b';
-      document.body.appendChild(d);
-    }
-    var lb=document.getElementById('nav-login-btn'),lob=document.getElementById('nav-logout-btn');
-    var msg=new Date().toTimeString().slice(0,8)
-      +' role='+getCurrentRole()
-      +' lastUI='+_lastUIRole
-      +' login='+(lb?getComputedStyle(lb).display:'-')
-      +' logout='+(lob?getComputedStyle(lob).display:'-');
-    d.textContent='🧪診断: '+msg;
-    console.log('[TESTFIX] '+msg);
-  }catch(e){}
-}
-setInterval(_testfixDebugTick,5000);
-/* _TESTFIX_VERIFY_END */
+
 function showLoginOverlay(targetSection){
   _authTargetSection=targetSection||null;
   document.getElementById('auth-err').textContent='';
