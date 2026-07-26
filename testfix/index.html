@@ -5959,12 +5959,13 @@ function renderResultByRole(){
   saveBtn.disabled=false;
 }
 
-/* ── 修正②：スマホの命盤画像保存（共有シート対応）─────────────
- * PCは従来どおり <a download>（処理内容は _legacyDownloadMeiban に移設・無変更）。
- * スマホのみ Web Share API のファイル共有を試み、共有シートから
- * 「画像を保存」「ファイルに保存」「LINEへ共有」等を選べるようにする。
- * 非対応・失敗・blob取得失敗時は必ず従来ダウンロード＋保存先案内にフォールバック。
- * キャンセル(AbortError)はエラー扱いにしない。
+/* ── 修正②：スマホの命盤画像保存（2タップ方式）─────────────
+ * PCは従来どおり <a download> 1クリック保存（_legacyDownloadMeiban・無変更）。
+ * スマホは タップ1=画像生成→プレビュー表示、タップ2=「共有・保存」で
+ * ユーザー操作の直後に navigator.share() を呼ぶ（WebKitはタップ直後しかshareを許可しないため。
+ * html2canvas完了後に呼ぶ旧方式は NotAllowedError で拒否される：iPhone Chrome実機で確認済み）。
+ * フォールバック順: ①共有シート → ②<a download> → ③新しいタブ → ④長押し保存（プレビュー自体）。
+ * キャンセル(AbortError)はエラー扱いにしない。プレビューを閉じる時にBlob URLを解放。
  * 画像生成（html2canvas・©透かし・ファイル名・MIME=image/png）は変更しない。 */
 function _isMobileDevice(){
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -5985,27 +5986,104 @@ function _legacyDownloadMeiban(canvas,name,showGuide){
   if(showGuide)_meibanToast('画像を保存しました。iPhoneは「ファイル」アプリ内のダウンロード、Androidは「ダウンロード」フォルダをご確認ください。');
 }
 function _deliverMeibanImage(canvas,name){
-  if(!_isMobileDevice()){_legacyDownloadMeiban(canvas,name,false);return;} // PCは従来どおり（案内なし）
-  if(!(navigator.share&&navigator.canShare&&window.File&&canvas.toBlob)){
-    _legacyDownloadMeiban(canvas,name,true);return; // 共有API非対応スマホ
+  if(!_isMobileDevice()){_legacyDownloadMeiban(canvas,name,false);return;} // PCは従来どおり1クリック保存（無変更）
+  /* スマホ：2タップ方式。タップ1=生成→プレビュー表示、タップ2=共有（ユーザー操作直後にshare） */
+  if(canvas.toBlob){
+    canvas.toBlob(function(blob){_showMeibanPreview(canvas,blob,name);},'image/png');
+  }else{
+    _showMeibanPreview(canvas,null,name);
   }
-  canvas.toBlob(function(blob){
-    if(!blob){_legacyDownloadMeiban(canvas,name,true);return;} // blob生成失敗
+}
+/* プレビューを閉じる（Blob URLを必ず解放してメモリ残りを防ぐ） */
+function _closeMeibanPreview(){
+  var ov=document.getElementById('meiban-preview-overlay');
+  if(!ov)return;
+  if(ov._blobUrl){try{URL.revokeObjectURL(ov._blobUrl);}catch(e){}}
+  ov.remove();
+}
+/* スマホ用 保存プレビュー（画像表示＝長押し保存が常に可能） */
+function _showMeibanPreview(canvas,blob,name){
+  _closeMeibanPreview(); // 既存があれば閉じてURL解放（多重表示防止）
+  var url=null;
+  if(blob){try{url=URL.createObjectURL(blob);}catch(e){url=null;}}
+  var isBlobUrl=!!url;
+  if(!url){try{url=canvas.toDataURL('image/png');}catch(e){url=null;}} // blob失敗時はdataURLで表示（長押し保存は可能）
+  if(!url){alert('画像の生成に失敗しました。もう一度お試しください。');return;}
+  var ov=document.createElement('div');
+  ov.id='meiban-preview-overlay';
+  ov._blob=blob||null;ov._name=name;ov._imgUrl=url;ov._blobUrl=isBlobUrl?url:null;
+  ov.style.cssText='position:fixed;inset:0;background:rgba(10,5,0,.82);backdrop-filter:blur(4px);z-index:99990;display:flex;align-items:center;justify-content:center;padding:.8rem';
+  ov.addEventListener('click',function(e){if(e.target===ov)_closeMeibanPreview();});
+  var box=document.createElement('div');
+  box.style.cssText='background:linear-gradient(160deg,#fffdf5,#fff8e8);border:1px solid rgba(160,110,40,.3);border-radius:16px;max-width:520px;width:100%;max-height:92vh;overflow-y:auto;padding:1rem 1rem 1.2rem;box-shadow:0 12px 48px rgba(0,0,0,.45)';
+  var head=document.createElement('div');
+  head.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem';
+  var title=document.createElement('div');
+  title.textContent='🖼 命盤画像のプレビュー';
+  title.style.cssText='font-weight:700;color:#5a3210;font-size:.95rem';
+  var closeBtn=document.createElement('button');
+  closeBtn.textContent='✕ 閉じる';
+  closeBtn.onclick=_closeMeibanPreview;
+  closeBtn.style.cssText='padding:.35rem .8rem;background:rgba(90,50,16,.08);color:#5a3210;border:1px solid rgba(90,50,16,.25);border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer';
+  head.appendChild(title);head.appendChild(closeBtn);
+  var img=document.createElement('img');
+  img.src=url;img.alt='命盤画像';
+  img.style.cssText='width:100%;border-radius:10px;border:1px solid rgba(160,110,40,.25);display:block';
+  var shareBtn=document.createElement('button');
+  shareBtn.textContent='📤 共有・保存する';
+  shareBtn.onclick=function(){_meibanShareTap(ov);};
+  shareBtn.style.cssText='width:100%;margin-top:.8rem;padding:.75rem;background:linear-gradient(135deg,#b45309,#92400e);color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(180,83,9,.3)';
+  var note=document.createElement('div');
+  note.id='meiban-preview-note';
+  note.textContent='うまく保存できない場合は、上の画像を長押しして「写真に追加」でも保存できます。';
+  note.style.cssText='margin-top:.6rem;font-size:.72rem;color:#8a6a45;line-height:1.7;text-align:center';
+  box.appendChild(head);box.appendChild(img);box.appendChild(shareBtn);box.appendChild(note);
+  ov.appendChild(box);
+  document.body.appendChild(ov);
+}
+/* タップ2：ユーザー操作の直後に共有APIを呼ぶ（WebKitのユーザー操作要件を満たす） */
+function _meibanShareTap(ov){
+  var blob=ov._blob,name=ov._name;
+  if(blob&&navigator.share&&navigator.canShare&&window.File){
     var file=null;
     try{file=new File([blob],name,{type:'image/png'});}catch(e){}
     var ok=false;
     if(file){try{ok=navigator.canShare({files:[file]});}catch(e){ok=false;}}
-    if(!ok){_legacyDownloadMeiban(canvas,name,true);return;} // ファイル共有非対応（iOS15未満等）
-    navigator.share({files:[file],title:'命盤画像'}).then(function(){
-      /* 共有完了：保存先は共有先アプリ側のため案内不要 */
-    }).catch(function(err){
-      if(err&&err.name==='AbortError'){
-        _meibanToast('保存または共有がキャンセルされました'); // エラー扱いにしない・再操作可
-      }else{
-        _legacyDownloadMeiban(canvas,name,true); // NotAllowedError等 → 従来保存＋案内
-      }
-    });
-  },'image/png');
+    if(ok){
+      navigator.share({files:[file],title:'命盤画像'}).then(function(){
+        /* 共有シートで完了。プレビューは開いたままにして続けて操作できる */
+      }).catch(function(err){
+        if(err&&err.name==='AbortError'){
+          _meibanToast('保存または共有がキャンセルされました'); // エラー扱いにしない・再タップ可
+        }else{
+          _meibanDownloadTiers(ov); // ②以降へ
+        }
+      });
+      return;
+    }
+  }
+  _meibanDownloadTiers(ov); // 共有API非対応 → ②から
+}
+/* ②通常ダウンロード → ③新しいタブ → ④長押し案内 の順で必ず1手段残す */
+function _meibanDownloadTiers(ov){
+  var name=ov._name,url=ov._imgUrl;
+  try{
+    var a=document.createElement('a');
+    if(('download' in a)&&url){
+      a.download=name;a.href=url;a.click();
+      _meibanToast('保存を実行しました。iPhoneは「ファイル」アプリ内のダウンロード、Androidは「ダウンロード」フォルダをご確認ください。見つからない場合はプレビューの画像を長押しして保存してください。');
+      return;
+    }
+  }catch(e){}
+  try{
+    if(url&&url.indexOf('blob:')===0){
+      var w=window.open(url,'_blank');
+      if(w){_meibanToast('新しいタブで画像を開きました。画像を長押しして保存してください。');return;}
+    }
+  }catch(e){}
+  var note=document.getElementById('meiban-preview-note');
+  if(note){note.style.color='#b45309';note.style.fontWeight='700';}
+  _meibanToast('この画面の画像を長押しして「写真に追加」で保存してください。');
 }
 function downloadMeiban(){
   var grid=document.getElementById('meiban-grid');
@@ -6048,13 +6126,13 @@ function downloadMeiban(){
     alert('画像の生成に失敗しました。もう一度お試しください。');
   });
 }
-/* _TESTFIX_DIAG_START 修正②診断（testfix限定・一時コード・本番には入れない）
- * 動作は本実装と同一。どの分岐を通ったかを画面下のパネルに表示するだけ。 */
+/* _TESTFIX_DIAG_START 修正②診断 v2（testfix限定・一時コード・本番には入れない）
+ * 動作を変えずに各ステップを画面下パネルへ記録するトレースのみ。 */
 function _diagPanel(){
   var d=document.getElementById('_fix2_diag');
   if(!d){
     d=document.createElement('div');d.id='_fix2_diag';
-    d.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:999999;background:#fef3c7;color:#78350f;font-size:11px;font-family:monospace;padding:6px 34px 6px 8px;border-top:2px solid #f59e0b;max-height:42vh;overflow-y:auto;line-height:1.5;white-space:pre-wrap;word-break:break-all';
+    d.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:999999;background:#fef3c7;color:#78350f;font-size:11px;font-family:monospace;padding:6px 34px 6px 8px;border-top:2px solid #f59e0b;max-height:38vh;overflow-y:auto;line-height:1.5;white-space:pre-wrap;word-break:break-all';
     var x=document.createElement('div');x.textContent='✕';
     x.style.cssText='position:absolute;top:4px;right:8px;cursor:pointer;font-size:15px;font-weight:700;padding:2px 6px';
     x.onclick=function(){d.remove();};
@@ -6072,59 +6150,50 @@ function _diagLog(msg){
   }catch(e){}
 }
 (function(){
-  var _origDL=downloadMeiban;
+  var _oDL=downloadMeiban;
   downloadMeiban=function(){
     window.__fix2T0=Date.now();
     var d=document.getElementById('_fix2_diag');if(d)d.remove();
-    _diagLog('保存タップ');
+    _diagLog('タップ1: 保存ボタン');
     _diagLog('UA: '+navigator.userAgent);
-    _origDL();
+    _oDL();
   };
-  var _origLegacy=_legacyDownloadMeiban;
-  _legacyDownloadMeiban=function(canvas,name,showGuide){
-    _diagLog('従来ダウンロード実行 name='+name+' 案内='+(!!showGuide));
-    try{_origLegacy(canvas,name,showGuide);_diagLog('従来ダウンロード click() 完了（例外なし）');}
-    catch(e){_diagLog('従来ダウンロード 例外: '+e.name+' / '+e.message);}
+  var _oPrev=_showMeibanPreview;
+  _showMeibanPreview=function(canvas,blob,name){
+    _diagLog('プレビュー表示 canvas='+canvas.width+'x'+canvas.height+' blob='+(blob?blob.size+'bytes':'null（dataURL表示）')+' name='+name);
+    _oPrev(canvas,blob,name);
   };
-  _deliverMeibanImage=function(canvas,name){
-    _diagLog('画像生成完了 canvas='+canvas.width+'x'+canvas.height);
-    _diagLog('isMobile='+_isMobileDevice()
-      +' | navigator.share='+(typeof navigator.share)
-      +' | navigator.canShare='+(typeof navigator.canShare)
-      +' | File='+(typeof window.File)
-      +' | toBlob='+(typeof canvas.toBlob));
-    if(!_isMobileDevice()){_diagLog('分岐: PC → 従来ダウンロード');_legacyDownloadMeiban(canvas,name,false);return;}
-    if(!(navigator.share&&navigator.canShare&&window.File&&canvas.toBlob)){
-      _diagLog('分岐A: 共有API機能ゲート false → フォールバック');
-      _legacyDownloadMeiban(canvas,name,true);return;
-    }
-    canvas.toBlob(function(blob){
-      if(!blob){_diagLog('分岐B: toBlob が null → フォールバック');_legacyDownloadMeiban(canvas,name,true);return;}
-      _diagLog('toBlob OK size='+blob.size+' type='+blob.type);
-      var file=null;
-      try{file=new File([blob],name,{type:'image/png'});_diagLog('File生成 OK name='+file.name);}
-      catch(e){_diagLog('分岐C: File生成 例外 '+e.name+' / '+e.message);}
-      var ok=false;
-      if(file){
-        try{ok=navigator.canShare({files:[file]});_diagLog('canShare({files})='+ok);}
-        catch(e){_diagLog('canShare 例外 '+e.name+' / '+e.message);ok=false;}
-      }
-      if(!ok){_diagLog('分岐D: ファイル共有不可 → フォールバック');_legacyDownloadMeiban(canvas,name,true);return;}
-      _diagLog('navigator.share() 呼出開始');
-      navigator.share({files:[file],title:'命盤画像'}).then(function(){
-        _diagLog('share 成功（共有シート操作完了）');
-      }).catch(function(err){
-        _diagLog('share 拒否: '+(err&&err.name)+' / '+(err&&err.message));
-        if(err&&err.name==='AbortError'){
-          _meibanToast('保存または共有がキャンセルされました');
-          _diagLog('AbortError=ユーザーキャンセル扱い（フォールバックせず）');
-        }else{
-          _diagLog('分岐E: share失敗 → フォールバック');
-          _legacyDownloadMeiban(canvas,name,true);
-        }
-      });
-    },'image/png');
+  var _oTap=_meibanShareTap;
+  _meibanShareTap=function(ov){
+    window.__fix2T0=Date.now();
+    _diagLog('タップ2: 共有・保存 blob='+(ov._blob?'あり':'なし')+' | share='+(typeof navigator.share)+' | canShare='+(typeof navigator.canShare));
+    _oTap(ov);
   };
+  var _oTiers=_meibanDownloadTiers;
+  _meibanDownloadTiers=function(ov){
+    _diagLog('フォールバック段（②→③→④）へ url種別='+(ov._imgUrl?ov._imgUrl.slice(0,5):'なし'));
+    _oTiers(ov);
+  };
+  var _oClose=_closeMeibanPreview;
+  _closeMeibanPreview=function(){
+    var ov=document.getElementById('meiban-preview-overlay');
+    if(ov&&ov._blobUrl)_diagLog('プレビューを閉じる: Blob URL解放');
+    _oClose();
+  };
+  var _oToast=_meibanToast;
+  _meibanToast=function(msg){_diagLog('トースト: '+msg);_oToast(msg);};
+  if(navigator.share){
+    var _oShare=navigator.share.bind(navigator);
+    navigator.share=function(data){
+      _diagLog('navigator.share() 呼出 files='+(data&&data.files?data.files.length:0));
+      return _oShare(data).then(function(r){_diagLog('share 成功');return r;})
+        .catch(function(err){_diagLog('share 拒否: '+(err&&err.name)+' / '+(err&&err.message));throw err;});
+    };
+  }
+  if(navigator.canShare){
+    var _oCan=navigator.canShare.bind(navigator);
+    navigator.canShare=function(data){var r=false;try{r=_oCan(data);}catch(e){_diagLog('canShare 例外 '+e.name);throw e;}_diagLog('canShare({files})='+r);return r;};
+  }
 })();
 /* _TESTFIX_DIAG_END */
 function closeFreePreview(){
