@@ -5959,6 +5959,132 @@ function renderResultByRole(){
   saveBtn.disabled=false;
 }
 
+/* ── 修正②：スマホの命盤画像保存（2タップ方式）─────────────
+ * PCは従来どおり <a download> 1クリック保存（_legacyDownloadMeiban・無変更）。
+ * スマホは タップ1=画像生成→プレビュー表示、タップ2=「共有・保存」で
+ * ユーザー操作の直後に navigator.share() を呼ぶ（WebKitはタップ直後しかshareを許可しないため。
+ * html2canvas完了後に呼ぶ旧方式は NotAllowedError で拒否される：iPhone Chrome実機で確認済み）。
+ * フォールバック順: ①共有シート → ②<a download> → ③新しいタブ → ④長押し保存（プレビュー自体）。
+ * キャンセル(AbortError)はエラー扱いにしない。プレビューを閉じる時にBlob URLを解放。
+ * 画像生成（html2canvas・©透かし・ファイル名・MIME=image/png）は変更しない。 */
+function _isMobileDevice(){
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    ||(navigator.maxTouchPoints>1&&/Mac/.test(navigator.userAgent)); // iPadOS 13+
+}
+function _meibanToast(msg){
+  var t=document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(60,35,10,.92);color:#fff;padding:.6rem 1.1rem;border-radius:10px;font-size:.8rem;z-index:99999;max-width:88vw;text-align:center;line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.25)';
+  document.body.appendChild(t);
+  setTimeout(function(){if(t.parentNode)t.remove();},6000);
+}
+function _legacyDownloadMeiban(canvas,name,showGuide){
+  var link=document.createElement('a');
+  link.download=name;
+  link.href=canvas.toDataURL('image/png');
+  link.click();
+  if(showGuide)_meibanToast('画像を保存しました。iPhoneは「ファイル」アプリ内のダウンロード、Androidは「ダウンロード」フォルダをご確認ください。');
+}
+function _deliverMeibanImage(canvas,name){
+  if(!_isMobileDevice()){_legacyDownloadMeiban(canvas,name,false);return;} // PCは従来どおり1クリック保存（無変更）
+  /* スマホ：2タップ方式。タップ1=生成→プレビュー表示、タップ2=共有（ユーザー操作直後にshare） */
+  if(canvas.toBlob){
+    canvas.toBlob(function(blob){_showMeibanPreview(canvas,blob,name);},'image/png');
+  }else{
+    _showMeibanPreview(canvas,null,name);
+  }
+}
+/* プレビューを閉じる（Blob URLを必ず解放してメモリ残りを防ぐ） */
+function _closeMeibanPreview(){
+  var ov=document.getElementById('meiban-preview-overlay');
+  if(!ov)return;
+  if(ov._blobUrl){try{URL.revokeObjectURL(ov._blobUrl);}catch(e){}}
+  ov.remove();
+}
+/* スマホ用 保存プレビュー（画像表示＝長押し保存が常に可能） */
+function _showMeibanPreview(canvas,blob,name){
+  _closeMeibanPreview(); // 既存があれば閉じてURL解放（多重表示防止）
+  var url=null;
+  if(blob){try{url=URL.createObjectURL(blob);}catch(e){url=null;}}
+  var isBlobUrl=!!url;
+  if(!url){try{url=canvas.toDataURL('image/png');}catch(e){url=null;}} // blob失敗時はdataURLで表示（長押し保存は可能）
+  if(!url){alert('画像の生成に失敗しました。もう一度お試しください。');return;}
+  var ov=document.createElement('div');
+  ov.id='meiban-preview-overlay';
+  ov._blob=blob||null;ov._name=name;ov._imgUrl=url;ov._blobUrl=isBlobUrl?url:null;
+  ov.style.cssText='position:fixed;inset:0;background:rgba(10,5,0,.82);backdrop-filter:blur(4px);z-index:99990;display:flex;align-items:center;justify-content:center;padding:.8rem';
+  ov.addEventListener('click',function(e){if(e.target===ov)_closeMeibanPreview();});
+  var box=document.createElement('div');
+  box.style.cssText='background:linear-gradient(160deg,#fffdf5,#fff8e8);border:1px solid rgba(160,110,40,.3);border-radius:16px;max-width:520px;width:100%;max-height:92vh;overflow-y:auto;padding:1rem 1rem 1.2rem;box-shadow:0 12px 48px rgba(0,0,0,.45)';
+  var head=document.createElement('div');
+  head.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem';
+  var title=document.createElement('div');
+  title.textContent='🖼 命盤画像のプレビュー';
+  title.style.cssText='font-weight:700;color:#5a3210;font-size:.95rem';
+  var closeBtn=document.createElement('button');
+  closeBtn.textContent='✕ 閉じる';
+  closeBtn.onclick=_closeMeibanPreview;
+  closeBtn.style.cssText='padding:.35rem .8rem;background:rgba(90,50,16,.08);color:#5a3210;border:1px solid rgba(90,50,16,.25);border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer';
+  head.appendChild(title);head.appendChild(closeBtn);
+  var img=document.createElement('img');
+  img.src=url;img.alt='命盤画像';
+  img.style.cssText='width:100%;border-radius:10px;border:1px solid rgba(160,110,40,.25);display:block';
+  var shareBtn=document.createElement('button');
+  shareBtn.textContent='📤 共有・保存する';
+  shareBtn.onclick=function(){_meibanShareTap(ov);};
+  shareBtn.style.cssText='width:100%;margin-top:.8rem;padding:.75rem;background:linear-gradient(135deg,#b45309,#92400e);color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(180,83,9,.3)';
+  var note=document.createElement('div');
+  note.id='meiban-preview-note';
+  note.textContent='うまく保存できない場合は、上の画像を長押しして「写真に追加」でも保存できます。';
+  note.style.cssText='margin-top:.6rem;font-size:.72rem;color:#8a6a45;line-height:1.7;text-align:center';
+  box.appendChild(head);box.appendChild(img);box.appendChild(shareBtn);box.appendChild(note);
+  ov.appendChild(box);
+  document.body.appendChild(ov);
+}
+/* タップ2：ユーザー操作の直後に共有APIを呼ぶ（WebKitのユーザー操作要件を満たす） */
+function _meibanShareTap(ov){
+  var blob=ov._blob,name=ov._name;
+  if(blob&&navigator.share&&navigator.canShare&&window.File){
+    var file=null;
+    try{file=new File([blob],name,{type:'image/png'});}catch(e){}
+    var ok=false;
+    if(file){try{ok=navigator.canShare({files:[file]});}catch(e){ok=false;}}
+    if(ok){
+      navigator.share({files:[file],title:'命盤画像'}).then(function(){
+        /* 共有シートで完了。プレビューは開いたままにして続けて操作できる */
+      }).catch(function(err){
+        if(err&&err.name==='AbortError'){
+          _meibanToast('保存または共有がキャンセルされました'); // エラー扱いにしない・再タップ可
+        }else{
+          _meibanDownloadTiers(ov); // ②以降へ
+        }
+      });
+      return;
+    }
+  }
+  _meibanDownloadTiers(ov); // 共有API非対応 → ②から
+}
+/* ②通常ダウンロード → ③新しいタブ → ④長押し案内 の順で必ず1手段残す */
+function _meibanDownloadTiers(ov){
+  var name=ov._name,url=ov._imgUrl;
+  try{
+    var a=document.createElement('a');
+    if(('download' in a)&&url){
+      a.download=name;a.href=url;a.click();
+      _meibanToast('保存を実行しました。iPhoneは「ファイル」アプリ内のダウンロード、Androidは「ダウンロード」フォルダをご確認ください。見つからない場合はプレビューの画像を長押しして保存してください。');
+      return;
+    }
+  }catch(e){}
+  try{
+    if(url&&url.indexOf('blob:')===0){
+      var w=window.open(url,'_blank');
+      if(w){_meibanToast('新しいタブで画像を開きました。画像を長押しして保存してください。');return;}
+    }
+  }catch(e){}
+  var note=document.getElementById('meiban-preview-note');
+  if(note){note.style.color='#b45309';note.style.fontWeight='700';}
+  _meibanToast('この画面の画像を長押しして「写真に追加」で保存してください。');
+}
 function downloadMeiban(){
   var grid=document.getElementById('meiban-grid');
   var info=document.getElementById('meiban-info');
@@ -5992,11 +6118,8 @@ function downloadMeiban(){
   html2canvas(wrap,{scale:2,useCORS:true,backgroundColor:'#faf5eb'}).then(function(canvas){
     wrap.remove();
     wm.remove();
-    var link=document.createElement('a');
     var name=currentResult?('meiban_'+currentResult.year+'_'+currentResult.month+'_'+currentResult.day+'.png'):'meiban.png';
-    link.download=name;
-    link.href=canvas.toDataURL('image/png');
-    link.click();
+    _deliverMeibanImage(canvas,name);
   }).catch(function(){
     wrap.remove();
     wm.remove();
