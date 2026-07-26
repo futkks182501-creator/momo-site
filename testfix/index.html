@@ -14524,16 +14524,47 @@ function closeProfileModal(){
 
 function onProfileImgChange(inp){
   if(!inp.files||!inp.files[0]) return;
+  /* ── 修正③：アップロード時にサイト側で自動縮小 ─────────────
+   * 従来は無圧縮dataURLをそのまま保存しており、スマホ写真(数MB)は
+   * サーバー保存上限(D1: 1値あたり2MB)を超えて保存に失敗していた。
+   * 長辺1000px・JPEG品質0.85に自動変換してから保存する（利用者の操作は従来どおり）。
+   * ・向き: 最近のブラウザは画像読み込み時にEXIFの回転を自動適用するため崩れない
+   * ・透過PNG: JPEGは透過非対応のため白背景に合成する
+   * ・画像として読めないファイルは従来どおりの動作にフォールバック */
   var reader=new FileReader();
   reader.onload=function(e){
-    var imgEl=document.getElementById('pm-img-el');
-    var imgPh=document.getElementById('pm-img-placeholder');
-    var imgClr=document.getElementById('pm-img-clear');
-    imgEl.src=e.target.result;
-    imgEl.style.display='block';
-    imgPh.style.display='none';
-    imgClr.style.display='inline-block';
-    window._pendingPhoto=e.target.result;
+    var orig=e.target.result;
+    function apply(dataUrl){
+      var imgEl=document.getElementById('pm-img-el');
+      var imgPh=document.getElementById('pm-img-placeholder');
+      var imgClr=document.getElementById('pm-img-clear');
+      imgEl.src=dataUrl;
+      imgEl.style.display='block';
+      imgPh.style.display='none';
+      imgClr.style.display='inline-block';
+      window._pendingPhoto=dataUrl;
+    }
+    var img=new Image();
+    img.onload=function(){
+      try{
+        var MAX=1000;
+        var w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;
+        var scale=Math.min(1,MAX/Math.max(w,h));
+        var cw=Math.max(1,Math.round(w*scale)),ch=Math.max(1,Math.round(h*scale));
+        var c=document.createElement('canvas');c.width=cw;c.height=ch;
+        var ctx=c.getContext('2d');
+        ctx.fillStyle='#ffffff';ctx.fillRect(0,0,cw,ch); // 透過PNG対策：白背景に合成
+        ctx.drawImage(img,0,0,cw,ch);
+        var out=c.toDataURL('image/jpeg',0.85);
+        console.log('[プロフィール画像] 元 '+Math.round(orig.length/1024)+'KB → 圧縮後 '+Math.round(out.length/1024)+'KB（'+cw+'×'+ch+'px）');
+        apply(out);
+      }catch(err){
+        console.log('[プロフィール画像] 圧縮失敗のため元データを使用: '+err.message);
+        apply(orig);
+      }
+    };
+    img.onerror=function(){apply(orig);}; // 画像として読めない場合は従来動作
+    img.src=orig;
   };
   reader.readAsDataURL(inp.files[0]);
 }
