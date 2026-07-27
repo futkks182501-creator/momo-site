@@ -1046,6 +1046,12 @@ section.active{display:block}
   #calc #line-cta-unified{order:15}
   #calc #today-unsei-section{order:5}
 }
+/* ── 修正③追補: スマホのプロフィール表示（自己紹介を下段・横幅いっぱいに） ──
+ * 自己紹介は複製せず1つのまま。PCは grid の2列目に置かれ従来と同じ見た目、
+ * スマホのみ全列にまたがせてカード横幅いっぱいで表示する。 */
+@media(max-width:640px){
+  .pf-card > .pf-bio{grid-column:1 / -1}
+}
 /* ── Phase 2: acc内padding・section-header統一 ── */
 .acc-body{padding:.5rem .25rem .6rem}
 .acc-body .section-header{text-align:center}
@@ -14496,16 +14502,19 @@ function renderProfileView(){
 
   let H='';
 
-  // プロフィールカード（外側flex: [画像列] [テキスト列]）
-  H+='<div style="background:linear-gradient(135deg,rgba(124,58,237,.1),rgba(180,100,10,.08));border:1.5px solid rgba(245,158,11,.25);border-radius:18px;padding:1.5rem;margin-bottom:1.4rem;display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap">';
+  // プロフィールカード（grid: [画像列] [テキスト列] / 自己紹介は1つだけ・配置のみCSSで切替）
+  //  PC   : 1行目=[画像][名前・肩書き] 2行目=[  ][自己紹介]（従来と同じ見た目）
+  //  スマホ: 1行目=[画像][名前・肩書き] 2行目=自己紹介がカード横幅いっぱい（.pf-bio をCSSで全幅化）
+  H+='<div class="pf-card" style="background:linear-gradient(135deg,rgba(124,58,237,.1),rgba(180,100,10,.08));border:1.5px solid rgba(245,158,11,.25);border-radius:18px;padding:1.5rem;margin-bottom:1.4rem;display:grid;grid-template-columns:'+(p.photo?'auto minmax(0,1fr)':'minmax(0,1fr)')+';column-gap:1rem;row-gap:0;align-items:start">';
   // 画像列（1:1正方形）
   if(p.photo){H+='<div style="flex-shrink:0"><img src="'+p.photo+'" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(245,158,11,.4)"></div>';}
-  // テキスト列
-  H+='<div style="flex:1;min-width:0">';
+  // テキスト列（名前・肩書き）
+  H+='<div style="min-width:0">';
   H+='<div style="font-size:1.4rem;font-weight:900;color:var(--gold);margin-bottom:.1rem">'+escHtml(name)+'</div>';
-  H+='<div style="font-size:.82rem;color:var(--text2);margin-bottom:.75rem;font-weight:600">'+escHtml(title)+'</div>';
-  if(bio) H+='<div style="font-size:.82rem;color:var(--text1);line-height:1.85;white-space:pre-wrap">'+escHtml(bio)+'</div>';
+  H+='<div style="font-size:.82rem;color:var(--text2);'+(bio?'margin-bottom:.75rem;':'')+'font-weight:600">'+escHtml(title)+'</div>';
   H+='</div>';
+  // 自己紹介（1つだけ。PCはテキスト列の下、スマホはカード全幅）
+  if(bio) H+='<div class="pf-bio" style="grid-column:'+(p.photo?'2':'1')+';min-width:0;font-size:.82rem;color:var(--text1);line-height:1.85;white-space:pre-wrap">'+escHtml(bio)+'</div>';
   H+='</div>';
 
   // SNS ボタン
