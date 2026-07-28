@@ -1046,6 +1046,16 @@ section.active{display:block}
   #calc #line-cta-unified{order:15}
   #calc #today-unsei-section{order:5}
 }
+/* ── 修正③追補: スマホのプロフィール表示（自己紹介を下段・横幅いっぱいに） ──
+ * 自己紹介は複製せず1つのまま。PCは grid の2列目に置かれ従来と同じ見た目、
+ * スマホのみ全列にまたがせてカード横幅いっぱいで表示する。 */
+.pf-card > .pf-photo{grid-row:1 / 3;align-self:start} /* PC: 画像は2行にまたがり、行1の高さは名前＋肩書きで決まる（＝従来の自己紹介位置を維持） */
+.pf-card > .pf-bio{grid-column:2}                     /* PC: 自己紹介は名前と同じ列 */
+.pf-card.pf-nophoto > .pf-bio{grid-column:1}          /* 画像なしの場合 */
+@media(max-width:640px){
+  .pf-card > .pf-photo{grid-row:auto}    /* スマホ: 画像は1行目だけ */
+  .pf-card > .pf-bio{grid-column:1 / -1} /* スマホ: 自己紹介を下段・カード横幅いっぱいに */
+}
 /* ── Phase 2: acc内padding・section-header統一 ── */
 .acc-body{padding:.5rem .25rem .6rem}
 .acc-body .section-header{text-align:center}
@@ -14431,16 +14441,19 @@ function renderProfileView(){
 
   let H='';
 
-  // プロフィールカード（外側flex: [画像列] [テキスト列]）
-  H+='<div style="background:linear-gradient(135deg,rgba(124,58,237,.1),rgba(180,100,10,.08));border:1.5px solid rgba(245,158,11,.25);border-radius:18px;padding:1.5rem;margin-bottom:1.4rem;display:flex;align-items:flex-start;gap:1rem;flex-wrap:wrap">';
+  // プロフィールカード（grid: [画像列] [テキスト列] / 自己紹介は1つだけ・配置のみCSSで切替）
+  //  PC   : 1行目=[画像][名前・肩書き] 2行目=[  ][自己紹介]（従来と同じ見た目）
+  //  スマホ: 1行目=[画像][名前・肩書き] 2行目=自己紹介がカード横幅いっぱい（.pf-bio をCSSで全幅化）
+  H+='<div class="pf-card'+(p.photo?'':' pf-nophoto')+'" style="background:linear-gradient(135deg,rgba(124,58,237,.1),rgba(180,100,10,.08));border:1.5px solid rgba(245,158,11,.25);border-radius:18px;padding:1.5rem;margin-bottom:1.4rem;display:grid;grid-template-columns:'+(p.photo?'auto minmax(0,1fr)':'minmax(0,1fr)')+';column-gap:1rem;row-gap:0;align-items:start">';
   // 画像列（1:1正方形）
-  if(p.photo){H+='<div style="flex-shrink:0"><img src="'+p.photo+'" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(245,158,11,.4)"></div>';}
-  // テキスト列
-  H+='<div style="flex:1;min-width:0">';
+  if(p.photo){H+='<div class="pf-photo"><img src="'+p.photo+'" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(245,158,11,.4)"></div>';}
+  // テキスト列（名前・肩書き）
+  H+='<div style="min-width:0">';
   H+='<div style="font-size:1.4rem;font-weight:900;color:var(--gold);margin-bottom:.1rem">'+escHtml(name)+'</div>';
-  H+='<div style="font-size:.82rem;color:var(--text2);margin-bottom:.75rem;font-weight:600">'+escHtml(title)+'</div>';
-  if(bio) H+='<div style="font-size:.82rem;color:var(--text1);line-height:1.85;white-space:pre-wrap">'+escHtml(bio)+'</div>';
+  H+='<div style="font-size:.82rem;color:var(--text2);'+(bio?'margin-bottom:.75rem;':'')+'font-weight:600">'+escHtml(title)+'</div>';
   H+='</div>';
+  // 自己紹介（1つだけ。PCはテキスト列の下、スマホはカード全幅）
+  if(bio) H+='<div class="pf-bio" style="min-width:0;font-size:.82rem;color:var(--text1);line-height:1.85;white-space:pre-wrap">'+escHtml(bio)+'</div>';
   H+='</div>';
 
   // SNS ボタン
@@ -14524,16 +14537,56 @@ function closeProfileModal(){
 
 function onProfileImgChange(inp){
   if(!inp.files||!inp.files[0]) return;
+  /* ── 修正③：アップロード時にサイト側で自動縮小 ─────────────
+   * 従来は無圧縮dataURLをそのまま保存しており、スマホ写真(数MB)は
+   * Worker側の受信上限(65,536バイト=64KB／parseJsonのContent-Length判定)を超え
+   * 「Request too large」で保存に失敗していた（iPhone実機で確認）。
+   * 送信サイズを基準に長辺・JPEG品質を段階的に下げて自動調整する（利用者の操作は従来どおり）。
+   * ・向き: 最近のブラウザは画像読み込み時にEXIFの回転を自動適用するため崩れない
+   * ・透過PNG: JPEGは透過非対応のため白背景に合成する
+   * ・画像として読めないファイルは従来どおりの動作にフォールバック */
   var reader=new FileReader();
   reader.onload=function(e){
-    var imgEl=document.getElementById('pm-img-el');
-    var imgPh=document.getElementById('pm-img-placeholder');
-    var imgClr=document.getElementById('pm-img-clear');
-    imgEl.src=e.target.result;
-    imgEl.style.display='block';
-    imgPh.style.display='none';
-    imgClr.style.display='inline-block';
-    window._pendingPhoto=e.target.result;
+    var orig=e.target.result;
+    function apply(dataUrl){
+      var imgEl=document.getElementById('pm-img-el');
+      var imgPh=document.getElementById('pm-img-placeholder');
+      var imgClr=document.getElementById('pm-img-clear');
+      imgEl.src=dataUrl;
+      imgEl.style.display='block';
+      imgPh.style.display='none';
+      imgClr.style.display='inline-block';
+      window._pendingPhoto=dataUrl;
+    }
+    var img=new Image();
+    img.onload=function(){
+      try{
+        /* 送信サイズ基準の段階圧縮：
+         * Workerは送信JSON全体が65,536バイト(64KB)を超えると拒否するため、
+         * photoのbase64が45KB以下（テキスト分を含めても十分な余裕）になるまで
+         * 長辺・JPEG品質を段階的に下げる。実写真は最終段でほぼ確実に収まる。 */
+        var TARGET=45*1024;
+        var STEPS=[[1000,0.85],[1000,0.7],[800,0.7],[800,0.6],[600,0.6],[500,0.5],[400,0.45]];
+        var w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;
+        var out=null;
+        for(var i=0;i<STEPS.length;i++){
+          var MAX=STEPS[i][0],Q=STEPS[i][1];
+          var scale=Math.min(1,MAX/Math.max(w,h));
+          var cw=Math.max(1,Math.round(w*scale)),ch=Math.max(1,Math.round(h*scale));
+          var c=document.createElement('canvas');c.width=cw;c.height=ch;
+          var ctx=c.getContext('2d');
+          ctx.fillStyle='#ffffff';ctx.fillRect(0,0,cw,ch); // 透過PNG対策：白背景に合成
+          ctx.drawImage(img,0,0,cw,ch);
+          out=c.toDataURL('image/jpeg',Q);
+          if(out.length<=TARGET)break; // 目標サイズに収まった段で確定
+        }
+        apply(out);
+      }catch(err){
+        apply(orig); // 圧縮できない場合は元データで従来動作
+      }
+    };
+    img.onerror=function(){apply(orig);}; // 画像として読めない場合は従来動作
+    img.src=orig;
   };
   reader.readAsDataURL(inp.files[0]);
 }
