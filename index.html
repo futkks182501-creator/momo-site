@@ -1537,6 +1537,34 @@ section.active{display:block}
           <input id="saved-search" type="text" placeholder="🎂 誕生日で検索（例：1990-03）" oninput="renderSavedList()" style="flex:1;padding:.4rem .75rem;border:1.5px solid var(--border);border-radius:8px;background:var(--card);color:var(--text1);font-size:.82rem;outline:none">
         </div>
         <div id="saved-list"><p class="saved-empty">まだ保存されたデータはありません。</p></div>
+
+        <!-- 💾 データ管理（バックアップ／復元）… 対象は権限に応じて自動で切り替わる -->
+        <div id="data-backup-box" style="border-top:1px solid var(--border);margin-top:.6rem;padding:.7rem .6rem .8rem">
+          <div style="font-size:.8rem;font-weight:700;color:var(--gold);margin-bottom:.35rem">💾 データ管理（バックアップ・復元）</div>
+          <p id="dbk-scope" style="font-size:.72rem;color:var(--text2);line-height:1.7;margin:0 0 .55rem"></p>
+
+          <button class="admin-btn" id="dbk-export-btn" onclick="dbkExport()" style="width:100%;font-size:.8rem;margin-bottom:.5rem">⬇️ データを書き出す</button>
+
+          <div id="dbk-draft-wrap" style="display:none;font-size:.74rem;color:var(--text2);margin:-.2rem 0 .5rem">
+            <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer">
+              <input type="checkbox" id="dbk-include-drafts"> 未公開のお知らせ下書きも含める（任意）
+            </label>
+          </div>
+
+          <div style="font-size:.74rem;color:var(--text2);margin-bottom:.3rem">復元のしかたを選んでください</div>
+          <label style="display:flex;align-items:flex-start;gap:.4rem;font-size:.75rem;color:var(--text1);margin-bottom:.4rem;cursor:pointer">
+            <input type="radio" name="dbk-mode" value="add" checked style="margin-top:.2rem">
+            <span><strong>追加（おすすめ）</strong><br><span style="color:var(--text2);font-size:.72rem">現在保存されているデータを残したまま、バックアップ内の重複しないデータだけ追加します。既存データは消えません。</span></span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:.4rem;font-size:.75rem;color:var(--text1);margin-bottom:.5rem;cursor:pointer">
+            <input type="radio" name="dbk-mode" value="replace" style="margin-top:.2rem">
+            <span><strong style="color:#dc2626">入れ替え</strong><br><span style="color:var(--text2);font-size:.72rem">現在保存されている対象データを削除し、バックアップの内容へ丸ごと入れ替えます。<strong style="color:#dc2626">現在のデータは削除されます。</strong>実行前に自動でバックアップを保存します。</span></span>
+          </label>
+
+          <input type="file" id="dbk-file" accept="application/json,.json" style="display:none" onchange="dbkImport(this)">
+          <button class="admin-btn" id="dbk-import-btn" onclick="document.getElementById('dbk-file').click()" style="width:100%;font-size:.8rem">⬆️ データを読み込む</button>
+          <div id="dbk-msg" style="font-size:.74rem;line-height:1.8;margin-top:.5rem;white-space:pre-wrap"></div>
+        </div>
       </div>
     </div>
 
@@ -13264,6 +13292,7 @@ function doInit(){
   syncUnseiLockByRole();
   // 管理人プロフィールを初期描画
   renderProfileView();
+  dbkSyncUI();                 // 修正⑤：データ管理の対象表示を権限に合わせる
   // 修正①：セッション失効を表示に反映する監視を開始（表示専用）
   _lastUIRole=getCurrentRole();
   setInterval(_watchSessionUI,30000);                         // 30秒ごとに表示同期
@@ -13444,6 +13473,7 @@ function updateRoleBadge(){
   if(lb)lb.style.display=role==='public'?'inline-block':'none';
   const lob=document.getElementById('nav-logout-btn');
   if(lob)lob.style.display=role!=='public'?'inline-block':'none';
+  if(typeof dbkSyncUI==='function')dbkSyncUI();  // 修正⑤：権限が変わったら対象表示も更新
 }
 /* ── 修正①：セッション失効時の表示同期（表示専用・認証処理は変更しない）──
  * updateRoleBadge はログイン/ログアウト/読込時しか呼ばれないため、
@@ -13900,6 +13930,210 @@ window.adminSaveOshiraseEdit=function(id){
     })
     .catch(function(e){alert('保存失敗: '+(e.message||'通信エラー'));});
 };
+
+/* =====================================================
+   💾 データ管理（バックアップ／復元）— 修正⑤
+   ・対象は権限で自動切替（公開:保存命盤のみ／鑑定士:+カルテ・スケジュール／管理人:+未公開下書き(任意)）
+   ・対象キー以外は読み書きしない。認証情報・D1管理データは一切含めない。
+   ・復元は「追加（おすすめ）」＝既存を残して重複以外を追加／「入れ替え」＝自動バックアップ後に置換。
+   既存の保存・カルテ・スケジュール処理は変更していない（読み取りのみ）。
+===================================================== */
+var DBK_VERSION=1;
+var DBK_SITE='hoshiyomilune-ziwei';
+var DBK_KEYS={savedCharts:'ziwei_saved_charts',karte:'ziwei_karte_list',schedule:'ziwei_kt_schedule',drafts:'ziwei_oshirase_draft'};
+/* 絶対に書き出さないキー（混入自己チェック用） */
+var DBK_FORBIDDEN=['ziwei_session_v2','ziwei_at','ziwei_rt','ziwei_gh_pat','ziwei_auth_v2','_ktRemember','ziwei_kanteishi_profile','ziwei_remote_config_v1','ziwei_oshirase','ziwei_oshirase_read'];
+
+function dbkScope(){
+  var role=(typeof getCurrentRole==='function')?getCurrentRole():'public';
+  if(role==='admin')return{savedCharts:true,karte:true,schedule:true,drafts:true,role:role};
+  if(role==='kante')return{savedCharts:true,karte:true,schedule:true,drafts:false,role:role};
+  return{savedCharts:true,karte:false,schedule:false,drafts:false,role:role};
+}
+function dbkReadArray(key){
+  try{var v=JSON.parse(localStorage.getItem(key));return Array.isArray(v)?v:[];}catch(e){return[];}
+}
+function dbkMsg(text,color){
+  var el=document.getElementById('dbk-msg');
+  if(el){el.textContent=text;el.style.color=color||'var(--text2)';}
+}
+function dbkSyncUI(){
+  var box=document.getElementById('data-backup-box');
+  if(!box)return;
+  var sc=dbkScope();
+  var names=['保存命盤'];
+  if(sc.karte)names.push('カルテ');
+  if(sc.schedule)names.push('スケジュール');
+  var p=document.getElementById('dbk-scope');
+  if(p)p.textContent='この端末の'+names.join('・')+'をファイルに書き出して保管できます。機種変更や別の端末への引っ越しのときは、そのファイルを読み込むと復元できます。';
+  var dw=document.getElementById('dbk-draft-wrap');
+  if(dw)dw.style.display=sc.drafts?'block':'none';
+  if(!sc.drafts){var cb=document.getElementById('dbk-include-drafts');if(cb)cb.checked=false;}
+}
+/* ── 書き出し ───────────────────────── */
+function dbkBuildBackup(includeDrafts){
+  var sc=dbkScope();
+  var data={
+    backupVersion:DBK_VERSION,
+    exportedAt:new Date().toISOString(),
+    siteName:DBK_SITE,
+    dataVersion:1,
+    counts:{},
+    savedCharts:dbkReadArray(DBK_KEYS.savedCharts)
+  };
+  if(sc.karte)data.karte=dbkReadArray(DBK_KEYS.karte);
+  if(sc.schedule)data.schedule=dbkReadArray(DBK_KEYS.schedule);
+  if(sc.drafts&&includeDrafts)data.drafts=dbkReadArray(DBK_KEYS.drafts);
+  data.counts={
+    savedCharts:data.savedCharts.length,
+    karte:data.karte?data.karte.length:0,
+    schedule:data.schedule?data.schedule.length:0,
+    drafts:data.drafts?data.drafts.length:0
+  };
+  return data;
+}
+/* 認証情報が1文字も混ざっていないかの自己検査 */
+function dbkSafetyCheck(json){
+  for(var i=0;i<DBK_FORBIDDEN.length;i++){if(json.indexOf(DBK_FORBIDDEN[i])>=0)return DBK_FORBIDDEN[i];}
+  if(/"(password|pin|pinHash|token|accessToken|refreshToken|sessionId)"\s*:/i.test(json))return '認証項目';
+  if(/eyJ[A-Za-z0-9_-]{10,}\./.test(json))return 'トークン形式の文字列';
+  return null;
+}
+function dbkTimestamp(){
+  var d=new Date(),z=function(n){return('0'+n).slice(-2);};
+  return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'_'+z(d.getHours())+'-'+z(d.getMinutes());
+}
+function dbkDownload(obj,filename){
+  var json=JSON.stringify(obj,null,2);
+  var bad=dbkSafetyCheck(json);
+  if(bad){dbkMsg('⚠️ 安全確認のため中止しました（'+bad+' が含まれる可能性）','#dc2626');return null;}
+  try{
+    var blob=new Blob([json],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;a.download=filename;a.click();
+    setTimeout(function(){try{URL.revokeObjectURL(url);}catch(e){}},1500);
+    return filename;
+  }catch(e){return null;}
+}
+window.dbkExport=function(){
+  var cb=document.getElementById('dbk-include-drafts');
+  var data=dbkBuildBackup(!!(cb&&cb.checked));
+  var name='ziwei_backup_'+dbkTimestamp()+'.json';
+  var okName=dbkDownload(data,name);
+  if(!okName)return;
+  var c=data.counts;
+  var parts=['保存命盤 '+c.savedCharts+'件'];
+  if(data.karte)parts.push('カルテ '+c.karte+'件');
+  if(data.schedule)parts.push('スケジュール '+c.schedule+'件');
+  if(data.drafts)parts.push('未公開下書き '+c.drafts+'件');
+  dbkMsg('✅ 書き出しました：'+okName+'\n'+parts.join(' / ')+'\niPhoneは「ファイル」アプリ、Androidは「ダウンロード」フォルダをご確認ください。','#16a34a');
+};
+/* ── 検証 ───────────────────────── */
+function dbkValidate(raw){
+  var obj;
+  try{obj=JSON.parse(raw);}catch(e){return{ok:false,error:'ファイルが壊れているか、JSON形式ではありません。'};}
+  if(!obj||typeof obj!=='object'||Array.isArray(obj))return{ok:false,error:'バックアップファイルの形式ではありません。'};
+  if(obj.backupVersion!==DBK_VERSION)return{ok:false,error:'このバックアップのバージョンには対応していません。'};
+  if(obj.siteName!==DBK_SITE)return{ok:false,error:'別のサイトのバックアップファイルのようです。'};
+  var allowed=['backupVersion','exportedAt','siteName','dataVersion','counts','savedCharts','karte','schedule','drafts'];
+  var keys=Object.keys(obj);
+  for(var i=0;i<keys.length;i++){if(allowed.indexOf(keys[i])<0)return{ok:false,error:'知らない項目が含まれています（'+keys[i]+'）。安全のため中止しました。'};}
+  var bad=dbkSafetyCheck(raw);
+  if(bad)return{ok:false,error:'認証情報らしき内容が含まれています（'+bad+'）。安全のため中止しました。'};
+  if(/<script|<\/script|javascript:|<iframe|onerror\s*=|onload\s*=/i.test(raw))return{ok:false,error:'不正なスクリプトが含まれている可能性があります。安全のため中止しました。'};
+  var sets=[['savedCharts',['id','name']],['karte',['id','clientName']],['schedule',['id','clientName']],['drafts',['id','title']]];
+  for(var s=0;s<sets.length;s++){
+    var k=sets[s][0],req=sets[s][1],arr=obj[k];
+    if(arr===undefined)continue;
+    if(!Array.isArray(arr))return{ok:false,error:k+' のデータ形式が正しくありません。'};
+    for(var j=0;j<arr.length;j++){
+      var it=arr[j];
+      if(!it||typeof it!=='object'||Array.isArray(it))return{ok:false,error:k+' に不正なデータが含まれています。'};
+      for(var q=0;q<req.length;q++){if(it[req[q]]===undefined||it[req[q]]===null||it[req[q]]==='')return{ok:false,error:k+' に必要な項目（'+req[q]+'）がありません。'};}
+    }
+    if(obj.counts&&typeof obj.counts[k]==='number'&&obj.counts[k]!==arr.length)return{ok:false,error:k+' の件数が記録と一致しません。ファイルが壊れている可能性があります。'};
+  }
+  return{ok:true,data:obj};
+}
+/* ── 重複判定 ───────────────────────── */
+function dbkSame(kind,a,b){
+  if(String(a.id)===String(b.id))return true;
+  if(kind==='savedCharts')return a.name===b.name&&a.dateVal===b.dateVal&&String(a.hour)===String(b.hour);
+  if(kind==='karte')return a.clientName===b.clientName&&(a.readingDate||'')===(b.readingDate||'');
+  if(kind==='schedule')return a.clientName===b.clientName&&a.date===b.date&&(a.startTime||'')===(b.startTime||'');
+  return false;
+}
+/* ── 読み込み ───────────────────────── */
+window.dbkImport=function(inp){
+  if(!inp||!inp.files||!inp.files[0])return;
+  var file=inp.files[0];
+  inp.value='';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var res=dbkValidate(String(e.target.result||''));
+    if(!res.ok){dbkMsg('⚠️ 読み込みを中止しました。\n'+res.error+'\n（この端末のデータは変更していません）','#dc2626');return;}
+    var mode='add';
+    var radios=document.getElementsByName('dbk-mode');
+    for(var i=0;i<radios.length;i++){if(radios[i].checked)mode=radios[i].value;}
+    var sc=dbkScope();
+    var targets=[{kind:'savedCharts',key:DBK_KEYS.savedCharts,label:'保存命盤',on:sc.savedCharts}];
+    if(sc.karte)targets.push({kind:'karte',key:DBK_KEYS.karte,label:'カルテ',on:true});
+    if(sc.schedule)targets.push({kind:'schedule',key:DBK_KEYS.schedule,label:'スケジュール',on:true});
+    if(sc.drafts)targets.push({kind:'drafts',key:DBK_KEYS.drafts,label:'未公開下書き',on:true});
+    if(mode==='replace')dbkDoReplace(res.data,targets);
+    else dbkDoAdd(res.data,targets);
+  };
+  reader.onerror=function(){dbkMsg('⚠️ ファイルを読み込めませんでした。（データは変更していません）','#dc2626');};
+  reader.readAsText(file);
+};
+function dbkDoAdd(data,targets){
+  var added=0,skipped=0,errors=0,lines=[];
+  targets.forEach(function(t){
+    var incoming=data[t.kind];
+    if(!Array.isArray(incoming))return;
+    var cur=dbkReadArray(t.key);
+    var a=0,s=0;
+    incoming.forEach(function(it){
+      try{
+        var dup=cur.some(function(x){return dbkSame(t.kind,x,it);});
+        if(dup){s++;return;}
+        cur.push(it);a++;
+      }catch(e){errors++;}
+    });
+    try{localStorage.setItem(t.key,JSON.stringify(cur));}catch(e){errors+=a;a=0;}
+    added+=a;skipped+=s;
+    lines.push(t.label+'：追加 '+a+'件 / 重複スキップ '+s+'件');
+  });
+  dbkMsg('✅ 追加が完了しました。\n'+lines.join('\n')+'\n合計：追加 '+added+'件 / 重複スキップ '+skipped+'件 / エラー '+errors+'件','#16a34a');
+  dbkRefreshViews();
+}
+function dbkDoReplace(data,targets){
+  if(!confirm('【入れ替え】を実行します。\n\n現在この端末に保存されている対象データ（'+targets.map(function(t){return t.label;}).join('・')+'）は削除され、バックアップの内容に置き換わります。\n\n続けますか？'))
+    {dbkMsg('入れ替えを中止しました。（データは変更していません）');return;}
+  if(!confirm('最終確認です。\n\n現在のデータは削除されます。\n実行前に自動バックアップを保存します。\n\n本当に入れ替えますか？'))
+    {dbkMsg('入れ替えを中止しました。（データは変更していません）');return;}
+  var cb=document.getElementById('dbk-include-drafts');
+  var auto=dbkBuildBackup(!!(cb&&cb.checked));
+  var autoName='ziwei_backup_before_restore_'+dbkTimestamp()+'.json';
+  var okName=dbkDownload(auto,autoName);
+  if(!okName){dbkMsg('⚠️ 自動バックアップに失敗したため、入れ替えを中止しました。（データは変更していません）','#dc2626');return;}
+  var replaced=0,errors=0,lines=[];
+  targets.forEach(function(t){
+    var incoming=data[t.kind];
+    if(!Array.isArray(incoming)){lines.push(t.label+'：ファイルに含まれていないため変更なし');return;}
+    try{localStorage.setItem(t.key,JSON.stringify(incoming));replaced+=incoming.length;lines.push(t.label+'：'+incoming.length+'件に入れ替え');}
+    catch(e){errors++;lines.push(t.label+'：入れ替えに失敗');}
+  });
+  dbkMsg('✅ 入れ替えが完了しました。\n'+lines.join('\n')+'\n合計：入れ替え '+replaced+'件 / エラー '+errors+'件\n自動バックアップ：'+okName,'#16a34a');
+  dbkRefreshViews();
+}
+function dbkRefreshViews(){
+  try{if(typeof renderSavedList==='function')renderSavedList();}catch(e){}
+  try{if(typeof renderKarteList==='function')renderKarteList();}catch(e){}
+  try{if(typeof renderKtCalendar==='function')renderKtCalendar();}catch(e){}
+  try{if(typeof renderAdminOshiraseList==='function')renderAdminOshiraseList();}catch(e){}
+}
 
 function renderAdminOshiraseList(){
   var el=document.getElementById('admin-oshirase-list');
