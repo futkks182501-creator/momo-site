@@ -13648,18 +13648,42 @@ var OSHIRASE_DRAFT_KEY='ziwei_oshirase_draft';
 function getDrafts(){try{return JSON.parse(localStorage.getItem(OSHIRASE_DRAFT_KEY)||'[]');}catch(e){return[];}}
 function saveDrafts(arr){localStorage.setItem(OSHIRASE_DRAFT_KEY,JSON.stringify(arr));}
 
+/* ── サイト更新の自動下書き（手動新規投稿とは別系統・公開するまで一般には非表示）──
+ * 本番へ意味のある更新を反映した際にこの配列へ1件追記する。
+ * id は upd-<本番コミット番号> 形式（同じ更新の重複登録を防ぐ）。
+ * 対象: 利用者が気づく新機能／不具合修正／表示・操作性の改善／重要な仕様変更
+ * 対象外: testfixだけの変更／診断コード／コメント修正／内部整理／同一内容の再コミット */
 var SITE_UPDATE_DRAFTS=[
-  {id:'upd-20260708-1',title:'命盤保存リストに誕生日検索・名前順ソート追加',body:'保存した命盤リストに誕生日で絞り込める検索欄を追加しました。また一覧が自動で名前の50音順に並ぶようになりました。',createdAt:'2026-07-08T00:00:00'},
-  {id:'upd-20260708-2',title:'星のふりがな修正',body:'貪狼（どんろう）・巨門（こもん）・天相（てんそう）・文曲（もんごく）・天馬（てんま）の読みを正しい発音に修正しました。',createdAt:'2026-07-08T00:01:00'},
-  {id:'upd-20260708-3',title:'「このサイトについて」セクション追加',body:'ホームページにもも独自の読み解きアプローチ（三方四正重視・星の組み合わせ・スピリチュアル視点・大限流年の時期読み）を紹介するセクションを追加しました。',createdAt:'2026-07-08T00:02:00'}
+  {id:'upd-20260708-1',title:'命盤保存リストに誕生日検索・名前順ソート追加',body:'保存した命盤リストに誕生日で絞り込める検索欄を追加しました。また一覧が自動で名前の50音順に並ぶようになりました。',createdAt:'2026-07-08T00:00:00',type:'サイト更新',target:'all',status:'draft',commit:''},
+  {id:'upd-20260708-2',title:'星のふりがな修正',body:'貪狼（どんろう）・巨門（こもん）・天相（てんそう）・文曲（もんごく）・天馬（てんま）の読みを正しい発音に修正しました。',createdAt:'2026-07-08T00:01:00',type:'サイト更新',target:'all',status:'draft',commit:''},
+  {id:'upd-20260708-3',title:'「このサイトについて」セクション追加',body:'ホームページにもも独自の読み解きアプローチ（三方四正重視・星の組み合わせ・スピリチュアル視点・大限流年の時期読み）を紹介するセクションを追加しました。',createdAt:'2026-07-08T00:02:00',type:'サイト更新',target:'all',status:'draft',commit:''},
+  {id:'upd-072d6fa',title:'プロフィール画像の保存と表示を改善しました',body:'スマホからプロフィール画像を保存できない不具合を修正しました。あわせて、スマホでのプロフィール表示を見やすく調整し、自己紹介文が画像の下に横幅いっぱいで表示されるようになりました。',createdAt:'2026-07-27T00:00:00',type:'サイト更新',target:'all',status:'draft',commit:'072d6fa'}
 ];
+
+/* 処理済み（公開または破棄）の下書きIDを記録し、固定配列から復活させない */
+var OSHIRASE_DRAFT_DONE_KEY='ziwei_oshirase_draft_done';
+function getDoneDraftIds(){try{return JSON.parse(localStorage.getItem(OSHIRASE_DRAFT_DONE_KEY)||'[]');}catch(e){return[];}}
+function markDraftDone(id){
+  try{
+    var done=getDoneDraftIds();
+    if(done.indexOf(id)<0){done.push(id);localStorage.setItem(OSHIRASE_DRAFT_DONE_KEY,JSON.stringify(done));}
+  }catch(e){}
+}
 
 function syncSiteUpdateDrafts(){
   var drafts=getDrafts();
-  var existing=new Set(drafts.map(function(d){return d.id;}));
+  var existing={};
+  drafts.forEach(function(d){existing[d.id]=true;});
+  var done=getDoneDraftIds();
   var added=false;
   SITE_UPDATE_DRAFTS.forEach(function(u){
-    if(!existing.has(u.id)){drafts.unshift(u);added=true;}
+    if(existing[u.id])return;              // すでに下書きにある
+    if(done.indexOf(u.id)>=0)return;       // 公開済み or 破棄済み → 復活させない
+    var copy={};Object.keys(u).forEach(function(k){copy[k]=u[k];});
+    copy.type=copy.type||'サイト更新';
+    copy.target=copy.target||'all';
+    copy.status='draft';
+    drafts.unshift(copy);added=true;
   });
   if(added)saveDrafts(drafts);
 }
@@ -13762,9 +13786,49 @@ window.adminDeleteOshirase=function(id){
 };
 
 window.adminDiscardDraft=function(id){
-  if(!confirm('この下書きを破棄しますか？'))return;
+  if(!confirm('この下書きを破棄しますか？\n（公開済みのお知らせには影響しません）'))return;
   saveDrafts(getDrafts().filter(function(d){return d.id!==id;}));
+  markDraftDone(id);          // 次回以降、固定配列から復活させない
   renderAdminOshiraseList();
+};
+
+/* 編集内容を下書きとして保存（公開はしない・localStorageへ永続化） */
+window.adminSaveDraftEdit=function(id,silent){
+  var drafts=getDrafts();
+  var i=-1;
+  for(var k=0;k<drafts.length;k++){if(drafts[k].id===id){i=k;break;}}
+  if(i<0)return false;
+  var ti=document.getElementById('draft-title-'+id);
+  var tb=document.getElementById('draft-body-'+id);
+  var ts=document.getElementById('draft-type-'+id);
+  var td=document.getElementById('draft-date-'+id);
+  if(ti)drafts[i].title=ti.value;
+  if(tb)drafts[i].body=tb.value;
+  if(ts)drafts[i].target=ts.value;
+  if(td&&td.value){
+    var t=new Date(drafts[i].createdAt);
+    var hhmmss=isNaN(t)?'T00:00:00':('T'+('0'+t.getHours()).slice(-2)+':'+('0'+t.getMinutes()).slice(-2)+':'+('0'+t.getSeconds()).slice(-2));
+    drafts[i].createdAt=td.value+hhmmss;
+  }
+  drafts[i].status='draft';
+  saveDrafts(drafts);
+  if(!silent){
+    var msg=document.getElementById('draft-msg-'+id);
+    if(msg){msg.textContent='✓ 下書きを保存しました（まだ公開されていません）';setTimeout(function(){if(msg)msg.textContent='';},3000);}
+  }
+  return true;
+};
+
+/* 編集モードの開閉 */
+window.adminToggleDraftEdit=function(id){
+  var box=document.getElementById('draft-edit-'+id);
+  var view=document.getElementById('draft-view-'+id);
+  var btn=document.getElementById('draft-editbtn-'+id);
+  if(!box)return;
+  var open=box.style.display==='none';
+  box.style.display=open?'block':'none';
+  if(view)view.style.display=open?'none':'block';
+  if(btn)btn.textContent=open?'× 編集を閉じる':'✏️ 編集する';
 };
 
 window.adminPublishDraft=function(id){
@@ -13774,16 +13838,19 @@ window.adminPublishDraft=function(id){
   var titleEl=document.getElementById('draft-title-'+id);
   var bodyEl=document.getElementById('draft-body-'+id);
   var typeEl=document.getElementById('draft-type-'+id);
+  draft=getDrafts().find(function(d){return d.id===id;})||draft; // 編集内容を保存済みの最新版を使う
   var title=titleEl?titleEl.value.trim():draft.title;
   var body=bodyEl?bodyEl.value.trim():draft.body;
-  var type=typeEl?typeEl.value:'all';
+  var type=typeEl?typeEl.value:(draft.target||'all');
   if(!title||!body){alert('タイトルと本文を入力してください');return;}
+  if(!confirm('この内容で公開しますか？\n公開すると一般の利用者にも表示されます。'))return;
   _api('/api/admin/notices',{method:'POST',body:{title:title,body:body,type:type}})
     .then(function(res){
       var items=getOshirase().slice();
       items.unshift(res.notice||{id:'n'+Date.now(),title:title,body:body,type:type,createdAt:new Date().toISOString()});
       saveOshirase(items);
-      saveDrafts(drafts.filter(function(d){return d.id!==id;}));
+      saveDrafts(getDrafts().filter(function(d){return d.id!==id;}));
+      markDraftDone(id);      // 公開済み → 固定配列から復活させない
       renderAdminOshiraseList();
       updateOshiraseBadge();
     })
@@ -13856,25 +13923,59 @@ function renderAdminOshiraseList(){
     el.appendChild(dhd);
 
     drafts.forEach(function(d){
+      var target=d.target||'all';
       var card=mkEl('div',{style:'border:1.5px solid rgba(245,158,11,.4);border-radius:10px;padding:.9rem 1rem;margin-bottom:.6rem;background:rgba(245,158,11,.04)'});
-      var meta=mkEl('div',{style:'font-size:.7rem;color:#f59e0b;font-weight:600;margin-bottom:.5rem'},'📝 サイト更新 · '+fmtDate(d.createdAt));
+      var meta=mkEl('div',{style:'font-size:.7rem;color:#f59e0b;font-weight:600;margin-bottom:.5rem'},
+        '📝 '+(d.type||'サイト更新')+' · '+fmtDate(d.createdAt)+' · 未公開'+(d.commit?' · '+d.commit:''));
+      card.appendChild(meta);
+
+      /* 表示（確認用） */
+      var view=mkEl('div',{id:'draft-view-'+d.id});
+      view.appendChild(mkEl('div',{style:'font-size:.86rem;font-weight:700;color:var(--text3);margin-bottom:.25rem'},d.title));
+      view.appendChild(mkEl('div',{style:'font-size:.8rem;color:var(--text2);line-height:1.75;white-space:pre-wrap;margin-bottom:.35rem'},d.body));
+      view.appendChild(mkEl('div',{style:'font-size:.72rem;color:var(--text2)'},'公開対象: '+(target==='kante'?'🔐 鑑定士向け':'📢 全員向け')));
+      card.appendChild(view);
+
+      /* 編集フォーム（初期は閉じている・入力内容は下書き保存でlocalStorageへ） */
+      var box=mkEl('div',{id:'draft-edit-'+d.id,style:'display:none;margin-top:.5rem'});
+      box.appendChild(mkEl('div',{style:'font-size:.7rem;color:var(--text2);margin-bottom:.25rem'},'タイトル'));
       var ti=mkEl('input',{id:'draft-title-'+d.id,class:'admin-input',style:'margin:0 0 .4rem;font-size:.83rem;display:block;width:100%;box-sizing:border-box'});
-      ti.value=d.title;
+      ti.value=d.title;box.appendChild(ti);
+      box.appendChild(mkEl('div',{style:'font-size:.7rem;color:var(--text2);margin-bottom:.25rem'},'本文'));
       var tb=document.createElement('textarea');
-      tb.id='draft-body-'+d.id;tb.className='admin-input';tb.rows=3;
+      tb.id='draft-body-'+d.id;tb.className='admin-input';tb.rows=4;
       tb.style.cssText='margin:0 0 .4rem;resize:vertical;font-family:inherit;font-size:.8rem;display:block;width:100%;box-sizing:border-box';
-      tb.value=d.body;
+      tb.value=d.body;box.appendChild(tb);
+      box.appendChild(mkEl('div',{style:'font-size:.7rem;color:var(--text2);margin-bottom:.25rem'},'更新日'));
+      var td=mkEl('input',{id:'draft-date-'+d.id,type:'date',class:'admin-input',style:'margin:0 0 .4rem;font-size:.8rem;display:block;width:100%;box-sizing:border-box'});
+      var dt=new Date(d.createdAt);
+      if(!isNaN(dt))td.value=dt.getFullYear()+'-'+('0'+(dt.getMonth()+1)).slice(-2)+'-'+('0'+dt.getDate()).slice(-2);
+      box.appendChild(td);
+      box.appendChild(mkEl('div',{style:'font-size:.7rem;color:var(--text2);margin-bottom:.25rem'},'公開対象'));
       var ts=document.createElement('select');
       ts.id='draft-type-'+d.id;ts.className='admin-input';
       ts.style.cssText='margin:0 0 .5rem;font-size:.8rem;display:block;width:100%;box-sizing:border-box';
       ts.innerHTML='<option value="all">📢 全員向け</option><option value="kante">🔐 鑑定士向け</option>';
-      var row=mkEl('div',{style:'display:flex;gap:.5rem'});
-      var pub=mkEl('button',{class:'admin-btn primary',style:'flex:1;font-size:.8rem'},'✓ 公開する');
-      (function(did){pub.onclick=function(){adminPublishDraft(did);};})(d.id);
+      ts.value=target;
+      box.appendChild(ts);
+      var save=mkEl('button',{class:'admin-btn',style:'width:100%;font-size:.8rem;margin-bottom:.2rem'},'💾 編集内容を下書き保存');
+      (function(did){save.onclick=function(){if(adminSaveDraftEdit(did))renderAdminOshiraseList();};})(d.id);
+      box.appendChild(save);
+      card.appendChild(box);
+
+      var msg=mkEl('div',{id:'draft-msg-'+d.id,style:'font-size:.72rem;color:#16a34a;min-height:1em;margin:.2rem 0'});
+      card.appendChild(msg);
+
+      /* 操作ボタン */
+      var row=mkEl('div',{style:'display:flex;gap:.5rem;margin-top:.4rem;flex-wrap:wrap'});
+      var edit=mkEl('button',{id:'draft-editbtn-'+d.id,class:'admin-btn',style:'flex:1;min-width:8rem;font-size:.8rem'},'✏️ 編集する');
+      (function(did){edit.onclick=function(){adminToggleDraftEdit(did);};})(d.id);
+      var pub=mkEl('button',{class:'admin-btn primary',style:'flex:1;min-width:8rem;font-size:.8rem'},'✓ 公開する');
+      (function(did){pub.onclick=function(){adminSaveDraftEdit(did,true);adminPublishDraft(did);};})(d.id);
       var dis=mkEl('button',{class:'admin-btn danger',style:'font-size:.8rem'},'破棄');
       (function(did){dis.onclick=function(){adminDiscardDraft(did);};})(d.id);
-      row.appendChild(pub);row.appendChild(dis);
-      card.appendChild(meta);card.appendChild(ti);card.appendChild(tb);card.appendChild(ts);card.appendChild(row);
+      row.appendChild(edit);row.appendChild(pub);row.appendChild(dis);
+      card.appendChild(row);
       el.appendChild(card);
     });
   }
