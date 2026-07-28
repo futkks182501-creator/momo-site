@@ -9966,6 +9966,14 @@ function dsScopeId(){
   return 'guest';
 }
 function dsKey(base){return base+DS_SEP+dsScopeId();}
+/* 画面表示・バックアップ記録用の分かりやすい名前 */
+function dsScopeName(id){
+  var sc=id||dsScopeId();
+  if(sc==='guest')return '無料・未ログイン利用者';
+  if(sc==='admin')return '管理人';
+  if(sc.indexOf('kt-')===0)return '鑑定士 '+sc.slice(3).toUpperCase();
+  return sc;
+}
 /* 旧キー（移行元）。読み取り専用で、削除も上書きもしない */
 const LEGACY_KEYS={savedCharts:'ziwei_saved_charts',karte:'ziwei_karte_list',schedule:'ziwei_kt_schedule'};
 
@@ -14013,6 +14021,8 @@ function dbkBuildBackup(includeDrafts){
     exportedAt:new Date().toISOString(),
     siteName:DBK_SITE,
     dataVersion:1,
+    scope:dsScopeId(),            // 修正⑥：どの利用者の領域から書き出したか
+    scopeName:dsScopeName(),      // 同上（表示用の名前）
     counts:{},
     savedCharts:dbkReadArray(DBK_KEYS.savedCharts)
   };
@@ -14178,7 +14188,7 @@ function dbkValidate(raw){
   if(!obj||typeof obj!=='object'||Array.isArray(obj))return{ok:false,error:'バックアップファイルの形式ではありません。'};
   if(obj.backupVersion!==DBK_VERSION)return{ok:false,error:'このバックアップのバージョンには対応していません。'};
   if(obj.siteName!==DBK_SITE)return{ok:false,error:'別のサイトのバックアップファイルのようです。'};
-  var allowed=['backupVersion','exportedAt','siteName','dataVersion','counts','savedCharts','karte','schedule','drafts'];
+  var allowed=['backupVersion','exportedAt','siteName','dataVersion','scope','scopeName','counts','savedCharts','karte','schedule','drafts'];
   var keys=Object.keys(obj);
   for(var i=0;i<keys.length;i++){if(allowed.indexOf(keys[i])<0)return{ok:false,error:'知らない項目が含まれています（'+keys[i]+'）。安全のため中止しました。'};}
   var bad=dbkSafetyCheck(raw);
@@ -14215,6 +14225,16 @@ window.dbkImport=function(inp){
   reader.onload=function(e){
     var res=dbkValidate(String(e.target.result||''));
     if(!res.ok){dbkMsg('⚠️ 読み込みを中止しました。\n'+res.error+'\n（この端末のデータは変更していません）','#dc2626');return;}
+    /* 修正⑥：別の利用者のバックアップを読み込もうとしたときは確認する（禁止はしない） */
+    var fileScope=res.data.scope;
+    var nowScope=dsScopeId();
+    if(fileScope&&fileScope!==nowScope){
+      var fromName=res.data.scopeName||dsScopeName(fileScope);
+      if(!confirm('このバックアップは別の利用者のデータです。\n\n書き出した利用者：'+fromName+'\n現在の利用者：'+dsScopeName(nowScope)+'\n\nこのまま「'+dsScopeName(nowScope)+'」のデータとして読み込みますか？')){
+        dbkMsg('読み込みを中止しました。（この端末のデータは変更していません）');
+        return;
+      }
+    }
     var mode='add';
     var radios=document.getElementsByName('dbk-mode');
     for(var i=0;i<radios.length;i++){if(radios[i].checked)mode=radios[i].value;}
