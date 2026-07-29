@@ -13636,6 +13636,44 @@ async function doForcePinChange(){
   alert('パスワードを変更しました。新しいパスワードでもう一度ログインしてください。');
   showLoginOverlay(_authTargetSection);
 }
+/* ── 修正⑦：ログアウト時に画面上の個人情報を初期化 ──────────────
+ * 氏名・生年月日・出生時刻などは保存領域ではなく入力欄とメモリ上にあるため、
+ * ログアウトしただけでは前の利用者の入力が画面に残ってしまう。
+ * ログアウト時に入力欄を初期値へ戻し、計算結果もメモリごと破棄する。
+ * 保存済みデータ（保存命盤・カルテ・スケジュール）は削除しない。 */
+function clearPersonalInputs(){
+  try{
+    ['inp-name','inp-date','inp-time','inp-gender','inp-hour','inp-min'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el)return;
+      if(el.tagName==='SELECT'){el.selectedIndex=0;return;}
+      el.value=(el.defaultValue!==undefined&&el.defaultValue!=='')?el.defaultValue:'';
+    });
+    var rg=document.getElementById('inp-rungetsu');
+    if(rg){rg.checked=false;var note=document.getElementById('rungetsu-note');if(note)note.style.display='none';}
+    var sr=document.getElementById('saved-search');
+    if(sr)sr.value='';
+    /* 計算結果をメモリごと破棄し、命盤表示を消す */
+    try{if(typeof currentResult!=='undefined')currentResult=null;}catch(e){}
+    ['meiban-info','meiban-grid','today-unsei-section','aisei-result','aisei-prev-a','aisei-prev-b'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el)el.innerHTML='';
+    });
+    ['aisei-sel-a','aisei-sel-b'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el)el.selectedIndex=0;
+    });
+    var wrap=document.getElementById('meiban-wrapper');
+    if(wrap)wrap.style.display='none';
+    var bar=document.getElementById('save-bar');
+    if(bar)bar.style.display='none';
+    /* 保存パネルは閉じた状態に戻す（開いたままだと次の人に一覧が見えるため） */
+    var slw=document.getElementById('saved-list-wrap');
+    if(slw)slw.style.display='none';
+    var arw=document.getElementById('saved-arrow');
+    if(arw)arw.textContent='▼';
+  }catch(e){}
+}
 function showLogoutConfirm(){
   if(confirm('ログアウトしますか？')){
     // サーバー側セッション破棄（アクセス+リフレッシュ両方）
@@ -13653,6 +13691,7 @@ function showLogoutConfirm(){
     renderBasics();
     renderResultByRole();        // 命盤・詳細鑑定・運気などを無料版ロック表示に戻す
     syncUnseiLockByRole();       // 運気グラフのロックを再適用
+    clearPersonalInputs();       // 修正⑦：前の利用者が入力した氏名・生年月日などを画面から消す
     showSection('home');
   }
 }
