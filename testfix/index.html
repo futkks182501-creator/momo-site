@@ -13655,10 +13655,13 @@ function clearPersonalInputs(){
     if(sr)sr.value='';
     /* 計算結果をメモリごと破棄し、命盤表示を消す */
     try{if(typeof currentResult!=='undefined')currentResult=null;}catch(e){}
-    ['meiban-info','meiban-grid','today-unsei-section','aisei-result','aisei-prev-a','aisei-prev-b'].forEach(function(id){
+    /* 内容だけを空にする（入れ物のdivは壊さない。壊すと次の計算でエラーになる） */
+    ['meiban-info','today-unsei-body','aisei-result','aisei-prev-a','aisei-prev-b'].forEach(function(id){
       var el=document.getElementById(id);
       if(el)el.innerHTML='';
     });
+    var tus=document.getElementById('today-unsei-section');
+    if(tus)tus.style.display='none';
     ['aisei-sel-a','aisei-sel-b'].forEach(function(id){
       var el=document.getElementById(id);
       if(el)el.selectedIndex=0;
