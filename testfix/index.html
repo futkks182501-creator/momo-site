@@ -14225,15 +14225,15 @@ window.dbkImport=function(inp){
   reader.onload=function(e){
     var res=dbkValidate(String(e.target.result||''));
     if(!res.ok){dbkMsg('⚠️ 読み込みを中止しました。\n'+res.error+'\n（この端末のデータは変更していません）','#dc2626');return;}
-    /* 修正⑥：別の利用者のバックアップを読み込もうとしたときは確認する（禁止はしない） */
-    var fileScope=res.data.scope;
-    var nowScope=dsScopeId();
-    if(fileScope&&fileScope!==nowScope){
-      var fromName=res.data.scopeName||dsScopeName(fileScope);
-      if(!confirm('このバックアップは別の利用者のデータです。\n\n書き出した利用者：'+fromName+'\n現在の利用者：'+dsScopeName(nowScope)+'\n\nこのまま「'+dsScopeName(nowScope)+'」のデータとして読み込みますか？')){
-        dbkMsg('読み込みを中止しました。（この端末のデータは変更していません）');
-        return;
-      }
+    /* 修正⑦：別の利用者のバックアップは読み込まない（続行・強制読み込みはできない）
+     * 比較は大文字小文字の表記ゆれだけ正規化し、IDが異なる場合は必ず拒否する。
+     *   無料 → guest のみ ／ 管理人 → admin のみ ／ 鑑定士 → 自分のIDのみ */
+    var nowScope=String(dsScopeId()||'').toLowerCase();
+    var fileScope=String(res.data.scope||'').toLowerCase();
+    if(fileScope!==nowScope){
+      var fromName=fileScope?(res.data.scopeName||dsScopeName(fileScope)):'不明（古い形式のファイル）';
+      dbkMsg('⛔ このバックアップは現在の利用者のデータではないため、読み込めません。\n書き出した利用者：'+fromName+'\n現在の利用者：'+dsScopeName(nowScope)+'\n（この端末のデータは変更していません）','#dc2626');
+      return;
     }
     var mode='add';
     var radios=document.getElementsByName('dbk-mode');
