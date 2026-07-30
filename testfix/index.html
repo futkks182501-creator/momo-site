@@ -13353,6 +13353,9 @@ if(document.readyState==='loading'){
 /* ─── Workerセッション復元 ───────
  * ページ読み込み時に GET /api/session でHttpOnly Cookieセッションを確認。
  * 有効ならUIロールを復元、無効ならリフレッシュトークンで再取得を試みる。 */
+/* 修正⑦：ログイン状態の確認（セッション復元）が終わったかどうか。
+ * 終わる前に読み込みを実行すると guest と誤判定されるため、完了までは読み込みを止める。 */
+var _sessionRestoreDone=false;
 async function _restoreWorkerSession(){
   try{
     // アクセストークンが無く、保持用リフレッシュトークンがあれば先に更新
@@ -13398,6 +13401,7 @@ async function _restoreWorkerSession(){
   }catch(e){
     /* オフライン等: 既存のsessionStorageセッション（8時間期限）をそのまま使う */
   }
+  _sessionRestoreDone=true;   // 修正⑦：ここまで来ればログイン状態は確定
   updateRoleBadge();
   syncUnseiLockByRole();
   var cur=document.querySelector('section.active');
@@ -14263,6 +14267,11 @@ window.dbkImport=function(inp){
   if(!inp||!inp.files||!inp.files[0])return;
   var file=inp.files[0];
   inp.value='';
+  /* 修正⑦：ログイン状態の確認が終わる前は判定できないため中止（guest誤判定の防止） */
+  if(typeof _sessionRestoreDone!=='undefined'&&!_sessionRestoreDone){
+    dbkMsg('⏳ ログイン状態を確認中です。数秒後にもう一度お試しください。\n（この端末のデータは変更していません）','#b45309');
+    return;
+  }
   var reader=new FileReader();
   reader.onload=function(e){
     var res=dbkValidate(String(e.target.result||''));
@@ -14272,8 +14281,13 @@ window.dbkImport=function(inp){
      *   無料 → guest のみ ／ 管理人 → admin のみ ／ 鑑定士 → 自分のIDのみ */
     var nowScope=String(dsScopeId()||'').toLowerCase();
     var fileScope=String(res.data.scope||'').toLowerCase();
+    /* 修正⑦：scopeが記録されていない古い形式のファイルは、誰のものか判断できないため専用の案内を出す */
+    if(!fileScope){
+      dbkMsg('⛔ このファイルは古い形式で、どの利用者のものか確認できないため、安全上読み込めません。\n新しい形式で書き出し直してください。\n（この端末のデータは変更していません）','#dc2626');
+      return;
+    }
     if(fileScope!==nowScope){
-      var fromName=fileScope?(res.data.scopeName||dsScopeName(fileScope)):'不明（古い形式のファイル）';
+      var fromName=res.data.scopeName||dsScopeName(fileScope);
       dbkMsg('⛔ このバックアップは現在の利用者のデータではないため、読み込めません。\n書き出した利用者：'+fromName+'\n現在の利用者：'+dsScopeName(nowScope)+'\n（この端末のデータは変更していません）','#dc2626');
       return;
     }
