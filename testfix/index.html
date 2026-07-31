@@ -7218,6 +7218,8 @@ const MEI_STAR_READING={
   '天府':'天府は「蔵（くら）」にたとえられる星です。豊かさを蓄え、必要なときに惜しみなく差し出せる度量が最大の魅力。人の話を最後まで聞ける落ち着きがあり、その安心感が自然と信頼を集めます。\n\n命宮にあることで、その落ち着きが「その人そのもの」として表に出ます。慌てない、急かさない、まず受け止める——初対面でも「この人なら大丈夫そう」と感じさせる雰囲気を持っています。\n\n人生の選択でも、勢いより堅実さを選ぶ場面が多いでしょう。時間をかけて積み上げたものが、あとから大きな財産に変わりやすく、数字や資産を扱う分野、人を育てる立場でも力を発揮します。\n\n一方で、安心できる場所が心地よいぶん、変化のタイミングを先延ばしにしがちな面もあります。「今が動きどきかもしれない」と感じたら、いつもより少し早めに一歩を踏み出すことで、天府の豊かさがさらに大きく育っていきます。'
 };
 /* 統合鑑定文があるかどうか（命宮＝palIdx 0 のときのみ使用） */
+/* 修正⑩：星名に「星」を付ける（火星・鈴星のように既に「星」で終わる名は二重に付けない） */
+function starLabel(n){ return /星$/.test(n) ? n : n+'星'; }
 function hasMeiReading(starName,palIdx){
   return palIdx===0 && !!MEI_STAR_READING[starName];
 }
@@ -7755,7 +7757,7 @@ function buildPalaceHTML(branch,r,compact){
   if(_sumPairs.length) H+='<div class="pip-subhd">■ '+palaceName+'とは？</div>';
   H+=pData.theme;
   _sumPairs.forEach(function(x){
-    H+='<div class="pip-subhd">■ '+x.name+'星が'+palaceName+'にあると…</div>'+x.txt;
+    H+='<div class="pip-subhd">■ '+starLabel(x.name)+'が'+palaceName+'にあると…</div>'+x.txt;
   });
   H+='</div>';
   if(meta.note){
@@ -7869,7 +7871,7 @@ function buildPalaceHTML(branch,r,compact){
         H+='<div style="margin-bottom:.8rem;padding:.72rem .9rem;border-radius:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22)">';
         var _pars=MEI_STAR_READING[x.name].split('\n\n');
         H+='<div class="pip-body mei-reading">';
-        H+='<div class="pip-subhd">■ '+x.name+'星が持つ本来の力</div>';
+        H+='<div class="pip-subhd">■ '+starLabel(x.name)+'が持つ本来の力</div>';
         H+=_pars.map(function(par,i){
           return '<p style="margin:0'+(i<_pars.length-1?' 0 .55rem':'')+'">'+par+'</p>';
         }).join('');
@@ -7878,7 +7880,7 @@ function buildPalaceHTML(branch,r,compact){
         if(x.sd&&(x.sd.personality||x.sd.habit||x.sd.thought)){
           H+='<div class="pip-accordion" style="margin-top:.6rem;margin-bottom:0">';
           H+='<button class="pip-acc-hdr" onclick="togglePipAccordion(this)" style="color:var(--gold2)">';
-          H+='📖 '+x.name+'星の特徴を詳しく見る<span class="pip-acc-arr">▶</span>';
+          H+='📖 '+starLabel(x.name)+'の特徴を詳しく見る<span class="pip-acc-arr">▶</span>';
           H+='</button>';
           H+='<div class="pip-acc-body">';
       if(x.sd&&x.sd.personality){
@@ -7899,11 +7901,11 @@ function buildPalaceHTML(branch,r,compact){
          このブロックは「星そのものの説明」であることが分かる表記にし、開閉式に収める。
          ◎星の本質／💬口ぐせ・癖／🧠思考パターンは文言・順序・スタイルをそのまま維持。 */
       H+='<div style="margin-bottom:.8rem;padding:.72rem .9rem;border-radius:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22)">';
-      H+='<div style="font-size:.88rem;font-weight:800;color:var(--gold)">✦ '+x.name+'星</div>';
+      H+='<div style="font-size:.88rem;font-weight:800;color:var(--gold)">✦ '+starLabel(x.name)+'</div>';
       if(x.sd&&(x.sd.personality||x.sd.habit||x.sd.thought)){
         H+='<div class="pip-accordion" style="margin-top:.5rem;margin-bottom:0">';
         H+='<button class="pip-acc-hdr" onclick="togglePipAccordion(this)" style="color:var(--gold2)">';
-        H+='📖 '+x.name+'星の本質を詳しく見る<span class="pip-acc-arr">▶</span>';
+        H+='📖 '+starLabel(x.name)+'の本質を詳しく見る<span class="pip-acc-arr">▶</span>';
         H+='</button>';
         H+='<div class="pip-acc-body">';
       }
@@ -7954,7 +7956,7 @@ function buildPalaceHTML(branch,r,compact){
       if(sd.desc){
         H+='<div class="pip-accordion" style="margin-top:.45rem;margin-bottom:0">';
         H+='<button class="pip-acc-hdr" onclick="togglePipAccordion(this)" style="color:#6d28d9">';
-        H+='📖 '+sn+'星そのものの性質を見る<span class="pip-acc-arr">▶</span>';
+        H+='📖 '+starLabel(sn)+'そのものの性質を見る<span class="pip-acc-arr">▶</span>';
         H+='</button>';
         H+='<div class="pip-acc-body"><div style="font-size:.78rem;color:var(--text2);line-height:1.78">'+sd.desc+'</div></div>';
         H+='</div>';
