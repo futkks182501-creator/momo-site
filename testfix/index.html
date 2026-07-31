@@ -7747,9 +7747,8 @@ function buildPalaceHTML(branch,r,compact){
   var starNames=mainStarsHere.join('・')||(palaceName+'の');
   H+='<div class="pip-body" style="font-size:.8rem;color:var(--text2);line-height:1.8">';
   if(mainStarsHere.length) H+='<strong style="color:var(--text1)">'+palaceName+'に '+mainStarsHere.join('・')+' が配置されているあなたは、</strong><br>';
-  /* 修正⑧⑨：統合鑑定文がある場合は小見出しを付けて区切りを分かりやすくする */
+  /* 修正⑩：宮別解説（STAR_IN_PALACE）は全12宮でこの1箇所のみに表示する */
   var _sumPairs=mainStarsHere.map(function(sn){
-    if(!hasMeiReading(sn,palIdx))return null;
     var sip=STAR_IN_PALACE[sn]&&STAR_IN_PALACE[sn][palIdx];
     return sip?{name:sn,txt:sip}:null;
   }).filter(Boolean);
@@ -7765,13 +7764,14 @@ function buildPalaceHTML(branch,r,compact){
   // 🔮 この宮の読み解き（配置星・対宮・副星ベース — STAR_IN_PALACE + SUB_STAR_PALACE_CTX 使用）
   /* 修正⑧⑨：配置された主星すべてに統合鑑定文がある場合、この節は「〇〇星が命宮に座す」と
      内容が重複するため表示しない（副星の影響がある場合のみ後段で表示） */
+  /* 修正⑩：主星の宮別解説は上部（■ ○○星が○○宮にあると…）へ集約したため、
+     この節は「空宮のとき対宮の星を参照する」用途のみに限定する。
+     副星の宮別解説も下部の「🌙 副星の影響」1箇所に集約した。 */
   var _allMerged=mainStarsHere.length>0&&mainStarsHere.every(function(sn){return hasMeiReading(sn,palIdx);});
-  var _impSubsPre=(subStarsHere||[]).filter(function(s){return SUB_STAR_PALACE_CTX[s];});
-  var _skipYomitoki=_allMerged&&_impSubsPre.length===0;
+  var _skipYomitoki=mainStarsHere.length>0;
   if(!_skipYomitoki){
   H+='<div style="margin-top:.62rem;padding:.68rem .85rem;background:rgba(99,102,241,.06);border-radius:10px;border:1px solid rgba(99,102,241,.22)">';
-  /* 修正⑧⑨：主星の解説がここに出ない（統合済み）場合は、大きな見出しを出さず副星情報だけを見せる */
-  if(!_allMerged) H+='<div style="font-size:.72rem;font-weight:700;color:#818cf8;margin-bottom:.45rem;letter-spacing:.04em">🔮 この宮の読み解き</div>';
+  H+='<div style="font-size:.72rem;font-weight:700;color:#818cf8;margin-bottom:.45rem;letter-spacing:.04em">🔮 この宮の読み解き</div>';
   if(mainStarsHere.length===0){
     // 空宮：対宮の星を参照
     var _oppBrR=(branch+6)%12;
@@ -7800,18 +7800,8 @@ function buildPalaceHTML(branch,r,compact){
     }).filter(Boolean);
     if(_mainTxts.length) H+=_mainTxts.join('<div style="height:.35rem"></div>');
   }
-  // 副星の宮別影響サマリー
-  var _impSubs=subStarsHere.filter(function(sn){return SUB_STAR_PALACE_CTX[sn];});
-  if(_impSubs.length){
-    H+='<div style="'+(_allMerged?'':'margin-top:.5rem;padding-top:.5rem;border-top:1px solid rgba(109,40,217,.18);')+'">';
-    H+='<div class="pip-subhd accent" style="color:#6d28d9">副星の影響（'+_impSubs.join('・')+'）</div>';
-    var _subTxts=_impSubs.map(function(sn){
-      var ctx=SUB_STAR_PALACE_CTX[sn][palIdx];
-      return '<div class="sub-star-card" style="font-size:.77rem;color:var(--text2);line-height:1.82"><span class="sub-icon">✦</span> <span style="color:#6d28d9;font-weight:600">【'+sn+'】</span>'+ctx+'</div>';
-    });
-    H+=_subTxts.join('');
-    H+='</div>';
-  }
+  /* 修正⑩：副星の宮別解説（SUB_STAR_PALACE_CTX）はここでは出さず、
+     下部の「🌙 副星の影響（宮コンテキストで読む）」1箇所に集約している。 */
   H+='</div>';
   } /* 修正⑧⑨：_skipYomitoki の閉じ */
   // KWバッジ
@@ -7841,6 +7831,10 @@ function buildPalaceHTML(branch,r,compact){
   var _mergedStars=mainStarsHere.filter(function(sn){return hasMeiReading(sn,palIdx);});
   if(_mergedStars.length&&_mergedStars.length===mainStarsHere.length){
     H+='<h4 style="color:var(--gold)">⭐ '+_mergedStars.join('・')+'星が'+palaceName+'に座す</h4>';
+  }else if(mainStarsHere.length){
+    /* 修正⑩：宮別の解説（上部）と、星そのものの解説（ここ）を取り違えないよう
+       「○○宮に輝く主星」という表記にする */
+    H+='<h4 style="color:var(--gold)">⭐ '+palaceName+'に輝く主星</h4>';
   }else{
     H+='<h4 style="color:var(--gold)">⭐ 主星の輝き方</h4>';
   }
@@ -7901,10 +7895,17 @@ function buildPalaceHTML(branch,r,compact){
         H+='</div>';
         return;
       }
+      /* 修正⑩：宮別解説（x.sip）は上部へ集約したためここでは出さない。
+         このブロックは「星そのものの説明」であることが分かる表記にし、開閉式に収める。
+         ◎星の本質／💬口ぐせ・癖／🧠思考パターンは文言・順序・スタイルをそのまま維持。 */
       H+='<div style="margin-bottom:.8rem;padding:.72rem .9rem;border-radius:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22)">';
-      H+='<div style="font-size:.88rem;font-weight:800;color:var(--gold);margin-bottom:.45rem">✦ '+x.name+' が「'+palaceName+'」に座す</div>';
-      if(x.sip){
-        H+='<div style="font-size:.8rem;color:var(--text2);line-height:1.85;margin-bottom:.38rem">'+x.sip+'</div>';
+      H+='<div style="font-size:.88rem;font-weight:800;color:var(--gold)">✦ '+x.name+'星</div>';
+      if(x.sd&&(x.sd.personality||x.sd.habit||x.sd.thought)){
+        H+='<div class="pip-accordion" style="margin-top:.5rem;margin-bottom:0">';
+        H+='<button class="pip-acc-hdr" onclick="togglePipAccordion(this)" style="color:var(--gold2)">';
+        H+='📖 '+x.name+'星の本質を詳しく見る<span class="pip-acc-arr">▶</span>';
+        H+='</button>';
+        H+='<div class="pip-acc-body">';
       }
       if(x.sd&&x.sd.personality){
         H+='<div style="border-top:1px solid rgba(245,158,11,.18);padding-top:.38rem;font-size:.77rem;color:var(--text2);opacity:.85;line-height:1.8"><span style="font-size:.7rem;font-weight:700;color:var(--gold2);display:block;margin-bottom:.2rem">◎ 星の本質</span>'+x.sd.personality+'</div>';
@@ -7915,6 +7916,7 @@ function buildPalaceHTML(branch,r,compact){
       if(x.sd&&x.sd.thought){
         H+='<div style="border-top:1px solid rgba(245,158,11,.12);padding-top:.35rem;margin-top:.35rem;font-size:.77rem;color:var(--text2);line-height:1.82"><span style="font-size:.7rem;font-weight:700;color:#60a5fa;display:block;margin-bottom:.15rem">🧠 思考パターン</span>'+x.sd.thought+'</div>';
       }
+      if(x.sd&&(x.sd.personality||x.sd.habit||x.sd.thought)){ H+='</div></div>'; }
       H+='</div>';
     });
   }
@@ -7944,10 +7946,18 @@ function buildPalaceHTML(branch,r,compact){
         }
         H+='</div>';
       } else {
-        H+='<div style="font-size:.78rem;color:var(--text2);line-height:1.78">'+sd.desc+'</div>';
         if(mainStarsHere.length){
-          H+='<div style="font-size:.72rem;color:#6d28d9;margin-top:.25rem;padding-top:.25rem;border-top:1px solid rgba(109,40,217,.15)">▷ '+mainStarsHere.join('・')+'＋'+sn+'：主星の力に「'+sd.role+'」の色が加わり、'+palaceName+'のテーマがより複合的に表れます。</div>';
+          H+='<div style="font-size:.72rem;color:#6d28d9;margin-top:.25rem">▷ '+mainStarsHere.join('・')+'＋'+sn+'：主星の力に「'+sd.role+'」の色が加わり、'+palaceName+'のテーマがより複合的に表れます。</div>';
         }
+      }
+      /* 修正⑩：副星そのものの説明（SUB_STAR_DATA.desc）は宮別解説と分けて開閉式で保持 */
+      if(sd.desc){
+        H+='<div class="pip-accordion" style="margin-top:.45rem;margin-bottom:0">';
+        H+='<button class="pip-acc-hdr" onclick="togglePipAccordion(this)" style="color:#6d28d9">';
+        H+='📖 '+sn+'星そのものの性質を見る<span class="pip-acc-arr">▶</span>';
+        H+='</button>';
+        H+='<div class="pip-acc-body"><div style="font-size:.78rem;color:var(--text2);line-height:1.78">'+sd.desc+'</div></div>';
+        H+='</div>';
       }
       H+='</div>';
     });
@@ -13946,7 +13956,8 @@ var SITE_UPDATE_DRAFTS=[
   {id:'upd-20260708-1',title:'命盤保存リストに誕生日検索・名前順ソート追加',body:'保存した命盤リストに誕生日で絞り込める検索欄を追加しました。また一覧が自動で名前の50音順に並ぶようになりました。',createdAt:'2026-07-08T00:00:00',type:'サイト更新',target:'all',status:'draft',commit:''},
   {id:'upd-20260708-2',title:'星のふりがな修正',body:'貪狼（どんろう）・巨門（こもん）・天相（てんそう）・文曲（もんごく）・天馬（てんま）の読みを正しい発音に修正しました。',createdAt:'2026-07-08T00:01:00',type:'サイト更新',target:'all',status:'draft',commit:''},
   {id:'upd-20260708-3',title:'「このサイトについて」セクション追加',body:'ホームページにもも独自の読み解きアプローチ（三方四正重視・星の組み合わせ・スピリチュアル視点・大限流年の時期読み）を紹介するセクションを追加しました。',createdAt:'2026-07-08T00:02:00',type:'サイト更新',target:'all',status:'draft',commit:''},
-  {id:'upd-072d6fa',title:'プロフィール画像の保存と表示を改善しました',body:'スマホからプロフィール画像を保存できない不具合を修正しました。あわせて、スマホでのプロフィール表示を見やすく調整し、自己紹介文が画像の下に横幅いっぱいで表示されるようになりました。',createdAt:'2026-07-27T00:00:00',type:'サイト更新',target:'all',status:'draft',commit:'072d6fa'}
+  {id:'upd-072d6fa',title:'プロフィール画像の保存と表示を改善しました',body:'スマホからプロフィール画像を保存できない不具合を修正しました。あわせて、スマホでのプロフィール表示を見やすく調整し、自己紹介文が画像の下に横幅いっぱいで表示されるようになりました。',createdAt:'2026-07-27T00:00:00',type:'サイト更新',target:'all',status:'draft',commit:'072d6fa'},
+  {id:'upd-232c007',title:'旧暦の変換精度を改善し、命宮の解説を充実させました',body:'旧暦への変換方法を、冬至を基準とする正式な計算方法へ見直しました。これにより、閏月のある年に生まれた方や、旧正月より前に生まれた方の命盤が、より正確に表示されるようになりました。あわせて、命宮の解説に「星が持つ本来の力」として、14の主星それぞれの読み解きを新しく追加しています。これまでの解説は「星の特徴を詳しく見る」を開くとご覧いただけます。文字が途中で切れていた箇所の表示と、一部の文字色の見やすさも改善しました。',createdAt:'2026-07-31T16:45:00',type:'サイト更新',target:'all',status:'draft',commit:'232c007'}
 ];
 
 /* 処理済み（公開または破棄）の下書きIDを記録し、固定配列から復活させない */
