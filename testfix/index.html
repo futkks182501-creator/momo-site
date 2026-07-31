@@ -7661,7 +7661,15 @@ function buildPalaceHTML(branch,r,compact){
   var starNames=mainStarsHere.join('・')||(palaceName+'の');
   H+='<div class="pip-body" style="font-size:.8rem;color:var(--text2);line-height:1.8">';
   if(mainStarsHere.length) H+='<strong style="color:var(--text1)">'+palaceName+'に '+mainStarsHere.join('・')+' が配置されているあなたは、</strong><br>';
-  H+=pData.theme+'</div>';
+  H+=pData.theme;
+  /* 修正⑧⑨：命宮の共通説明の直後に、主星×宮の短い要約を続けて表示（すぐ把握できる要約） */
+  var _sumTxts=mainStarsHere.map(function(sn){
+    if(!hasMeiReading(sn,palIdx))return null;   // 統合鑑定文がある星のみここで要約を出す
+    var sip=STAR_IN_PALACE[sn]&&STAR_IN_PALACE[sn][palIdx];
+    return sip||null;
+  }).filter(Boolean);
+  if(_sumTxts.length) H+='<div style="margin-top:.5rem">'+_sumTxts.join('<br>')+'</div>';
+  H+='</div>';
   if(meta.note){
     H+='<div style="font-size:.73rem;color:var(--text2);padding:.4rem .62rem;background:rgba(99,102,241,.07);border-radius:7px;border-left:3px solid #818cf8;margin-top:.5rem;line-height:1.62">💡 '+meta.note+'</div>';
   }
@@ -7673,7 +7681,8 @@ function buildPalaceHTML(branch,r,compact){
   var _skipYomitoki=_allMerged&&_impSubsPre.length===0;
   if(!_skipYomitoki){
   H+='<div style="margin-top:.62rem;padding:.68rem .85rem;background:rgba(99,102,241,.06);border-radius:10px;border:1px solid rgba(99,102,241,.22)">';
-  H+='<div style="font-size:.72rem;font-weight:700;color:#818cf8;margin-bottom:.45rem;letter-spacing:.04em">🔮 この宮の読み解き</div>';
+  /* 修正⑧⑨：主星の解説がここに出ない（統合済み）場合は、大きな見出しを出さず副星情報だけを見せる */
+  if(!_allMerged) H+='<div style="font-size:.72rem;font-weight:700;color:#818cf8;margin-bottom:.45rem;letter-spacing:.04em">🔮 この宮の読み解き</div>';
   if(mainStarsHere.length===0){
     // 空宮：対宮の星を参照
     var _oppBrR=(branch+6)%12;
@@ -7705,7 +7714,7 @@ function buildPalaceHTML(branch,r,compact){
   // 副星の宮別影響サマリー
   var _impSubs=subStarsHere.filter(function(sn){return SUB_STAR_PALACE_CTX[sn];});
   if(_impSubs.length){
-    H+='<div style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid rgba(94,234,212,.18)">';
+    H+='<div style="'+(_allMerged?'':'margin-top:.5rem;padding-top:.5rem;border-top:1px solid rgba(94,234,212,.18);')+'">';
     H+='<div style="font-size:.72rem;font-weight:700;color:#5eead4;margin-bottom:.28rem">副星の影響（'+_impSubs.join('・')+'）</div>';
     var _subTxts=_impSubs.map(function(sn){
       var ctx=SUB_STAR_PALACE_CTX[sn][palIdx];
@@ -7772,9 +7781,11 @@ function buildPalaceHTML(branch,r,compact){
     starReadings.forEach(function(x){
       /* 修正⑧⑨：統合鑑定文がある星は、その1本だけを表示（同内容の繰り返しを避ける） */
       if(hasMeiReading(x.name,palIdx)){
-        H+='<div class="mei-reading" style="margin-bottom:.8rem;padding:.85rem 1rem;border-radius:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22)">';
-        H+='<div style="font-size:.8rem;color:var(--text2);line-height:1.95;white-space:pre-wrap">'+MEI_STAR_READING[x.name]+'</div>';
-        H+='</div>';
+        /* 既存の .pip-body と同じ字送り・行間で表示し、段落は<p>で既存と同じ間隔にする */
+        var _pars=MEI_STAR_READING[x.name].split('\n\n');
+        H+='<div class="pip-body mei-reading">'+_pars.map(function(par,i){
+          return '<p style="margin:0'+(i<_pars.length-1?' 0 .55rem':'')+'">'+par+'</p>';
+        }).join('')+'</div>';
         return;
       }
       H+='<div style="margin-bottom:.8rem;padding:.72rem .9rem;border-radius:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22)">';
