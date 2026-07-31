@@ -3657,9 +3657,12 @@ function solarToLunar(year,month,day){
     }
     return Math.floor(trueNewMoon(k)+0.5);
   }
-  let cny=getCNY(year);
-  // If target is before this year's CNY, use previous year's CNY
-  if(tgt<cny) cny=getCNY(year-1);
+  /* 修正：旧正月より前の日付は「前年の旧暦」に属する。
+     cny を上書きしたあとで tgt<cny を再評価していたため、
+     nextCNY と lunarYear が1年ずれ、旧暦13月・年干支の誤りが出ていた。
+     判定結果を beforeCNY に保持して使い回す。 */
+  const beforeCNY=tgt<getCNY(year);
+  let cny=beforeCNY?getCNY(year-1):getCNY(year);
 
   // Build list of new moon JDs starting from CNY
   const cnyJD=cny;
@@ -3668,7 +3671,7 @@ function solarToLunar(year,month,day){
 
   // Check if this is a leap year Chinese calendar (13 months)
   // Simple approach: count months until next CNY
-  const nextCNY=getCNY(year+(tgt<cny?0:1));
+  const nextCNY=beforeCNY?getCNY(year):getCNY(year+1);
 
   const months=[];
   for(let i=0;i<=13;i++){
@@ -3687,7 +3690,7 @@ function solarToLunar(year,month,day){
     }
   }
   // Chinese year starts at CNY; determine lunar year stem/branch
-  const lunarYear=year+(tgt<cny?-1:0);
+  const lunarYear=year+(beforeCNY?-1:0);
   return{lunarYear,lunarMonth,lunarDay};
 }
 
@@ -7805,13 +7808,25 @@ function buildPalaceHTML(branch,r,compact){
     starReadings.forEach(function(x){
       /* 修正⑧⑨：統合鑑定文がある星は、その1本だけを表示（同内容の繰り返しを避ける） */
       if(hasMeiReading(x.name,palIdx)){
-        /* 既存の .pip-body と同じ字送り・行間で表示し、段落は<p>で既存と同じ間隔にする */
+        /* 修正：統合鑑定文のあとに、既存の ◎星の本質 / 💬口ぐせ・癖 / 🧠思考パターン を必ず表示する
+           （これらは既存の主星解説のため削除・変更しない） */
+        H+='<div style="margin-bottom:.8rem;padding:.72rem .9rem;border-radius:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22)">';
         var _pars=MEI_STAR_READING[x.name].split('\n\n');
         H+='<div class="pip-body mei-reading">';
         H+='<div class="pip-subhd">■ '+x.name+'星が持つ本来の力</div>';
         H+=_pars.map(function(par,i){
           return '<p style="margin:0'+(i<_pars.length-1?' 0 .55rem':'')+'">'+par+'</p>';
         }).join('');
+        H+='</div>';
+      if(x.sd&&x.sd.personality){
+        H+='<div style="border-top:1px solid rgba(245,158,11,.18);padding-top:.38rem;font-size:.77rem;color:var(--text2);opacity:.85;line-height:1.8"><span style="font-size:.7rem;font-weight:700;color:var(--gold2);display:block;margin-bottom:.2rem">◎ 星の本質</span>'+x.sd.personality+'</div>';
+      }
+      if(x.sd&&x.sd.habit){
+        H+='<div style="border-top:1px solid rgba(245,158,11,.12);padding-top:.35rem;margin-top:.35rem;font-size:.77rem;color:var(--text2);line-height:1.82"><span style="font-size:.7rem;font-weight:700;color:#f472b6;display:block;margin-bottom:.15rem">💬 口ぐせ・癖</span>'+x.sd.habit+'</div>';
+      }
+      if(x.sd&&x.sd.thought){
+        H+='<div style="border-top:1px solid rgba(245,158,11,.12);padding-top:.35rem;margin-top:.35rem;font-size:.77rem;color:var(--text2);line-height:1.82"><span style="font-size:.7rem;font-weight:700;color:#60a5fa;display:block;margin-bottom:.15rem">🧠 思考パターン</span>'+x.sd.thought+'</div>';
+      }
         H+='</div>';
         return;
       }
