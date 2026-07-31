@@ -621,6 +621,11 @@ section.active{display:block}
 /* 修正⑧⑨：ブロック内の小見出し（控えめなアクセント・既存の余白感に合わせる） */
 .pip-subhd{font-size:.75rem;font-weight:700;color:var(--gold2);margin:.7rem 0 .3rem;letter-spacing:.02em}
 .pip-subhd:first-child{margin-top:0}
+/* ティールはアクセント専用（文字色には使わない）：小見出しの左に細いライン */
+.pip-subhd.accent{padding-left:.5rem;border-left:2px solid #0d9488}
+/* 副星カード：左のアクセントライン＋ごく薄い背景 */
+.sub-star-card{border-left:3px solid #0d9488;background:rgba(13,148,136,.045);border-radius:0 9px 9px 0;padding:.5rem .7rem;margin-bottom:.35rem}
+.sub-star-card .sub-icon{color:#0d9488}
 .pip-trait{font-size:.79rem;color:var(--text3);margin-top:.35rem;line-height:1.65}
 .pip-kika-item{margin-top:.45rem;padding:.5rem .7rem;border-radius:8px;border-left:3px solid var(--gold2);background:rgba(255,255,255,.04);font-size:.82rem;color:var(--text2);line-height:1.65}
 .pip-kw{display:inline-block;font-size:.7rem;padding:2px 8px;border-radius:9999px;background:rgba(124,58,237,.1);color:var(--purple2);border:1px solid rgba(124,58,237,.18);margin:.18rem .15rem 0 0}
@@ -7724,10 +7729,10 @@ function buildPalaceHTML(branch,r,compact){
   var _impSubs=subStarsHere.filter(function(sn){return SUB_STAR_PALACE_CTX[sn];});
   if(_impSubs.length){
     H+='<div style="'+(_allMerged?'':'margin-top:.5rem;padding-top:.5rem;border-top:1px solid rgba(109,40,217,.18);')+'">';
-    H+='<div class="pip-subhd" style="color:#6d28d9">■ 副星の影響（'+_impSubs.join('・')+'）</div>';
+    H+='<div class="pip-subhd accent" style="color:#6d28d9">副星の影響（'+_impSubs.join('・')+'）</div>';
     var _subTxts=_impSubs.map(function(sn){
       var ctx=SUB_STAR_PALACE_CTX[sn][palIdx];
-      return '<div style="font-size:.77rem;color:var(--text2);line-height:1.82;margin-bottom:.22rem"><span style="color:#6d28d9;font-weight:600">【'+sn+'】</span>'+ctx+'</div>';
+      return '<div class="sub-star-card" style="font-size:.77rem;color:var(--text2);line-height:1.82"><span class="sub-icon">✦</span> <span style="color:#6d28d9;font-weight:600">【'+sn+'】</span>'+ctx+'</div>';
     });
     H+=_subTxts.join('');
     H+='</div>';
@@ -7830,7 +7835,7 @@ function buildPalaceHTML(branch,r,compact){
       var sd=SUB_STAR_DATA[sn];
       var ctx=SUB_STAR_PALACE_CTX[sn];
       var ctxText=ctx?ctx[palIdx]:'';
-      H+='<div style="margin-bottom:.6rem;padding:.55rem .75rem;border-radius:9px;background:rgba(109,40,217,.05);border-left:3px solid #6d28d9">';
+      H+='<div style="margin-bottom:.6rem;padding:.55rem .75rem;border-radius:0 9px 9px 0;background:rgba(13,148,136,.045);border-left:3px solid #0d9488">';
       H+='<div style="font-size:.8rem;font-weight:700;color:#6d28d9;margin-bottom:.2rem">🌙 '+sn+'<span style="font-size:.67rem;font-weight:400;color:var(--text2);margin-left:.4rem;padding:1px 5px;background:rgba(255,255,255,.06);border-radius:3px">'+sd.role+'</span></div>';
       if(ctxText){
         // 宮文脈に特化した読み解き
