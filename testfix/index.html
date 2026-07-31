@@ -547,6 +547,17 @@ section.active{display:block}
 .saved-count-badge{font-size:.75rem;padding:2px 8px;border-radius:9999px;background:rgba(124,58,237,.12);color:#5b21b6;border:1px solid rgba(124,58,237,.22);font-weight:600}
 .saved-arrow{font-size:.75rem;color:var(--text2);transition:.2s}
 .saved-list-wrap{border-top:1px solid var(--border)}
+/* 💾 バックアップ（データ移行・復元）：通常は折りたたみ。既存パネルと同じ見た目に合わせる */
+.dbk-hd{display:flex;align-items:center;gap:.6rem;padding:.7rem 1.1rem;cursor:pointer;user-select:none;transition:.15s}
+.dbk-hd:hover{background:rgba(180,130,70,.07)}
+.dbk-hd:focus-visible{outline:2px solid rgba(180,130,70,.5);outline-offset:-2px}
+.dbk-hd-title{font-size:.85rem;font-weight:700;color:var(--text3);flex:1}
+.dbk-arrow{font-size:.72rem;color:var(--text2);transition:.2s}
+.dbk-body{border-top:1px solid var(--border);padding:.75rem 1.1rem .9rem}
+@media(max-width:640px){
+  .dbk-hd{padding:.7rem .8rem}
+  .dbk-body{padding:.7rem .8rem .85rem}
+}
 .saved-empty{padding:1.2rem 1.4rem;font-size:.85rem;color:var(--text2);text-align:center}
 .saved-item{display:flex;align-items:center;gap:.8rem;padding:.85rem 1.2rem;border-bottom:1px solid rgba(180,130,70,.1);transition:.15s;cursor:pointer;user-select:none}
 .saved-item:last-child{border-bottom:none}
@@ -1539,8 +1550,13 @@ section.active{display:block}
         <div id="saved-list"><p class="saved-empty">まだ保存されたデータはありません。</p></div>
 
         <!-- 💾 データ管理（バックアップ／復元）… 対象は権限に応じて自動で切り替わる -->
-        <div id="data-backup-box" style="border-top:1px solid var(--border);margin-top:.6rem;padding:.7rem .6rem .8rem">
-          <div style="font-size:.8rem;font-weight:700;color:var(--gold);margin-bottom:.35rem">💾 データ管理（バックアップ・復元）</div>
+        <div id="data-backup-box" style="border-top:1px solid var(--border);margin-top:.6rem">
+          <!-- 見出し（クリックで開閉・初期は閉じた状態） -->
+          <div class="dbk-hd" onclick="dbkTogglePanel()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();dbkTogglePanel();}" aria-controls="dbk-body" aria-expanded="false">
+            <span class="dbk-hd-title">💾 バックアップ（データ移行・復元）</span>
+            <span class="dbk-arrow" id="dbk-arrow">▼</span>
+          </div>
+          <div id="dbk-body" class="dbk-body" style="display:none">
           <p id="dbk-scope" style="font-size:.72rem;color:var(--text2);line-height:1.7;margin:0 0 .55rem"></p>
 
           <button class="admin-btn" id="dbk-export-btn" onclick="dbkExport()" style="width:100%;font-size:.8rem;margin-bottom:.5rem">⬇️ データを書き出す</button>
@@ -1564,6 +1580,7 @@ section.active{display:block}
           <input type="file" id="dbk-file" accept="application/json,.json" style="display:none" onchange="dbkImport(this)">
           <button class="admin-btn" id="dbk-import-btn" onclick="document.getElementById('dbk-file').click()" style="width:100%;font-size:.8rem">⬆️ データを読み込む</button>
           <div id="dbk-msg" style="font-size:.74rem;line-height:1.8;margin-top:.5rem;white-space:pre-wrap"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -14033,6 +14050,17 @@ var DBK_KEYS={get savedCharts(){return DBK_KEY('savedCharts');},get karte(){retu
 /* 絶対に書き出さないキー（混入自己チェック用） */
 var DBK_FORBIDDEN=['ziwei_session_v2','ziwei_at','ziwei_rt','ziwei_gh_pat','ziwei_auth_v2','_ktRemember','ziwei_kanteishi_profile','ziwei_remote_config_v1','ziwei_oshirase','ziwei_oshirase_read'];
 
+/* 折りたたみの開閉（初期は閉じた状態。成功時は自動で閉じ、エラー時は開いたまま） */
+window.dbkTogglePanel=function(open){
+  var body=document.getElementById('dbk-body');
+  var arrow=document.getElementById('dbk-arrow');
+  var hd=document.querySelector('#data-backup-box .dbk-hd');
+  if(!body)return;
+  var willOpen=(open===undefined)?(body.style.display==='none'):!!open;
+  body.style.display=willOpen?'block':'none';
+  if(arrow)arrow.textContent=willOpen?'▲':'▼';
+  if(hd)hd.setAttribute('aria-expanded',willOpen?'true':'false');
+};
 function dbkScope(){
   var role=(typeof getCurrentRole==='function')?getCurrentRole():'public';
   if(role==='admin')return{savedCharts:true,karte:true,schedule:true,drafts:true,role:role};
@@ -14045,6 +14073,14 @@ function dbkReadArray(key){
 function dbkMsg(text,color){
   var el=document.getElementById('dbk-msg');
   if(el){el.textContent=text;el.style.color=color||'var(--text2)';}
+  /* 成功メッセージ（緑）のときだけ、少し見せてから自動で折りたたむ。
+     エラー・警告のときは開いたままにして内容を読めるようにする。 */
+  if(color==='#16a34a'){
+    setTimeout(function(){
+      var m=document.getElementById('dbk-msg');
+      if(m&&m.textContent===text&&typeof dbkTogglePanel==='function')dbkTogglePanel(false);
+    },2600);
+  }
 }
 function dbkSyncUI(){
   var box=document.getElementById('data-backup-box');
