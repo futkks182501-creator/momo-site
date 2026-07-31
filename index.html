@@ -7218,6 +7218,8 @@ const MEI_STAR_READING={
   '天府':'天府は「蔵（くら）」にたとえられる星です。豊かさを蓄え、必要なときに惜しみなく差し出せる度量が最大の魅力。人の話を最後まで聞ける落ち着きがあり、その安心感が自然と信頼を集めます。\n\n命宮にあることで、その落ち着きが「その人そのもの」として表に出ます。慌てない、急かさない、まず受け止める——初対面でも「この人なら大丈夫そう」と感じさせる雰囲気を持っています。\n\n人生の選択でも、勢いより堅実さを選ぶ場面が多いでしょう。時間をかけて積み上げたものが、あとから大きな財産に変わりやすく、数字や資産を扱う分野、人を育てる立場でも力を発揮します。\n\n一方で、安心できる場所が心地よいぶん、変化のタイミングを先延ばしにしがちな面もあります。「今が動きどきかもしれない」と感じたら、いつもより少し早めに一歩を踏み出すことで、天府の豊かさがさらに大きく育っていきます。'
 };
 /* 統合鑑定文があるかどうか（命宮＝palIdx 0 のときのみ使用） */
+/* 修正⑩：星名に「星」を付ける（火星・鈴星のように既に「星」で終わる名は二重に付けない） */
+function starLabel(n){ return /星$/.test(n) ? n : n+'星'; }
 function hasMeiReading(starName,palIdx){
   return palIdx===0 && !!MEI_STAR_READING[starName];
 }
@@ -7747,16 +7749,15 @@ function buildPalaceHTML(branch,r,compact){
   var starNames=mainStarsHere.join('・')||(palaceName+'の');
   H+='<div class="pip-body" style="font-size:.8rem;color:var(--text2);line-height:1.8">';
   if(mainStarsHere.length) H+='<strong style="color:var(--text1)">'+palaceName+'に '+mainStarsHere.join('・')+' が配置されているあなたは、</strong><br>';
-  /* 修正⑧⑨：統合鑑定文がある場合は小見出しを付けて区切りを分かりやすくする */
+  /* 修正⑩：宮別解説（STAR_IN_PALACE）は全12宮でこの1箇所のみに表示する */
   var _sumPairs=mainStarsHere.map(function(sn){
-    if(!hasMeiReading(sn,palIdx))return null;
     var sip=STAR_IN_PALACE[sn]&&STAR_IN_PALACE[sn][palIdx];
     return sip?{name:sn,txt:sip}:null;
   }).filter(Boolean);
   if(_sumPairs.length) H+='<div class="pip-subhd">■ '+palaceName+'とは？</div>';
   H+=pData.theme;
   _sumPairs.forEach(function(x){
-    H+='<div class="pip-subhd">■ '+x.name+'星が'+palaceName+'にあると…</div>'+x.txt;
+    H+='<div class="pip-subhd">■ '+starLabel(x.name)+'が'+palaceName+'にあると…</div>'+x.txt;
   });
   H+='</div>';
   if(meta.note){
@@ -7765,13 +7766,14 @@ function buildPalaceHTML(branch,r,compact){
   // 🔮 この宮の読み解き（配置星・対宮・副星ベース — STAR_IN_PALACE + SUB_STAR_PALACE_CTX 使用）
   /* 修正⑧⑨：配置された主星すべてに統合鑑定文がある場合、この節は「〇〇星が命宮に座す」と
      内容が重複するため表示しない（副星の影響がある場合のみ後段で表示） */
+  /* 修正⑩：主星の宮別解説は上部（■ ○○星が○○宮にあると…）へ集約したため、
+     この節は「空宮のとき対宮の星を参照する」用途のみに限定する。
+     副星の宮別解説も下部の「🌙 副星の影響」1箇所に集約した。 */
   var _allMerged=mainStarsHere.length>0&&mainStarsHere.every(function(sn){return hasMeiReading(sn,palIdx);});
-  var _impSubsPre=(subStarsHere||[]).filter(function(s){return SUB_STAR_PALACE_CTX[s];});
-  var _skipYomitoki=_allMerged&&_impSubsPre.length===0;
+  var _skipYomitoki=mainStarsHere.length>0;
   if(!_skipYomitoki){
   H+='<div style="margin-top:.62rem;padding:.68rem .85rem;background:rgba(99,102,241,.06);border-radius:10px;border:1px solid rgba(99,102,241,.22)">';
-  /* 修正⑧⑨：主星の解説がここに出ない（統合済み）場合は、大きな見出しを出さず副星情報だけを見せる */
-  if(!_allMerged) H+='<div style="font-size:.72rem;font-weight:700;color:#818cf8;margin-bottom:.45rem;letter-spacing:.04em">🔮 この宮の読み解き</div>';
+  H+='<div style="font-size:.72rem;font-weight:700;color:#818cf8;margin-bottom:.45rem;letter-spacing:.04em">🔮 この宮の読み解き</div>';
   if(mainStarsHere.length===0){
     // 空宮：対宮の星を参照
     var _oppBrR=(branch+6)%12;
@@ -7800,18 +7802,8 @@ function buildPalaceHTML(branch,r,compact){
     }).filter(Boolean);
     if(_mainTxts.length) H+=_mainTxts.join('<div style="height:.35rem"></div>');
   }
-  // 副星の宮別影響サマリー
-  var _impSubs=subStarsHere.filter(function(sn){return SUB_STAR_PALACE_CTX[sn];});
-  if(_impSubs.length){
-    H+='<div style="'+(_allMerged?'':'margin-top:.5rem;padding-top:.5rem;border-top:1px solid rgba(109,40,217,.18);')+'">';
-    H+='<div class="pip-subhd accent" style="color:#6d28d9">副星の影響（'+_impSubs.join('・')+'）</div>';
-    var _subTxts=_impSubs.map(function(sn){
-      var ctx=SUB_STAR_PALACE_CTX[sn][palIdx];
-      return '<div class="sub-star-card" style="font-size:.77rem;color:var(--text2);line-height:1.82"><span class="sub-icon">✦</span> <span style="color:#6d28d9;font-weight:600">【'+sn+'】</span>'+ctx+'</div>';
-    });
-    H+=_subTxts.join('');
-    H+='</div>';
-  }
+  /* 修正⑩：副星の宮別解説（SUB_STAR_PALACE_CTX）はここでは出さず、
+     下部の「🌙 副星の影響（宮コンテキストで読む）」1箇所に集約している。 */
   H+='</div>';
   } /* 修正⑧⑨：_skipYomitoki の閉じ */
   // KWバッジ
@@ -7841,6 +7833,10 @@ function buildPalaceHTML(branch,r,compact){
   var _mergedStars=mainStarsHere.filter(function(sn){return hasMeiReading(sn,palIdx);});
   if(_mergedStars.length&&_mergedStars.length===mainStarsHere.length){
     H+='<h4 style="color:var(--gold)">⭐ '+_mergedStars.join('・')+'星が'+palaceName+'に座す</h4>';
+  }else if(mainStarsHere.length){
+    /* 修正⑩：宮別の解説（上部）と、星そのものの解説（ここ）を取り違えないよう
+       「○○宮に輝く主星」という表記にする */
+    H+='<h4 style="color:var(--gold)">⭐ '+palaceName+'に輝く主星</h4>';
   }else{
     H+='<h4 style="color:var(--gold)">⭐ 主星の輝き方</h4>';
   }
@@ -7875,7 +7871,7 @@ function buildPalaceHTML(branch,r,compact){
         H+='<div style="margin-bottom:.8rem;padding:.72rem .9rem;border-radius:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22)">';
         var _pars=MEI_STAR_READING[x.name].split('\n\n');
         H+='<div class="pip-body mei-reading">';
-        H+='<div class="pip-subhd">■ '+x.name+'星が持つ本来の力</div>';
+        H+='<div class="pip-subhd">■ '+starLabel(x.name)+'が持つ本来の力</div>';
         H+=_pars.map(function(par,i){
           return '<p style="margin:0'+(i<_pars.length-1?' 0 .55rem':'')+'">'+par+'</p>';
         }).join('');
@@ -7884,7 +7880,7 @@ function buildPalaceHTML(branch,r,compact){
         if(x.sd&&(x.sd.personality||x.sd.habit||x.sd.thought)){
           H+='<div class="pip-accordion" style="margin-top:.6rem;margin-bottom:0">';
           H+='<button class="pip-acc-hdr" onclick="togglePipAccordion(this)" style="color:var(--gold2)">';
-          H+='📖 '+x.name+'星の特徴を詳しく見る<span class="pip-acc-arr">▶</span>';
+          H+='📖 '+starLabel(x.name)+'の特徴を詳しく見る<span class="pip-acc-arr">▶</span>';
           H+='</button>';
           H+='<div class="pip-acc-body">';
       if(x.sd&&x.sd.personality){
@@ -7901,10 +7897,17 @@ function buildPalaceHTML(branch,r,compact){
         H+='</div>';
         return;
       }
+      /* 修正⑩：宮別解説（x.sip）は上部へ集約したためここでは出さない。
+         このブロックは「星そのものの説明」であることが分かる表記にし、開閉式に収める。
+         ◎星の本質／💬口ぐせ・癖／🧠思考パターンは文言・順序・スタイルをそのまま維持。 */
       H+='<div style="margin-bottom:.8rem;padding:.72rem .9rem;border-radius:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22)">';
-      H+='<div style="font-size:.88rem;font-weight:800;color:var(--gold);margin-bottom:.45rem">✦ '+x.name+' が「'+palaceName+'」に座す</div>';
-      if(x.sip){
-        H+='<div style="font-size:.8rem;color:var(--text2);line-height:1.85;margin-bottom:.38rem">'+x.sip+'</div>';
+      H+='<div style="font-size:.88rem;font-weight:800;color:var(--gold)">✦ '+starLabel(x.name)+'</div>';
+      if(x.sd&&(x.sd.personality||x.sd.habit||x.sd.thought)){
+        H+='<div class="pip-accordion" style="margin-top:.5rem;margin-bottom:0">';
+        H+='<button class="pip-acc-hdr" onclick="togglePipAccordion(this)" style="color:var(--gold2)">';
+        H+='📖 '+starLabel(x.name)+'の本質を詳しく見る<span class="pip-acc-arr">▶</span>';
+        H+='</button>';
+        H+='<div class="pip-acc-body">';
       }
       if(x.sd&&x.sd.personality){
         H+='<div style="border-top:1px solid rgba(245,158,11,.18);padding-top:.38rem;font-size:.77rem;color:var(--text2);opacity:.85;line-height:1.8"><span style="font-size:.7rem;font-weight:700;color:var(--gold2);display:block;margin-bottom:.2rem">◎ 星の本質</span>'+x.sd.personality+'</div>';
@@ -7915,6 +7918,7 @@ function buildPalaceHTML(branch,r,compact){
       if(x.sd&&x.sd.thought){
         H+='<div style="border-top:1px solid rgba(245,158,11,.12);padding-top:.35rem;margin-top:.35rem;font-size:.77rem;color:var(--text2);line-height:1.82"><span style="font-size:.7rem;font-weight:700;color:#60a5fa;display:block;margin-bottom:.15rem">🧠 思考パターン</span>'+x.sd.thought+'</div>';
       }
+      if(x.sd&&(x.sd.personality||x.sd.habit||x.sd.thought)){ H+='</div></div>'; }
       H+='</div>';
     });
   }
