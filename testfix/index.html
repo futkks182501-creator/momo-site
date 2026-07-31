@@ -3645,10 +3645,13 @@ function sunLongitude(jde){
   lam=((lam%360)+360)%360;
   return lam;
 }
-/* 期間 [jdStart, jdEnd) に中気が含まれるか（黄経の30度区分が変わるか） */
-function hasMajorTerm(jdStart,jdEnd){
-  const a=Math.floor(sunLongitude(jdStart-0.5+8/24)/30);
-  const b=Math.floor(sunLongitude(jdEnd-0.5+8/24)/30);
+/* 期間 [nStart, nEnd) に中気が含まれるか（黄経の30度区分が変わるか）
+ * 引数は solarToLunar 内で使う「中国時間の日番号」。
+ * その日の 00:00 CST に相当するユリウス日へ戻して黄経を求める。 */
+function dayNumToJD(n){return n-0.5-8/24;}
+function hasMajorTerm(nStart,nEnd){
+  const a=Math.floor(sunLongitude(dayNumToJD(nStart))/30);
+  const b=Math.floor(sunLongitude(dayNumToJD(nEnd))/30);
   return a!==b;
 }
 
