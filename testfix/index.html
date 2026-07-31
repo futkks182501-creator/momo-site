@@ -3658,84 +3658,101 @@ function hasMajorTerm(nStart,nEnd){
 /* =====================================================
    SOLAR → LUNAR CONVERSION
 ===================================================== */
+/* ── 旧暦変換（冬至基準の正式アルゴリズム）──────────────────────
+ * 従来は「1/21〜2/20の朔＝旧正月」という窓で判定していたため、
+ * 窓に朔が2つ入る年（例：1985年）で旧正月を取り違え、
+ * 閏月の判定も旧正月起点だったため冬至をまたぐ閏月（1984年閏十月）を誤っていた。
+ * 正式な手順に置き換える：
+ *   1. 冬至（太陽黄経270度）を含む月を「11月」とする
+ *   2. 11月から次の11月までが13か月なら閏年。最初の「中気を含まない月」が閏月
+ *   3. 正月は11月の2か月後（閏月が間に入ればその分ずれる）
+ * これにより旧正月・閏月・年またぎがすべて暦法どおりに決まる。 */
+function winterSolsticeDayNum(y){
+  /* y年12月の冬至（太陽黄経270度）の日を、中国時間の日番号で返す */
+  let lo=Math.floor(solarToJD(y,12,16)+0.5+8/24);
+  let hi=Math.floor(solarToJD(y,12,25)+0.5+8/24);
+  for(let n=lo;n<=hi;n++){
+    const a=sunLongitude(dayNumToJD(n));
+    const b=sunLongitude(dayNumToJD(n+1));
+    /* 270度をまたぐ日を冬至とする */
+    if(a<270&&b>=270) return n;
+    if(a>b&&b>=270) return n;   /* 360→0 の折返し対策 */
+  }
+  return Math.floor(solarToJD(y,12,22)+0.5+8/24);
+}
+function newMoonDayNumOnOrBefore(n){
+  /* 日番号 n 以前で最も近い朔（月の始まり）の日番号 */
+  let k=Math.round((n-2451550.09766)/29.530588861);
+  for(let i=2;i>=-2;i--){
+    const jd=Math.floor(trueNewMoon(k+i)+0.5);
+    if(jd<=n) return jd;
+  }
+  return Math.floor(trueNewMoon(k)+0.5);
+}
+function buildLunarMonths(y){
+  /* y年の冬至を含む月（＝前年11月）から、翌年の11月までの朔を並べる */
+  const ws=winterSolsticeDayNum(y);
+  const m11=newMoonDayNumOnOrBefore(ws);
+  const wsNext=winterSolsticeDayNum(y+1);
+  const m11Next=newMoonDayNumOnOrBefore(wsNext);
+  const starts=[];
+  let k=Math.round((m11-2451550.09766)/29.530588861);
+  for(let i=0;i<16;i++){
+    const jd=Math.floor(trueNewMoon(k+i)+0.5);
+    if(jd<m11) continue;
+    starts.push(jd);
+    if(jd>=m11Next) break;
+  }
+  /* 11月から次の11月までの月数（13なら閏年） */
+  let count=0;
+  while(count+1<starts.length&&starts[count+1]<=m11Next) count++;
+  let leapIndex=-1;
+  if(count>=13){
+    for(let i=1;i<Math.min(count+1,starts.length-1);i++){
+      if(!hasMajorTerm(starts[i],starts[i+1])){leapIndex=i;break;}
+    }
+  }
+  /* 各月に番号を割り当てる（starts[0]=11月から開始） */
+  const labels=[];
+  let num=11;
+  for(let i=0;i<starts.length;i++){
+    if(leapIndex>=0&&i===leapIndex){
+      labels.push({start:starts[i],month:((num-1-1+12)%12)+1,leap:true});  /* 前月と同番号の閏月 */
+    }else{
+      labels.push({start:starts[i],month:((num-1)%12)+1,leap:false});
+      num++;
+    }
+  }
+  return labels;
+}
 function solarToLunar(year,month,day){
   const targetJD=solarToJD(year,month,day);
-  // CST day integer: use noon CST (=04:00 UTC) as reference so that
-  // solar dates and new moon times are on the same integer scale.
-  // solarToJD gives midnight UTC (= integer JD - 0.5), adding 0.5+8/24 aligns to noon CST.
-  // trueNewMoon returns JDE+8/24 (CST-offset), adding 0.5 aligns to the same scale.
   const tgt=Math.floor(targetJD+0.5+8/24);
 
-  // Find Chinese New Year for this solar year (new moon Jan21~Feb20)
-  function getCNY(y){
-    const k=kFromYear(y,1.5);
-    for(let dk=-2;dk<=2;dk++){
-      const jd=trueNewMoon(k+dk);
-      const s=jdToSolar(jd);
-      if(s.year===y&&((s.month===1&&s.day>=21)||(s.month===2&&s.day<=20))) return Math.floor(jd+0.5);
-    }
-    // fallback: brute force
-    for(let dk=-3;dk<=3;dk++){
-      const jd=trueNewMoon(k+dk);
-      const s=jdToSolar(jd);
-      if(s.year===y) return Math.floor(jd+0.5);
-    }
-    return Math.floor(trueNewMoon(k)+0.5);
+  /* 対象日が属する「11月起点の暦年」を選ぶ（前年冬至〜今年冬至） */
+  let base=year-1;
+  let labels=buildLunarMonths(base);
+  if(tgt<labels[0].start){ base=year-2; labels=buildLunarMonths(base); }
+  else if(tgt>=labels[labels.length-1].start){ const nx=buildLunarMonths(year); if(tgt>=nx[0].start){ base=year; labels=nx; } }
+
+  let idx=-1;
+  for(let i=0;i<labels.length-1;i++){
+    if(tgt>=labels[i].start&&tgt<labels[i+1].start){ idx=i; break; }
   }
-  /* 修正：旧正月より前の日付は「前年の旧暦」に属する。
-     cny を上書きしたあとで tgt<cny を再評価していたため、
-     nextCNY と lunarYear が1年ずれ、旧暦13月・年干支の誤りが出ていた。
-     判定結果を beforeCNY に保持して使い回す。 */
-  const beforeCNY=tgt<getCNY(year);
-  let cny=beforeCNY?getCNY(year-1):getCNY(year);
+  if(idx<0) idx=labels.length-1;
 
-  // Build list of new moon JDs starting from CNY
-  const cnyJD=cny;
-  // Find which k corresponds to cnyJD
-  const k0=Math.round((cnyJD-2451550.09766)/29.530588861);
+  const lunarMonth=labels[idx].month;
+  const isLeapMonth=labels[idx].leap;
+  const lunarDay=tgt-labels[idx].start+1;
 
-  // Check if this is a leap year Chinese calendar (13 months)
-  // Simple approach: count months until next CNY
-  const nextCNY=beforeCNY?getCNY(year):getCNY(year+1);
-
-  const months=[];
-  for(let i=0;i<=13;i++){
-    const jd=Math.floor(trueNewMoon(k0+i)+0.5);
-    months.push(jd);
-    if(jd>=nextCNY&&i>10) break;
+  /* 旧暦の年：正月（閏でない1月）以降がその年。正月より前は前年扱い */
+  let newYearStart=null;
+  for(let i=0;i<labels.length;i++){
+    if(labels[i].month===1&&!labels[i].leap){ newYearStart=labels[i].start; break; }
   }
+  /* labels は base年12月の冬至月（11月）から始まるので、正月は base+1 年に属する */
+  const lunarYear=(newYearStart!==null&&tgt>=newYearStart)?(base+1):base;
 
-  /* 閏月の判定：旧正月から次の旧正月までが13か月ある年は、
-     中気を含まない最初の月が閏月。それ以降の月番号を1つ戻す。 */
-  let monthCount=0;
-  while(monthCount+1<months.length&&months[monthCount+1]<=nextCNY) monthCount++;
-  let leapIndex=-1;
-  if(monthCount>=13){
-    for(let i=0;i<Math.min(13,months.length-1);i++){
-      if(!hasMajorTerm(months[i],months[i+1])){leapIndex=i;break;}
-    }
-  }
-
-  // Find which lunar month the target date is in
-  let lunarMonth=1,lunarDay=1,isLeapMonth=false;
-  for(let i=0;i<months.length-1;i++){
-    if(tgt>=months[i]&&tgt<months[i+1]){
-      if(leapIndex<0||i<leapIndex){
-        lunarMonth=i+1;
-      }else if(i===leapIndex){
-        lunarMonth=leapIndex;      // 閏◯月（前の月と同じ番号）
-        isLeapMonth=true;
-      }else{
-        lunarMonth=i;              // 閏月より後は1つ戻す
-      }
-      lunarDay=tgt-months[i]+1;
-      break;
-    }
-  }
-  if(lunarMonth<1)lunarMonth=12;
-  if(lunarMonth>12)lunarMonth=12;
-  // Chinese year starts at CNY; determine lunar year stem/branch
-  const lunarYear=year+(beforeCNY?-1:0);
   return{lunarYear,lunarMonth,lunarDay,isLeapMonth};
 }
 
