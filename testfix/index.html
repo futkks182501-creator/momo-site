@@ -7122,6 +7122,20 @@ const PALACE_META=[
    mainF:'personality',mainC:'#f59e0b'},
 ];
 
+/* ── 修正⑧⑨：命宮の統合鑑定文 ─────────────────────────────
+ * 従来は「この宮の読み解き」「主星の輝き方」「〇〇星が命宮に座す」で
+ * ほぼ同じ内容を3回表示していたため、1つの充実した鑑定文に統合する。
+ * 1文の中に「星本来の性質／命宮での現れ方／第一印象／行動・選択の傾向／
+ * 才能と活かし方／偏ったときの課題／より良く活かす助言」を自然に含める。
+ * ここに定義がない星は従来表示のまま（段階的に14主星へ展開する）。 */
+const MEI_STAR_READING={
+  '天府':'天府は「蔵（くら）」にたとえられる星です。豊かさを蓄え、必要なときに惜しみなく差し出せる度量が最大の魅力。人の話を最後まで聞ける落ち着きがあり、その安心感が自然と信頼を集めます。\n\n命宮にあることで、その落ち着きが「その人そのもの」として表に出ます。慌てない、急かさない、まず受け止める——初対面でも「この人なら大丈夫そう」と感じさせる雰囲気を持っています。\n\n人生の選択でも、勢いより堅実さを選ぶ場面が多いでしょう。時間をかけて積み上げたものが、あとから大きな財産に変わりやすく、数字や資産を扱う分野、人を育てる立場でも力を発揮します。\n\n一方で、安心できる場所が心地よいぶん、変化のタイミングを先延ばしにしがちな面もあります。「今が動きどきかもしれない」と感じたら、いつもより少し早めに一歩を踏み出すことで、天府の豊かさがさらに大きく育っていきます。'
+};
+/* 統合鑑定文があるかどうか（命宮＝palIdx 0 のときのみ使用） */
+function hasMeiReading(starName,palIdx){
+  return palIdx===0 && !!MEI_STAR_READING[starName];
+}
+
 const STAR_IN_PALACE={
   '紫微':[
     '帝王の星が命宮に座す。生まれながらのリーダーシップと圧倒的な存在感が命宮に輝く。プライドが高く、人の上に立つ使命感が宿る。どんな場所でも自然と中心的存在になり、周囲から一目置かれる。孤高になりやすく、プライドが傷つくと人を遠ざける傾向があるため、謙虚さを意識することが大切。自分の「王国」を持つ意識で生きると才能が開花する。',
@@ -7652,6 +7666,12 @@ function buildPalaceHTML(branch,r,compact){
     H+='<div style="font-size:.73rem;color:var(--text2);padding:.4rem .62rem;background:rgba(99,102,241,.07);border-radius:7px;border-left:3px solid #818cf8;margin-top:.5rem;line-height:1.62">💡 '+meta.note+'</div>';
   }
   // 🔮 この宮の読み解き（配置星・対宮・副星ベース — STAR_IN_PALACE + SUB_STAR_PALACE_CTX 使用）
+  /* 修正⑧⑨：配置された主星すべてに統合鑑定文がある場合、この節は「〇〇星が命宮に座す」と
+     内容が重複するため表示しない（副星の影響がある場合のみ後段で表示） */
+  var _allMerged=mainStarsHere.length>0&&mainStarsHere.every(function(sn){return hasMeiReading(sn,palIdx);});
+  var _impSubsPre=(subStarsHere||[]).filter(function(s){return SUB_STAR_PALACE_CTX[s];});
+  var _skipYomitoki=_allMerged&&_impSubsPre.length===0;
+  if(!_skipYomitoki){
   H+='<div style="margin-top:.62rem;padding:.68rem .85rem;background:rgba(99,102,241,.06);border-radius:10px;border:1px solid rgba(99,102,241,.22)">';
   H+='<div style="font-size:.72rem;font-weight:700;color:#818cf8;margin-bottom:.45rem;letter-spacing:.04em">🔮 この宮の読み解き</div>';
   if(mainStarsHere.length===0){
@@ -7673,6 +7693,7 @@ function buildPalaceHTML(branch,r,compact){
   } else {
     // 主星あり：STAR_IN_PALACE から各星の宮別読み解き
     var _mainTxts=mainStarsHere.map(function(sn){
+      if(hasMeiReading(sn,palIdx)) return null;   // 修正⑧⑨：統合鑑定文で表示するため重複させない
       var sip=STAR_IN_PALACE[sn]&&STAR_IN_PALACE[sn][palIdx];
       if(!sip) return null;
       return mainStarsHere.length===1
@@ -7694,6 +7715,7 @@ function buildPalaceHTML(branch,r,compact){
     H+='</div>';
   }
   H+='</div>';
+  } /* 修正⑧⑨：_skipYomitoki の閉じ */
   // KWバッジ
   H+='<div class="pip-kw-row" style="margin-top:.45rem">'+pData.kw.map(function(k){return '<span class="pip-kw">#'+k+'</span>';}).join('')+'</div>';
   H+='</div></div>';
@@ -7717,7 +7739,13 @@ function buildPalaceHTML(branch,r,compact){
   }
 
   H+='<div class="pip-sec" style="background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.3)">';
-  H+='<h4 style="color:var(--gold)">⭐ 主星の輝き方</h4>';
+  /* 修正⑧⑨：統合鑑定文がある場合は「〇〇星が◯宮に座す」を見出しにする */
+  var _mergedStars=mainStarsHere.filter(function(sn){return hasMeiReading(sn,palIdx);});
+  if(_mergedStars.length&&_mergedStars.length===mainStarsHere.length){
+    H+='<h4 style="color:var(--gold)">⭐ '+_mergedStars.join('・')+'星が'+palaceName+'に座す</h4>';
+  }else{
+    H+='<h4 style="color:var(--gold)">⭐ 主星の輝き方</h4>';
+  }
   if(mainStarsHere.length===0){
     var oppBr=(branch+6)%12;
     var oppPI=(r.meiPos-oppBr+12)%12;
@@ -7742,6 +7770,13 @@ function buildPalaceHTML(branch,r,compact){
   } else {
     // 主星ごとに STAR_IN_PALACE + STAR_PANEL_DATA.personality を統合表示
     starReadings.forEach(function(x){
+      /* 修正⑧⑨：統合鑑定文がある星は、その1本だけを表示（同内容の繰り返しを避ける） */
+      if(hasMeiReading(x.name,palIdx)){
+        H+='<div class="mei-reading" style="margin-bottom:.8rem;padding:.85rem 1rem;border-radius:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22)">';
+        H+='<div style="font-size:.8rem;color:var(--text2);line-height:1.95;white-space:pre-wrap">'+MEI_STAR_READING[x.name]+'</div>';
+        H+='</div>';
+        return;
+      }
       H+='<div style="margin-bottom:.8rem;padding:.72rem .9rem;border-radius:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22)">';
       H+='<div style="font-size:.88rem;font-weight:800;color:var(--gold);margin-bottom:.45rem">✦ '+x.name+' が「'+palaceName+'」に座す</div>';
       if(x.sip){
@@ -12668,7 +12703,7 @@ function generateUnseigraph(r){
       kanteiText='【'+d.ageStart+'〜'+d.ageEnd+'歳】「<strong>'+d.palName+'</strong>（'+BR[mb]+'）」を大限宮として、この10年の運が展開されます。';
     }
     if(pData.theme){
-      kanteiText+='<br><span style="color:#5a3a1a;font-size:.78rem">'+pData.theme.substring(0,130)+'……</span>';
+      kanteiText+='<br><span style="color:#5a3a1a;font-size:.78rem">'+pData.theme+'</span>';  /* 修正⑧：文字数カットを解除し全文表示 */
     }
     if(mainStars.length){
       kanteiText+='<br><br>この宮の主星「<strong>'+mainStars.join('・')+'</strong>」が、';
