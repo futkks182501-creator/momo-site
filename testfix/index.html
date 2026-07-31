@@ -7870,8 +7870,8 @@ function buildPalaceHTML(branch,r,compact){
     starReadings.forEach(function(x){
       /* 修正⑧⑨：統合鑑定文がある星は、その1本だけを表示（同内容の繰り返しを避ける） */
       if(hasMeiReading(x.name,palIdx)){
-        /* 修正：統合鑑定文のあとに、既存の ◎星の本質 / 💬口ぐせ・癖 / 🧠思考パターン を必ず表示する
-           （これらは既存の主星解説のため削除・変更しない） */
+        /* 命宮の統合鑑定文（新規）＋ 既存の星辞典（◎星の本質 / 💬口ぐせ・癖 / 🧠思考パターン）を開閉で表示。
+           既存3項目は文言・順序・スタイルをそのまま維持している。 */
         H+='<div style="margin-bottom:.8rem;padding:.72rem .9rem;border-radius:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22)">';
         var _pars=MEI_STAR_READING[x.name].split('\n\n');
         H+='<div class="pip-body mei-reading">';
@@ -7880,6 +7880,13 @@ function buildPalaceHTML(branch,r,compact){
           return '<p style="margin:0'+(i<_pars.length-1?' 0 .55rem':'')+'">'+par+'</p>';
         }).join('');
         H+='</div>';
+        /* ▼ この星をもっと詳しく見る（初期は閉じた状態） */
+        if(x.sd&&(x.sd.personality||x.sd.habit||x.sd.thought)){
+          H+='<div class="pip-accordion" style="margin-top:.6rem;margin-bottom:0">';
+          H+='<button class="pip-acc-hdr" onclick="togglePipAccordion(this)" style="color:var(--gold2)">';
+          H+='📖 '+x.name+'星の特徴を詳しく見る<span class="pip-acc-arr">▶</span>';
+          H+='</button>';
+          H+='<div class="pip-acc-body">';
       if(x.sd&&x.sd.personality){
         H+='<div style="border-top:1px solid rgba(245,158,11,.18);padding-top:.38rem;font-size:.77rem;color:var(--text2);opacity:.85;line-height:1.8"><span style="font-size:.7rem;font-weight:700;color:var(--gold2);display:block;margin-bottom:.2rem">◎ 星の本質</span>'+x.sd.personality+'</div>';
       }
@@ -7889,6 +7896,8 @@ function buildPalaceHTML(branch,r,compact){
       if(x.sd&&x.sd.thought){
         H+='<div style="border-top:1px solid rgba(245,158,11,.12);padding-top:.35rem;margin-top:.35rem;font-size:.77rem;color:var(--text2);line-height:1.82"><span style="font-size:.7rem;font-weight:700;color:#60a5fa;display:block;margin-bottom:.15rem">🧠 思考パターン</span>'+x.sd.thought+'</div>';
       }
+          H+='</div></div>';
+        }
         H+='</div>';
         return;
       }
