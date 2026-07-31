@@ -547,6 +547,17 @@ section.active{display:block}
 .saved-count-badge{font-size:.75rem;padding:2px 8px;border-radius:9999px;background:rgba(124,58,237,.12);color:#5b21b6;border:1px solid rgba(124,58,237,.22);font-weight:600}
 .saved-arrow{font-size:.75rem;color:var(--text2);transition:.2s}
 .saved-list-wrap{border-top:1px solid var(--border)}
+/* 💾 バックアップ（データ移行・復元）：通常は折りたたみ。既存パネルと同じ見た目に合わせる */
+.dbk-hd{display:flex;align-items:center;gap:.6rem;padding:.7rem 1.1rem;cursor:pointer;user-select:none;transition:.15s}
+.dbk-hd:hover{background:rgba(180,130,70,.07)}
+.dbk-hd:focus-visible{outline:2px solid rgba(180,130,70,.5);outline-offset:-2px}
+.dbk-hd-title{font-size:.85rem;font-weight:700;color:var(--text3);flex:1}
+.dbk-arrow{font-size:.72rem;color:var(--text2);transition:.2s}
+.dbk-body{border-top:1px solid var(--border);padding:.75rem 1.1rem .9rem}
+@media(max-width:640px){
+  .dbk-hd{padding:.7rem .8rem}
+  .dbk-body{padding:.7rem .8rem .85rem}
+}
 .saved-empty{padding:1.2rem 1.4rem;font-size:.85rem;color:var(--text2);text-align:center}
 .saved-item{display:flex;align-items:center;gap:.8rem;padding:.85rem 1.2rem;border-bottom:1px solid rgba(180,130,70,.1);transition:.15s;cursor:pointer;user-select:none}
 .saved-item:last-child{border-bottom:none}
@@ -1539,8 +1550,13 @@ section.active{display:block}
         <div id="saved-list"><p class="saved-empty">まだ保存されたデータはありません。</p></div>
 
         <!-- 💾 データ管理（バックアップ／復元）… 対象は権限に応じて自動で切り替わる -->
-        <div id="data-backup-box" style="border-top:1px solid var(--border);margin-top:.6rem;padding:.7rem .6rem .8rem">
-          <div style="font-size:.8rem;font-weight:700;color:var(--gold);margin-bottom:.35rem">💾 データ管理（バックアップ・復元）</div>
+        <div id="data-backup-box" style="border-top:1px solid var(--border);margin-top:.6rem">
+          <!-- 見出し（クリックで開閉・初期は閉じた状態） -->
+          <div class="dbk-hd" onclick="dbkTogglePanel()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();dbkTogglePanel();}" aria-controls="dbk-body" aria-expanded="false">
+            <span class="dbk-hd-title">💾 バックアップ（データ移行・復元）</span>
+            <span class="dbk-arrow" id="dbk-arrow">▼</span>
+          </div>
+          <div id="dbk-body" class="dbk-body" style="display:none">
           <p id="dbk-scope" style="font-size:.72rem;color:var(--text2);line-height:1.7;margin:0 0 .55rem"></p>
 
           <button class="admin-btn" id="dbk-export-btn" onclick="dbkExport()" style="width:100%;font-size:.8rem;margin-bottom:.5rem">⬇️ データを書き出す</button>
@@ -1564,6 +1580,7 @@ section.active{display:block}
           <input type="file" id="dbk-file" accept="application/json,.json" style="display:none" onchange="dbkImport(this)">
           <button class="admin-btn" id="dbk-import-btn" onclick="document.getElementById('dbk-file').click()" style="width:100%;font-size:.8rem">⬆️ データを読み込む</button>
           <div id="dbk-msg" style="font-size:.74rem;line-height:1.8;margin-top:.5rem;white-space:pre-wrap"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -9943,10 +9960,44 @@ function renderBasics(){
 /* =====================================================
    命盤 保存・読み込み（localStorage）
 ===================================================== */
+/* ── 修正⑥：端末内データの利用者別分離 ────────────────────
+ * 保存命盤・カルテ・スケジュールは端末(localStorage)に保存される。
+ * 従来は全員が同じキーを共有しており、同じ端末を使う別の利用者から
+ * 顧客情報が見えてしまうため、保存先を利用者ごとに分離する。
+ *   無料・未ログイン → ...::guest
+ *   管理人           → ...::admin
+ *   鑑定士           → ...::kt-0007（ログインIDごと）
+ * 旧キー（区切りなし）は読み書きせず、そのまま残す（削除しない）。
+ * ログアウトしてもデータは消さず、参照先が guest に切り替わるだけ。 */
+const DS_SEP='::';
+function dsScopeId(){
+  try{
+    var s=(typeof getSession==='function')?getSession():null;
+    if(!s)return 'guest';
+    if(s.role==='admin')return 'admin';
+    if(s.role==='kante'){
+      var id=String(s.kanteId||'').toLowerCase().replace(/[^a-z0-9-]/g,'');
+      return id?('kt-'+id.replace(/^kt-?/,'')):'kante-unknown';
+    }
+  }catch(e){}
+  return 'guest';
+}
+function dsKey(base){return base+DS_SEP+dsScopeId();}
+/* 画面表示・バックアップ記録用の分かりやすい名前 */
+function dsScopeName(id){
+  var sc=id||dsScopeId();
+  if(sc==='guest')return '無料・未ログイン利用者';
+  if(sc==='admin')return '管理人';
+  if(sc.indexOf('kt-')===0)return '鑑定士 '+sc.slice(3).toUpperCase();
+  return sc;
+}
+/* 旧キー（移行元）。読み取り専用で、削除も上書きもしない */
+const LEGACY_KEYS={savedCharts:'ziwei_saved_charts',karte:'ziwei_karte_list',schedule:'ziwei_kt_schedule'};
+
 const LS_KEY='ziwei_saved_charts';
 
 function getSavedCharts(){
-  try{return JSON.parse(localStorage.getItem(LS_KEY))||[];}
+  try{return JSON.parse(localStorage.getItem(dsKey(LS_KEY)))||[];}
   catch{return[];}
 }
 
@@ -9979,7 +10030,7 @@ function saveCurrentChart(){
     charts.unshift(entry);
     btn.textContent='✅ 保存しました！';
   }
-  localStorage.setItem(LS_KEY,JSON.stringify(charts));
+  localStorage.setItem(dsKey(LS_KEY),JSON.stringify(charts));
   renderSavedList();
   // ボタンフィードバック
   btn.disabled=true;
@@ -10021,7 +10072,7 @@ function confirmDeleteChart(id,name){
 }
 function deleteSavedChart(id){
   const charts=getSavedCharts().filter(c=>c.id!==id);
-  localStorage.setItem(LS_KEY,JSON.stringify(charts));
+  localStorage.setItem(dsKey(LS_KEY),JSON.stringify(charts));
   renderSavedList();
 }
 
@@ -13319,6 +13370,9 @@ if(document.readyState==='loading'){
 /* ─── Workerセッション復元 ───────
  * ページ読み込み時に GET /api/session でHttpOnly Cookieセッションを確認。
  * 有効ならUIロールを復元、無効ならリフレッシュトークンで再取得を試みる。 */
+/* 修正⑦：ログイン状態の確認（セッション復元）が終わったかどうか。
+ * 終わる前に読み込みを実行すると guest と誤判定されるため、完了までは読み込みを止める。 */
+var _sessionRestoreDone=false;
 async function _restoreWorkerSession(){
   try{
     // アクセストークンが無く、保持用リフレッシュトークンがあれば先に更新
@@ -13364,6 +13418,7 @@ async function _restoreWorkerSession(){
   }catch(e){
     /* オフライン等: 既存のsessionStorageセッション（8時間期限）をそのまま使う */
   }
+  _sessionRestoreDone=true;   // 修正⑦：ここまで来ればログイン状態は確定
   updateRoleBadge();
   syncUnseiLockByRole();
   var cur=document.querySelector('section.active');
@@ -13474,6 +13529,9 @@ function updateRoleBadge(){
   const lob=document.getElementById('nav-logout-btn');
   if(lob)lob.style.display=role!=='public'?'inline-block':'none';
   if(typeof dbkSyncUI==='function')dbkSyncUI();  // 修正⑤：権限が変わったら対象表示も更新
+  /* 修正⑥：利用者が変わったら、その利用者の領域のデータで一覧を描き直す */
+  try{if(typeof dbkRefreshViews==='function')dbkRefreshViews();}catch(e){}
+  try{if(typeof lgcMaybeShow==='function')lgcMaybeShow();}catch(e){}
 }
 /* ── 修正①：セッション失効時の表示同期（表示専用・認証処理は変更しない）──
  * updateRoleBadge はログイン/ログアウト/読込時しか呼ばれないため、
@@ -13599,6 +13657,47 @@ async function doForcePinChange(){
   alert('パスワードを変更しました。新しいパスワードでもう一度ログインしてください。');
   showLoginOverlay(_authTargetSection);
 }
+/* ── 修正⑦：ログアウト時に画面上の個人情報を初期化 ──────────────
+ * 氏名・生年月日・出生時刻などは保存領域ではなく入力欄とメモリ上にあるため、
+ * ログアウトしただけでは前の利用者の入力が画面に残ってしまう。
+ * ログアウト時に入力欄を初期値へ戻し、計算結果もメモリごと破棄する。
+ * 保存済みデータ（保存命盤・カルテ・スケジュール）は削除しない。 */
+function clearPersonalInputs(){
+  try{
+    ['inp-name','inp-date','inp-time','inp-gender','inp-hour','inp-min'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el)return;
+      if(el.tagName==='SELECT'){el.selectedIndex=0;return;}
+      el.value=(el.defaultValue!==undefined&&el.defaultValue!=='')?el.defaultValue:'';
+    });
+    var rg=document.getElementById('inp-rungetsu');
+    if(rg){rg.checked=false;var note=document.getElementById('rungetsu-note');if(note)note.style.display='none';}
+    var sr=document.getElementById('saved-search');
+    if(sr)sr.value='';
+    /* 計算結果をメモリごと破棄し、命盤表示を消す */
+    try{if(typeof currentResult!=='undefined')currentResult=null;}catch(e){}
+    /* 内容だけを空にする（入れ物のdivは壊さない。壊すと次の計算でエラーになる） */
+    ['meiban-info','today-unsei-body','aisei-result','aisei-prev-a','aisei-prev-b'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el)el.innerHTML='';
+    });
+    var tus=document.getElementById('today-unsei-section');
+    if(tus)tus.style.display='none';
+    ['aisei-sel-a','aisei-sel-b'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el)el.selectedIndex=0;
+    });
+    var wrap=document.getElementById('meiban-wrapper');
+    if(wrap)wrap.style.display='none';
+    var bar=document.getElementById('save-bar');
+    if(bar)bar.style.display='none';
+    /* 保存パネルは閉じた状態に戻す（開いたままだと次の人に一覧が見えるため） */
+    var slw=document.getElementById('saved-list-wrap');
+    if(slw)slw.style.display='none';
+    var arw=document.getElementById('saved-arrow');
+    if(arw)arw.textContent='▼';
+  }catch(e){}
+}
 function showLogoutConfirm(){
   if(confirm('ログアウトしますか？')){
     // サーバー側セッション破棄（アクセス+リフレッシュ両方）
@@ -13616,6 +13715,7 @@ function showLogoutConfirm(){
     renderBasics();
     renderResultByRole();        // 命盤・詳細鑑定・運気などを無料版ロック表示に戻す
     syncUnseiLockByRole();       // 運気グラフのロックを再適用
+    clearPersonalInputs();       // 修正⑦：前の利用者が入力した氏名・生年月日などを画面から消す
     showSection('home');
   }
 }
@@ -13940,10 +14040,27 @@ window.adminSaveOshiraseEdit=function(id){
 ===================================================== */
 var DBK_VERSION=1;
 var DBK_SITE='hoshiyomilune-ziwei';
-var DBK_KEYS={savedCharts:'ziwei_saved_charts',karte:'ziwei_karte_list',schedule:'ziwei_kt_schedule',drafts:'ziwei_oshirase_draft'};
+/* 修正⑥：バックアップも現在の利用者の領域だけを対象にする（下書きは端末共通） */
+function DBK_KEY(kind){
+  if(kind==='drafts')return 'ziwei_oshirase_draft';
+  var base={savedCharts:'ziwei_saved_charts',karte:'ziwei_karte_list',schedule:'ziwei_kt_schedule'}[kind];
+  return dsKey(base);
+}
+var DBK_KEYS={get savedCharts(){return DBK_KEY('savedCharts');},get karte(){return DBK_KEY('karte');},get schedule(){return DBK_KEY('schedule');},get drafts(){return DBK_KEY('drafts');}};
 /* 絶対に書き出さないキー（混入自己チェック用） */
 var DBK_FORBIDDEN=['ziwei_session_v2','ziwei_at','ziwei_rt','ziwei_gh_pat','ziwei_auth_v2','_ktRemember','ziwei_kanteishi_profile','ziwei_remote_config_v1','ziwei_oshirase','ziwei_oshirase_read'];
 
+/* 折りたたみの開閉（初期は閉じた状態。成功時は自動で閉じ、エラー時は開いたまま） */
+window.dbkTogglePanel=function(open){
+  var body=document.getElementById('dbk-body');
+  var arrow=document.getElementById('dbk-arrow');
+  var hd=document.querySelector('#data-backup-box .dbk-hd');
+  if(!body)return;
+  var willOpen=(open===undefined)?(body.style.display==='none'):!!open;
+  body.style.display=willOpen?'block':'none';
+  if(arrow)arrow.textContent=willOpen?'▲':'▼';
+  if(hd)hd.setAttribute('aria-expanded',willOpen?'true':'false');
+};
 function dbkScope(){
   var role=(typeof getCurrentRole==='function')?getCurrentRole():'public';
   if(role==='admin')return{savedCharts:true,karte:true,schedule:true,drafts:true,role:role};
@@ -13956,6 +14073,14 @@ function dbkReadArray(key){
 function dbkMsg(text,color){
   var el=document.getElementById('dbk-msg');
   if(el){el.textContent=text;el.style.color=color||'var(--text2)';}
+  /* 成功メッセージ（緑）のときだけ、少し見せてから自動で折りたたむ。
+     エラー・警告のときは開いたままにして内容を読めるようにする。 */
+  if(color==='#16a34a'){
+    setTimeout(function(){
+      var m=document.getElementById('dbk-msg');
+      if(m&&m.textContent===text&&typeof dbkTogglePanel==='function')dbkTogglePanel(false);
+    },2600);
+  }
 }
 function dbkSyncUI(){
   var box=document.getElementById('data-backup-box');
@@ -13978,6 +14103,8 @@ function dbkBuildBackup(includeDrafts){
     exportedAt:new Date().toISOString(),
     siteName:DBK_SITE,
     dataVersion:1,
+    scope:dsScopeId(),            // 修正⑥：どの利用者の領域から書き出したか
+    scopeName:dsScopeName(),      // 同上（表示用の名前）
     counts:{},
     savedCharts:dbkReadArray(DBK_KEYS.savedCharts)
   };
@@ -14016,6 +14143,113 @@ function dbkDownload(obj,filename){
     return filename;
   }catch(e){return null;}
 }
+/* ── 修正⑥：旧データ（分離前の共通キー）の移行案内 ──────────────
+ * ・管理人がログインしたときだけ表示（無料・鑑定士には出さない）
+ * ・移行はコピーのみ。旧データは削除も変更もしない。
+ * ・完了すると ziwei_legacy_migrated を立て、この端末では二度と表示しない。 */
+var LEGACY_DONE_KEY='ziwei_legacy_migrated';
+function lgcRead(key){
+  try{var v=JSON.parse(localStorage.getItem(key));return Array.isArray(v)?v:[];}catch(e){return[];}
+}
+function lgcCounts(){
+  return{
+    savedCharts:lgcRead(LEGACY_KEYS.savedCharts).length,
+    karte:lgcRead(LEGACY_KEYS.karte).length,
+    schedule:lgcRead(LEGACY_KEYS.schedule).length
+  };
+}
+function lgcHasData(){var c=lgcCounts();return (c.savedCharts+c.karte+c.schedule)>0;}
+function lgcDone(){try{return localStorage.getItem(LEGACY_DONE_KEY)==='1';}catch(e){return true;}}
+function lgcMarkDone(){try{localStorage.setItem(LEGACY_DONE_KEY,'1');}catch(e){}}
+
+function lgcMaybeShow(){
+  try{
+    if(typeof getCurrentRole!=='function'||getCurrentRole()!=='admin')return; // 管理人のみ
+    if(lgcDone())return;                                                      // 移行済みなら二度と出さない
+    if(!lgcHasData())return;                                                  // 旧データが無ければ出さない
+    if(document.getElementById('lgc-overlay'))return;
+    lgcRender();
+  }catch(e){}
+}
+function lgcRender(){
+  var c=lgcCounts();
+  var ov=document.createElement('div');
+  ov.id='lgc-overlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(10,5,0,.8);backdrop-filter:blur(4px);z-index:99995;display:flex;align-items:center;justify-content:center;padding:1rem';
+  var box=document.createElement('div');
+  box.style.cssText='background:linear-gradient(160deg,#fffdf5,#fff8e8);border:1px solid rgba(160,110,40,.3);border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:1.2rem;box-shadow:0 12px 48px rgba(0,0,0,.45);color:#2d1a00';
+  var h='';
+  h+='<div style="font-size:1rem;font-weight:800;color:#b45309;margin-bottom:.6rem">📦 この端末に以前のデータが残っています</div>';
+  h+='<div style="font-size:.82rem;line-height:1.85;margin-bottom:.7rem">利用者ごとにデータを分けて保存する方式に変わりました。以前の保存データは<strong>そのまま残しています</strong>ので、必要なものをコピーして引き継げます。</div>';
+  h+='<div style="background:rgba(180,83,9,.07);border:1px solid rgba(180,83,9,.2);border-radius:10px;padding:.6rem .8rem;font-size:.82rem;line-height:1.9;margin-bottom:.8rem">';
+  h+='保存命盤：'+c.savedCharts+'件<br>カルテ：'+c.karte+'件<br>スケジュール：'+c.schedule+'件</div>';
+  h+='<div style="font-size:.78rem;font-weight:700;margin-bottom:.3rem">コピー先を選んでください</div>';
+  h+='<select id="lgc-dest" class="admin-input" style="width:100%;font-size:.85rem;margin-bottom:.5rem">';
+  h+='<option value="admin">管理人用（このアカウント）</option>';
+  var s=(typeof getSession==='function')?getSession():null;
+  if(s&&s.kanteId)h+='<option value="self">自分の鑑定士ID用（'+escHtml(String(s.kanteId))+'）</option>';
+  h+='<option value="guest">無料利用者用（ログインしていない状態で見えるデータ）</option>';
+  h+='</select>';
+  h+='<div style="font-size:.75rem;color:#8a6a45;line-height:1.8;margin-bottom:.8rem">・コピーのみで、以前のデータは削除しません。<br>・コピー先に同じデータがある場合は重複を避けてスキップします。<br>・「コピーする」を実行すると、この案内は今後表示されません。</div>';
+  h+='<div id="lgc-msg" style="font-size:.78rem;line-height:1.8;margin-bottom:.5rem;white-space:pre-wrap"></div>';
+  h+='<button id="lgc-run" class="admin-btn primary" style="width:100%;font-size:.85rem;margin-bottom:.4rem">📥 コピーする</button>';
+  h+='<button id="lgc-later" class="admin-btn" style="width:100%;font-size:.8rem;margin-bottom:.4rem">あとで（次回また表示）</button>';
+  h+='<button id="lgc-never" class="admin-btn" style="width:100%;font-size:.78rem;color:#8a6a45">コピーせずに今後表示しない</button>';
+  box.innerHTML=h;
+  ov.appendChild(box);
+  document.body.appendChild(ov);
+  document.getElementById('lgc-run').onclick=lgcRun;
+  document.getElementById('lgc-later').onclick=function(){ov.remove();};
+  document.getElementById('lgc-never').onclick=function(){
+    if(!confirm('この案内を今後表示しないようにします。\n以前のデータは削除されず、この端末に残ります。\nよろしいですか？'))return;
+    lgcMarkDone();ov.remove();
+  };
+}
+function lgcRun(){
+  var destSel=document.getElementById('lgc-dest');
+  var dest=destSel?destSel.value:'admin';
+  var scope='admin';
+  if(dest==='guest')scope='guest';
+  else if(dest==='self'){
+    var s=(typeof getSession==='function')?getSession():null;
+    var id=String((s&&s.kanteId)||'').toLowerCase().replace(/[^a-z0-9-]/g,'');
+    scope=id?('kt-'+id.replace(/^kt-?/,'')):'admin';
+  }
+  var plan=[
+    {kind:'savedCharts',base:LEGACY_KEYS.savedCharts,label:'保存命盤'},
+    {kind:'karte',base:LEGACY_KEYS.karte,label:'カルテ'},
+    {kind:'schedule',base:LEGACY_KEYS.schedule,label:'スケジュール'}
+  ];
+  var lines=[],added=0,skipped=0,errors=0;
+  plan.forEach(function(t){
+    if(scope==='guest'&&t.kind!=='savedCharts'){lines.push(t.label+'：無料利用者用では扱わないためコピーしません');return;}
+    var from=lgcRead(t.base);
+    if(!from.length){lines.push(t.label+'：0件');return;}
+    var toKey=t.base+DS_SEP+scope;
+    var cur=[];
+    try{var v=JSON.parse(localStorage.getItem(toKey));if(Array.isArray(v))cur=v;}catch(e){}
+    var a=0,sk=0;
+    from.forEach(function(it){
+      try{
+        var dup=cur.some(function(x){return (typeof dbkSame==='function')?dbkSame(t.kind,x,it):String(x.id)===String(it.id);});
+        if(dup){sk++;return;}
+        cur.push(it);a++;
+      }catch(e){errors++;}
+    });
+    try{localStorage.setItem(toKey,JSON.stringify(cur));}
+    catch(e){errors+=a;a=0;}
+    added+=a;skipped+=sk;
+    lines.push(t.label+'：コピー '+a+'件 / 重複スキップ '+sk+'件');
+  });
+  var msg=document.getElementById('lgc-msg');
+  if(msg){msg.style.color='#16a34a';msg.textContent='✅ コピーが完了しました。\n'+lines.join('\n')+'\n合計：コピー '+added+'件 / スキップ '+skipped+'件 / エラー '+errors+'件\n（以前のデータはそのまま残しています）';}
+  lgcMarkDone();
+  try{if(typeof dbkRefreshViews==='function')dbkRefreshViews();}catch(e){}
+  var run=document.getElementById('lgc-run');if(run){run.textContent='✓ 完了';run.disabled=true;}
+  var later=document.getElementById('lgc-later');if(later)later.textContent='閉じる';
+  var never=document.getElementById('lgc-never');if(never)never.style.display='none';
+}
+
 window.dbkExport=function(){
   var cb=document.getElementById('dbk-include-drafts');
   var data=dbkBuildBackup(!!(cb&&cb.checked));
@@ -14036,7 +14270,7 @@ function dbkValidate(raw){
   if(!obj||typeof obj!=='object'||Array.isArray(obj))return{ok:false,error:'バックアップファイルの形式ではありません。'};
   if(obj.backupVersion!==DBK_VERSION)return{ok:false,error:'このバックアップのバージョンには対応していません。'};
   if(obj.siteName!==DBK_SITE)return{ok:false,error:'別のサイトのバックアップファイルのようです。'};
-  var allowed=['backupVersion','exportedAt','siteName','dataVersion','counts','savedCharts','karte','schedule','drafts'];
+  var allowed=['backupVersion','exportedAt','siteName','dataVersion','scope','scopeName','counts','savedCharts','karte','schedule','drafts'];
   var keys=Object.keys(obj);
   for(var i=0;i<keys.length;i++){if(allowed.indexOf(keys[i])<0)return{ok:false,error:'知らない項目が含まれています（'+keys[i]+'）。安全のため中止しました。'};}
   var bad=dbkSafetyCheck(raw);
@@ -14069,10 +14303,30 @@ window.dbkImport=function(inp){
   if(!inp||!inp.files||!inp.files[0])return;
   var file=inp.files[0];
   inp.value='';
+  /* 修正⑦：ログイン状態の確認が終わる前は判定できないため中止（guest誤判定の防止） */
+  if(typeof _sessionRestoreDone!=='undefined'&&!_sessionRestoreDone){
+    dbkMsg('⏳ ログイン状態を確認中です。数秒後にもう一度お試しください。\n（この端末のデータは変更していません）','#b45309');
+    return;
+  }
   var reader=new FileReader();
   reader.onload=function(e){
     var res=dbkValidate(String(e.target.result||''));
     if(!res.ok){dbkMsg('⚠️ 読み込みを中止しました。\n'+res.error+'\n（この端末のデータは変更していません）','#dc2626');return;}
+    /* 修正⑦：別の利用者のバックアップは読み込まない（続行・強制読み込みはできない）
+     * 比較は大文字小文字の表記ゆれだけ正規化し、IDが異なる場合は必ず拒否する。
+     *   無料 → guest のみ ／ 管理人 → admin のみ ／ 鑑定士 → 自分のIDのみ */
+    var nowScope=String(dsScopeId()||'').toLowerCase();
+    var fileScope=String(res.data.scope||'').toLowerCase();
+    /* 修正⑦：scopeが記録されていない古い形式のファイルは、誰のものか判断できないため専用の案内を出す */
+    if(!fileScope){
+      dbkMsg('⛔ このファイルは古い形式で、どの利用者のものか確認できないため、安全上読み込めません。\n新しい形式で書き出し直してください。\n（この端末のデータは変更していません）','#dc2626');
+      return;
+    }
+    if(fileScope!==nowScope){
+      var fromName=res.data.scopeName||dsScopeName(fileScope);
+      dbkMsg('⛔ このバックアップは現在の利用者のデータではないため、読み込めません。\n書き出した利用者：'+fromName+'\n現在の利用者：'+dsScopeName(nowScope)+'\n（この端末のデータは変更していません）','#dc2626');
+      return;
+    }
     var mode='add';
     var radios=document.getElementsByName('dbk-mode');
     for(var i=0;i<radios.length;i++){if(radios[i].checked)mode=radios[i].value;}
@@ -15004,10 +15258,10 @@ function _showSaveToast(text,isErr){
 
 // ─── カルテ CRUD ─────────────────────────
 function getKarteList(){
-  try{var d=JSON.parse(localStorage.getItem(KT_KARTE_KEY));return(Array.isArray(d)&&d.length>0)?d:(BAKED_KARTE.length>0?BAKED_KARTE:[]);}
+  try{var d=JSON.parse(localStorage.getItem(dsKey(KT_KARTE_KEY)));return(Array.isArray(d)&&d.length>0)?d:(BAKED_KARTE.length>0?BAKED_KARTE:[]);}
   catch{return BAKED_KARTE.length>0?BAKED_KARTE:[];}
 }
-function saveKarteList(list){localStorage.setItem(KT_KARTE_KEY,JSON.stringify(list));}
+function saveKarteList(list){localStorage.setItem(dsKey(KT_KARTE_KEY),JSON.stringify(list));}
 
 function openKarteModal(id){
   const today=new Date().toISOString().slice(0,10);
@@ -15155,10 +15409,10 @@ function renderHistoryList(){
 
 // ─── スケジュール helpers ─────────────────────────
 function getSchedule(){
-  try{var d=JSON.parse(localStorage.getItem(KT_SCHEDULE_KEY));return(Array.isArray(d)&&d.length>0)?d:(BAKED_SCHEDULE.length>0?BAKED_SCHEDULE:[]);}
+  try{var d=JSON.parse(localStorage.getItem(dsKey(KT_SCHEDULE_KEY)));return(Array.isArray(d)&&d.length>0)?d:(BAKED_SCHEDULE.length>0?BAKED_SCHEDULE:[]);}
   catch(e){return BAKED_SCHEDULE.length>0?BAKED_SCHEDULE:[];}
 }
-function saveSchedule(list){localStorage.setItem(KT_SCHEDULE_KEY,JSON.stringify(list));}
+function saveSchedule(list){localStorage.setItem(dsKey(KT_SCHEDULE_KEY),JSON.stringify(list));}
 
 // ─── カレンダー state ─────────────────────────────
 const ktCalState={year:new Date().getFullYear(),month:new Date().getMonth(),selectedDate:null};
