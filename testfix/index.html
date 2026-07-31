@@ -618,6 +618,9 @@ section.active{display:block}
 .pip-sec{margin-bottom:1rem;padding:.8rem .95rem;background:rgba(255,255,255,.038);border-radius:11px;border:1px solid var(--border)}
 .pip-sec h4{font-size:.8rem;font-weight:700;color:var(--gold2);margin-bottom:.45rem;letter-spacing:.04em}
 .pip-body{font-size:.84rem;color:var(--text2);line-height:1.75}
+/* 修正⑧⑨：ブロック内の小見出し（控えめなアクセント・既存の余白感に合わせる） */
+.pip-subhd{font-size:.75rem;font-weight:700;color:var(--gold2);margin:.7rem 0 .3rem;letter-spacing:.02em}
+.pip-subhd:first-child{margin-top:0}
 .pip-trait{font-size:.79rem;color:var(--text3);margin-top:.35rem;line-height:1.65}
 .pip-kika-item{margin-top:.45rem;padding:.5rem .7rem;border-radius:8px;border-left:3px solid var(--gold2);background:rgba(255,255,255,.04);font-size:.82rem;color:var(--text2);line-height:1.65}
 .pip-kw{display:inline-block;font-size:.7rem;padding:2px 8px;border-radius:9999px;background:rgba(124,58,237,.1);color:var(--purple2);border:1px solid rgba(124,58,237,.18);margin:.18rem .15rem 0 0}
@@ -7661,14 +7664,17 @@ function buildPalaceHTML(branch,r,compact){
   var starNames=mainStarsHere.join('・')||(palaceName+'の');
   H+='<div class="pip-body" style="font-size:.8rem;color:var(--text2);line-height:1.8">';
   if(mainStarsHere.length) H+='<strong style="color:var(--text1)">'+palaceName+'に '+mainStarsHere.join('・')+' が配置されているあなたは、</strong><br>';
-  H+=pData.theme;
-  /* 修正⑧⑨：命宮の共通説明の直後に、主星×宮の短い要約を続けて表示（すぐ把握できる要約） */
-  var _sumTxts=mainStarsHere.map(function(sn){
-    if(!hasMeiReading(sn,palIdx))return null;   // 統合鑑定文がある星のみここで要約を出す
+  /* 修正⑧⑨：統合鑑定文がある場合は小見出しを付けて区切りを分かりやすくする */
+  var _sumPairs=mainStarsHere.map(function(sn){
+    if(!hasMeiReading(sn,palIdx))return null;
     var sip=STAR_IN_PALACE[sn]&&STAR_IN_PALACE[sn][palIdx];
-    return sip||null;
+    return sip?{name:sn,txt:sip}:null;
   }).filter(Boolean);
-  if(_sumTxts.length) H+='<div style="margin-top:.5rem">'+_sumTxts.join('<br>')+'</div>';
+  if(_sumPairs.length) H+='<div class="pip-subhd">■ '+palaceName+'とは？</div>';
+  H+=pData.theme;
+  _sumPairs.forEach(function(x){
+    H+='<div class="pip-subhd">■ '+x.name+'星が'+palaceName+'にあると…</div>'+x.txt;
+  });
   H+='</div>';
   if(meta.note){
     H+='<div style="font-size:.73rem;color:var(--text2);padding:.4rem .62rem;background:rgba(99,102,241,.07);border-radius:7px;border-left:3px solid #818cf8;margin-top:.5rem;line-height:1.62">💡 '+meta.note+'</div>';
@@ -7715,7 +7721,7 @@ function buildPalaceHTML(branch,r,compact){
   var _impSubs=subStarsHere.filter(function(sn){return SUB_STAR_PALACE_CTX[sn];});
   if(_impSubs.length){
     H+='<div style="'+(_allMerged?'':'margin-top:.5rem;padding-top:.5rem;border-top:1px solid rgba(94,234,212,.18);')+'">';
-    H+='<div style="font-size:.72rem;font-weight:700;color:#5eead4;margin-bottom:.28rem">副星の影響（'+_impSubs.join('・')+'）</div>';
+    H+='<div class="pip-subhd" style="color:#5eead4">■ 副星の影響（'+_impSubs.join('・')+'）</div>';
     var _subTxts=_impSubs.map(function(sn){
       var ctx=SUB_STAR_PALACE_CTX[sn][palIdx];
       return '<div style="font-size:.77rem;color:var(--text2);line-height:1.82;margin-bottom:.22rem"><span style="color:#5eead4;font-weight:600">【'+sn+'】</span>'+ctx+'</div>';
@@ -7783,9 +7789,12 @@ function buildPalaceHTML(branch,r,compact){
       if(hasMeiReading(x.name,palIdx)){
         /* 既存の .pip-body と同じ字送り・行間で表示し、段落は<p>で既存と同じ間隔にする */
         var _pars=MEI_STAR_READING[x.name].split('\n\n');
-        H+='<div class="pip-body mei-reading">'+_pars.map(function(par,i){
+        H+='<div class="pip-body mei-reading">';
+        H+='<div class="pip-subhd">■ '+x.name+'星が持つ本来の力</div>';
+        H+=_pars.map(function(par,i){
           return '<p style="margin:0'+(i<_pars.length-1?' 0 .55rem':'')+'">'+par+'</p>';
-        }).join('')+'</div>';
+        }).join('');
+        H+='</div>';
         return;
       }
       H+='<div style="margin-bottom:.8rem;padding:.72rem .9rem;border-radius:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.22)">';
