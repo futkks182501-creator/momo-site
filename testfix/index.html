@@ -7948,18 +7948,10 @@ function buildPalaceHTML(branch,r,compact){
         }
         H+='</div>';
       } else {
+        H+='<div style="font-size:.78rem;color:var(--text2);line-height:1.78">'+sd.desc+'</div>';
         if(mainStarsHere.length){
-          H+='<div style="font-size:.72rem;color:#6d28d9;margin-top:.25rem">▷ '+mainStarsHere.join('・')+'＋'+sn+'：主星の力に「'+sd.role+'」の色が加わり、'+palaceName+'のテーマがより複合的に表れます。</div>';
+          H+='<div style="font-size:.72rem;color:#6d28d9;margin-top:.25rem;padding-top:.25rem;border-top:1px solid rgba(109,40,217,.15)">▷ '+mainStarsHere.join('・')+'＋'+sn+'：主星の力に「'+sd.role+'」の色が加わり、'+palaceName+'のテーマがより複合的に表れます。</div>';
         }
-      }
-      /* 修正⑩：副星そのものの説明（SUB_STAR_DATA.desc）は宮別解説と分けて開閉式で保持 */
-      if(sd.desc){
-        H+='<div class="pip-accordion" style="margin-top:.45rem;margin-bottom:0">';
-        H+='<button class="pip-acc-hdr" onclick="togglePipAccordion(this)" style="color:#6d28d9">';
-        H+='📖 '+starLabel(sn)+'そのものの性質を見る<span class="pip-acc-arr">▶</span>';
-        H+='</button>';
-        H+='<div class="pip-acc-body"><div style="font-size:.78rem;color:var(--text2);line-height:1.78">'+sd.desc+'</div></div>';
-        H+='</div>';
       }
       H+='</div>';
     });
