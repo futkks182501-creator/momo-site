@@ -2261,7 +2261,7 @@ section.active{display:block}
             <strong>STORES（ストアーズ）</strong><br>
             <!-- 修正⑪: href は _refreshStoresLink() が profile.sites.stores から設定する。
                  未設定のときは href を持たせず、押せない状態にする（"#" は現在のサイトへ遷移するため使わない） -->
-            <a id="si-stores-link" target="_blank" rel="noopener" aria-disabled="true" style="color:var(--purple2);font-size:.82rem;opacity:.55;pointer-events:none">→ STORESショップページ（準備中）</a>
+            <a id="si-stores-link" target="_blank" rel="noopener" aria-disabled="true" style="color:var(--text2);font-size:.82rem;pointer-events:none;cursor:default;text-decoration:none">ショップページは現在準備中です</a>
           </li>
         </ul>
         <h4>販売者情報・特定商取引法表記</h4>
@@ -3278,6 +3278,8 @@ function showSection(id){
   if(id==='siteinfo'){document.getElementById('footer-year').textContent=new Date().getFullYear();var _sl=document.getElementById('si-line-btn');if(_sl)_sl.href=getLineUrl();if(!isLineUrlSet())_refreshAllLineUrls();}
   if(id==='blog') renderBlog();
   if(id==='oshirase'){renderOshirase();updateOshiraseBadge();}
+  /* 修正⑪: ログイン状態によって文言が変わるため、サイト情報を開くたびに更新する */
+  if(id==='siteinfo'&&typeof _refreshStoresLink==='function')_refreshStoresLink();
   if(id==='stars') renderStars();
   if(id==='palaces') renderPalaces();
   if(id==='contact'){const cb=document.getElementById('contact-line-btn');if(cb)cb.href=getLineUrl();if(!isLineUrlSet())_refreshAllLineUrls();renderProfileView();}
@@ -15300,17 +15302,35 @@ function _refreshStoresLink(){
   var sites=(getProfile()||{}).sites||{};
   var url=String(sites.stores||'').trim();
   if(url&&/^https?:\/\//i.test(url)){
+    /* URLが設定されていれば自動でリンクになる */
     a.setAttribute('href',url);
     a.removeAttribute('aria-disabled');
+    a.removeAttribute('title');
     a.style.pointerEvents='';
     a.style.opacity='';
+    a.style.cursor='';
+    a.style.color='var(--purple2)';
+    a.style.textDecoration='';
     a.textContent='→ STORESショップページ（特定商取引法表記あり）';
   }else{
+    /* 未設定のときは href を持たせず、状況が分かる文言にする。
+       管理人には設定場所を案内し、一般の利用者には準備中であることを伝える。 */
     a.removeAttribute('href');
     a.setAttribute('aria-disabled','true');
     a.style.pointerEvents='none';
-    a.style.opacity='.55';
-    a.textContent='→ STORESショップページ（準備中）';
+    a.style.opacity='1';
+    a.style.cursor='default';
+    a.style.textDecoration='none';
+    var _isAdmin=(typeof getCurrentRole==='function'&&getCurrentRole()==='admin');
+    if(_isAdmin){
+      a.style.color='#f59e0b';
+      a.textContent='⚠ ショップURLが未設定です（管理画面 → プロフィール編集 → 「ストアーズ URL」から設定できます）';
+      a.setAttribute('title','管理人にのみ表示されています');
+    }else{
+      a.style.color='var(--text2)';
+      a.textContent='ショップページは現在準備中です';
+      a.removeAttribute('title');
+    }
   }
 }
 
