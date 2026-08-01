@@ -2259,7 +2259,9 @@ section.active{display:block}
         <ul>
           <li>
             <strong>STORES（ストアーズ）</strong><br>
-            <a id="si-stores-link" href="#" target="_blank" rel="noopener" style="color:var(--purple2);font-size:.82rem">→ STORESショップページ（特定商取引法表記あり）</a>
+            <!-- 修正⑪: href は _refreshStoresLink() が profile.sites.stores から設定する。
+                 未設定のときは href を持たせず、押せない状態にする（"#" は現在のサイトへ遷移するため使わない） -->
+            <a id="si-stores-link" target="_blank" rel="noopener" aria-disabled="true" style="color:var(--text2);font-size:.82rem;pointer-events:none;cursor:default;text-decoration:none">ショップページは現在準備中です</a>
           </li>
         </ul>
         <h4>販売者情報・特定商取引法表記</h4>
@@ -3276,6 +3278,8 @@ function showSection(id){
   if(id==='siteinfo'){document.getElementById('footer-year').textContent=new Date().getFullYear();var _sl=document.getElementById('si-line-btn');if(_sl)_sl.href=getLineUrl();if(!isLineUrlSet())_refreshAllLineUrls();}
   if(id==='blog') renderBlog();
   if(id==='oshirase'){renderOshirase();updateOshiraseBadge();}
+  /* 修正⑪: ログイン状態によって文言が変わるため、サイト情報を開くたびに更新する */
+  if(id==='siteinfo'&&typeof _refreshStoresLink==='function')_refreshStoresLink();
   if(id==='stars') renderStars();
   if(id==='palaces') renderPalaces();
   if(id==='contact'){const cb=document.getElementById('contact-line-btn');if(cb)cb.href=getLineUrl();if(!isLineUrlSet())_refreshAllLineUrls();renderProfileView();}
@@ -13600,29 +13604,64 @@ async function _restoreWorkerSession(){
 function _getRemoteConfig(){
   try{return JSON.parse(localStorage.getItem(REMOTE_CONFIG_KEY))||null;}catch(e){return null;}
 }
+/* 修正⑪: 公開設定の取得
+ * - 存在しない data/config.json へのフォールバックは削除（常に404だった）
+ * - 取得に失敗してもローカルキャッシュは消さない（既存のお知らせが消えないようにする）
+ * - 失敗時は1回だけ自動リトライし、タブ復帰時に古ければ再取得する（古いまま固定されない）
+ * - 成功・失敗にかかわらずUIを再描画する（通信完了前にタブを開いても最新に更新される） */
+var REMOTE_CONFIG_SYNC_KEY='ziwei_remote_config_synced_at';
+var _remoteConfigError=false;
+var _remoteConfigLoading=false;
+var _remoteConfigRetryDone=false;
+function _remoteConfigSyncedAt(){
+  try{return parseInt(localStorage.getItem(REMOTE_CONFIG_SYNC_KEY)||'0',10)||0;}catch(e){return 0;}
+}
+function _refreshRemoteConfigUI(){
+  if(typeof renderProfileView==='function')renderProfileView();
+  if(typeof updateOshiraseBadge==='function')updateOshiraseBadge();
+  if(typeof renderOshirase==='function')renderOshirase();
+  if(typeof _refreshAllLineUrls==='function')_refreshAllLineUrls();
+  if(typeof _refreshStoresLink==='function')_refreshStoresLink();
+}
 async function _loadRemoteConfig(){
+  if(_remoteConfigLoading)return false;
+  _remoteConfigLoading=true;
   var cfg=null;
-  // 1) Worker公開API（認証不要・認証情報は一切含まれない）
+  // Worker公開API（認証不要・認証情報は一切含まれない）
   try{
     var res=await fetch(_AUTH_API+'/api/public/config',{cache:'no-store'});
     if(res.ok)cfg=await res.json();
   }catch(e){}
-  // 2) フォールバック: サイト同梱の data/config.json
-  if(!cfg||typeof cfg!=='object'){
+  var okFlag=!!(cfg&&typeof cfg==='object'&&!Array.isArray(cfg));
+  if(okFlag){
     try{
-      var res2=await fetch('data/config.json?_='+Date.now(),{cache:'no-store'});
-      if(res2.ok)cfg=await res2.json();
+      localStorage.setItem(REMOTE_CONFIG_KEY,JSON.stringify(cfg));
+      localStorage.setItem(REMOTE_CONFIG_SYNC_KEY,String(Date.now()));
     }catch(e){}
+    _remoteConfigError=false;
+  }else{
+    /* 失敗時もキャッシュは保持する（消さない） */
+    _remoteConfigError=true;
   }
-  if(cfg&&typeof cfg==='object'){
-    try{localStorage.setItem(REMOTE_CONFIG_KEY,JSON.stringify(cfg));}catch(e){}
-    // 反映が必要なUIを再描画
-    if(typeof renderProfileView==='function')renderProfileView();
-    if(typeof updateOshiraseBadge==='function')updateOshiraseBadge();
-    if(typeof _refreshAllLineUrls==='function')_refreshAllLineUrls();
-  }
-  /* いずれも失敗した場合はローカルキャッシュを使用 */
+  _remoteConfigLoading=false;
+  _refreshRemoteConfigUI();
+  if(!okFlag)_scheduleRemoteConfigRetry();
+  return okFlag;
 }
+function _scheduleRemoteConfigRetry(){
+  if(_remoteConfigRetryDone)return;
+  _remoteConfigRetryDone=true;
+  setTimeout(function(){_loadRemoteConfig();},4000);
+}
+window._retryRemoteConfig=function(){
+  _remoteConfigRetryDone=false;
+  _loadRemoteConfig();
+};
+/* タブ復帰時、最後の取得成功から5分以上経っていれば再取得 */
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden)return;
+  if(Date.now()-_remoteConfigSyncedAt()>5*60*1000)_loadRemoteConfig();
+});
 function getSession(){
   try{
     const s=JSON.parse(sessionStorage.getItem(ZIWEI_SESSION_KEY));
@@ -14021,6 +14060,13 @@ function renderOshirase(){
     return n.type==='all'||(role!=='public'&&n.type==='kante');
   }).sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
   if(!visible.length){
+    /* 修正⑪: 取得に失敗していてキャッシュも無い場合は「ありません」ではなく再読み込みを案内する */
+    if(typeof _remoteConfigError!=='undefined'&&_remoteConfigError&&!_getRemoteConfig()){
+      list.innerHTML='<div style="text-align:center;padding:2.2rem 0">'
+        +'<p style="color:var(--text2);font-size:.86rem;margin-bottom:.8rem">お知らせを読み込めませんでした。<br>通信環境をご確認のうえ、もう一度お試しください。</p>'
+        +'<button class="admin-btn" onclick="_retryRemoteConfig()">🔄 再読み込み</button></div>';
+      return;
+    }
     list.innerHTML='<p style="text-align:center;color:var(--text2);font-size:.86rem;padding:2.5rem 0">現在お知らせはありません</p>';
     return;
   }
@@ -15243,6 +15289,49 @@ function renderProfileView(){
   var _p2=getProfile();
   var _fn=document.getElementById('footer-name');
   if(_fn&&_p2.name) _fn.textContent=_p2.name;
+  // 修正⑪: 特定商取引法タブのSTORESリンクも同じ profile.sites.stores から更新する
+  _refreshStoresLink();
+}
+
+/* 修正⑪: 特定商取引法タブのSTORESリンクを profile.sites.stores から設定する。
+ * プロフィール内のSTORESボタン（sites.stores）と同じURLを使用。
+ * 未設定・不正なURLのときは href を付けず、押せない状態にする。 */
+function _refreshStoresLink(){
+  var a=document.getElementById('si-stores-link');
+  if(!a)return;
+  var sites=(getProfile()||{}).sites||{};
+  var url=String(sites.stores||'').trim();
+  if(url&&/^https?:\/\//i.test(url)){
+    /* URLが設定されていれば自動でリンクになる */
+    a.setAttribute('href',url);
+    a.removeAttribute('aria-disabled');
+    a.removeAttribute('title');
+    a.style.pointerEvents='';
+    a.style.opacity='';
+    a.style.cursor='';
+    a.style.color='var(--purple2)';
+    a.style.textDecoration='';
+    a.textContent='→ STORESショップページ（特定商取引法表記あり）';
+  }else{
+    /* 未設定のときは href を持たせず、状況が分かる文言にする。
+       管理人には設定場所を案内し、一般の利用者には準備中であることを伝える。 */
+    a.removeAttribute('href');
+    a.setAttribute('aria-disabled','true');
+    a.style.pointerEvents='none';
+    a.style.opacity='1';
+    a.style.cursor='default';
+    a.style.textDecoration='none';
+    var _isAdmin=(typeof getCurrentRole==='function'&&getCurrentRole()==='admin');
+    if(_isAdmin){
+      a.style.color='#f59e0b';
+      a.textContent='⚠ ショップURLが未設定です（管理画面 → プロフィール編集 → 「ストアーズ URL」から設定できます）';
+      a.setAttribute('title','管理人にのみ表示されています');
+    }else{
+      a.style.color='var(--text2)';
+      a.textContent='ショップページは現在準備中です';
+      a.removeAttribute('title');
+    }
+  }
 }
 
 function openProfileModal(){
