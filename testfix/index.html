@@ -7286,6 +7286,70 @@ function withYomiSmall(name){
   return y ? '<span style="font-size:.72em;opacity:.7;margin-left:.2em">（'+y+'）</span>' : '';
 }
 
+
+/* ─── 修正⑮：鑑定士向け専門解説（🔐）───────────────────
+ * 情報源（Excelシート）に根拠のある記述のみを収録する。推測で補完しない。
+ * 無料版の表示内容（統合鑑定文・宮専用3項目）には一切影響しない。
+ * PALACE_STAR_PRO[宮index][星名] = {t:本文, src:出典}
+ * 宮レベルの解説は既存の PALACE_DATA（desc/theme/tip）をそのまま使う。 */
+const PRO_SRC_MASTER='紫微斗数読み解きかた.xlsx / マスターシート';
+const PALACE_STAR_PRO={
+  5:{ /* 疾厄宮 */
+    '武曲':{t:'喘息や鼻血、鼻づまりを引き起こしやすい体質。お酒に弱い傾向。',src:PRO_SRC_MASTER},
+    '太陰':{t:'腎臓、消化器官、腸、目、生殖器、腰に注意。乳腺炎・子宮筋腫・糖尿病にも留意。',src:PRO_SRC_MASTER},
+    '七殺':{t:'肝臓、肺、腸に注意。短気な性格を改めることが、そのまま健康につながる。',src:PRO_SRC_MASTER}
+  },
+  8:{ /* 官禄宮 */
+    '巨門':{t:'専門的な職種、あるいは巧みな話術を生かした講師・営業・アナウンサーなどの仕事が吉。',src:PRO_SRC_MASTER},
+    '太陰':{t:'芸術関係、マスコミ、文章、音楽、哲学、占術、学術研究の分野で活躍する。',src:PRO_SRC_MASTER},
+    '貪狼':{t:'人を楽しませる仕事が適職。文化教室や習い事の事業が向いている。',src:PRO_SRC_MASTER}
+  },
+  4:{ /* 財帛宮 */
+    '天梁':{t:'親分肌で大盤振る舞いしがち。吉星がないと貯金は難しい。',src:PRO_SRC_MASTER},
+    '七殺':{t:'ギャンブルや投資には向かない。吉星が入れば損失を取り戻すことができる。',src:PRO_SRC_MASTER},
+    '貪狼':{t:'社交術と遊び心が商売に結びつき、基本的には利益をあげられる。',src:PRO_SRC_MASTER}
+  }
+};
+function palaceStarPro(star,palIdx){
+  var p=PALACE_STAR_PRO[palIdx];
+  return (p&&p[star])||null;
+}
+/* 鑑定士向け専門解説ブロックを組み立てる（鑑定士・管理人のみ／初期は閉じた状態） */
+function buildProSection(palIdx,mainStars){
+  if(typeof isKante!=='function'||!isKante())return '';
+  var pd=(typeof PALACE_DATA!=='undefined'&&PALACE_DATA[palIdx])||null;
+  var stars=(mainStars||[]).map(function(sn){return {name:sn,pro:palaceStarPro(sn,palIdx)};});
+  var hasStar=stars.some(function(x){return x.pro;});
+  if(!pd&&!hasStar)return '';
+  var H='<div class="pip-accordion" style="margin-top:.7rem">';
+  H+='<button class="pip-acc-hdr" onclick="togglePipAccordion(this)" style="color:#6d28d9">';
+  H+='🔐 鑑定士向け専門解説<span class="pip-acc-arr">▶</span>';
+  H+='</button><div class="pip-acc-body">';
+  if(pd){
+    H+='<div style="font-size:.7rem;font-weight:700;color:#6d28d9;margin-bottom:.25rem">📖 宮全体の見方</div>';
+    if(pd.theme)H+='<div style="font-size:.75rem;color:var(--text2);margin-bottom:.3rem"><strong>テーマ：</strong>'+pd.theme+'</div>';
+    if(pd.desc)H+='<div style="font-size:.77rem;color:var(--text2);line-height:1.85;margin-bottom:.45rem">'+pd.desc+'</div>';
+    if(pd.tip)H+='<div style="font-size:.75rem;color:var(--text2);line-height:1.8;padding:.5rem .7rem;background:rgba(109,40,217,.06);border-left:3px solid #6d28d9;border-radius:0 8px 8px 0">💡 '+pd.tip+'</div>';
+  }
+  if(hasStar){
+    H+='<div style="font-size:.7rem;font-weight:700;color:#6d28d9;margin:.6rem 0 .25rem">⭐ 星別の専門的な見方</div>';
+    stars.forEach(function(x){
+      if(!x.pro)return;
+      H+='<div style="margin-bottom:.4rem;padding:.5rem .7rem;background:rgba(13,148,136,.045);border-left:3px solid #0d9488;border-radius:0 8px 8px 0">';
+      H+='<div style="font-size:.75rem;font-weight:700;color:#6d28d9;margin-bottom:.15rem">'+starLabel(x.name)+'</div>';
+      H+='<div style="font-size:.77rem;color:var(--text2);line-height:1.8">'+x.pro.t+'</div>';
+      H+='<div style="font-size:.66rem;color:var(--text3);opacity:.75;margin-top:.25rem">出典：'+x.pro.src+'</div>';
+      H+='</div>';
+    });
+    var none=stars.filter(function(x){return !x.pro;}).map(function(x){return x.name;});
+    if(none.length){
+      H+='<div style="font-size:.72rem;color:var(--text3);opacity:.8;margin-top:.3rem">※ '+none.join('・')+' … 情報源に記載なし</div>';
+    }
+  }
+  H+='</div></div>';
+  return H;
+}
+
 /* 修正⑩：星名に「星」を付ける（火星・鈴星のように既に「星」で終わる名は二重に付けない） */
 function starLabel(n){ return /星$/.test(n) ? n : n+'星'; }
 
@@ -8404,6 +8468,8 @@ function buildPalaceHTML(branch,r,compact){
       H+='</div>';
     });
   }
+  /* 修正⑮：鑑定士・管理人のみ「🔐 鑑定士向け専門解説」を統合鑑定文の下に追加（初期は閉じた状態） */
+  H+=buildProSection(palIdx,mainStarsHere);
   H+='</div>';
 
   if(!arguments[3]){H+='<!--GATE_START-->';}
@@ -14473,7 +14539,8 @@ var SITE_UPDATE_DRAFTS=[
   {id:'upd-fd99617',title:'十二宮の解説の重複を整理し、読みやすくしました',body:'これまで、同じ鑑定文が一つの宮の中で二度表示されていた箇所がありました。今回、主星の宮ごとの解説と、副星の影響について、それぞれ一度だけ表示されるように整理しています。あわせて、星そのものの説明は「○○星の本質を詳しく見る」を開くとご覧いただける形にまとめました。鑑定文の内容そのものは変更していません。表示される位置を整えただけですので、これまでお読みいただいた内容がなくなることはありません。',createdAt:'2026-07-31T20:45:00',type:'サイト更新',target:'all',status:'draft',commit:'fd99617'},
   {id:'upd-6197759',title:'お知らせの表示とショップへのリンクを改善しました',body:'お知らせが最新の内容に更新されない場合があった不具合を修正しました。お知らせページを開いたまま最新の内容へ自動で切り替わるようになり、タブを開き直す必要がなくなっています。通信が一時的に不安定なときも、これまでに届いたお知らせが消えないようにしました。あわせて、サイト情報の「特定商取引法」内にあるショップページへのリンクが正しく開くよう修正しています。',createdAt:'2026-08-01T13:20:00',type:'サイト更新',target:'all',status:'draft',commit:'6197759'},
   {id:'upd-a23f290',title:'恋愛・お金・仕事・社会運の鑑定文を追加しました',body:'これまで命宮だけでご覧いただけた詳しい鑑定文を、夫妻宮（恋愛・結婚）、財帛宮（お金・豊かさ）、官禄宮（仕事・働き方）、遷移宮（社会・外の世界）にも追加しました。14の主星それぞれについて、その宮ならではの読み解きをご用意しています。あわせて、各宮の「星の特徴を詳しく見る」を開くと、その宮に合わせた3つの視点（例：恋愛で出やすい癖、お金との付き合い方など）もご覧いただけます。これまでの解説はそのまま残していますので、内容が減ることはありません。',createdAt:'2026-08-01T17:05:00',type:'サイト更新',target:'all',status:'draft',commit:'a23f290'},
-  {id:'upd-26105b0',title:'星や宮の読み仮名を見直しました',body:'サイト内で表示している星名・宮名・専門用語の読み仮名を、あらためて整理して見直しました。一部の読みを正しい表記に改めたほか、これまで読み仮名が付いていなかった用語にも追加しています。ふりがなが付いたことで、はじめて紫微斗数に触れる方にも読み進めやすくなりました。鑑定内容や命盤の計算結果には変更ありません。',createdAt:'2026-08-03T10:10:00',type:'サイト更新',target:'all',status:'draft',commit:'26105b0'}
+  {id:'upd-26105b0',title:'星や宮の読み仮名を見直しました',body:'サイト内で表示している星名・宮名・専門用語の読み仮名を、あらためて整理して見直しました。一部の読みを正しい表記に改めたほか、これまで読み仮名が付いていなかった用語にも追加しています。ふりがなが付いたことで、はじめて紫微斗数に触れる方にも読み進めやすくなりました。鑑定内容や命盤の計算結果には変更ありません。',createdAt:'2026-08-03T10:10:00',type:'サイト更新',target:'all',status:'draft',commit:'26105b0'},
+  {id:'upd-722e649',title:'十二宮すべてに詳しい鑑定文が揃いました',body:'これまで一部の宮だけでご覧いただけた詳しい鑑定文を、十二宮すべてに追加しました。兄弟宮（仲間とのつながり）、子女宮（育てるもの）、疾厄宮（心と体）、奴僕宮（協力者との関係）、田宅宮（住まいと家庭）、福徳宮（心の豊かさ）、父母宮（目上との縁）が新しく加わっています。14の主星それぞれについて、その宮ならではの読み解きと、宮に合わせた3つの視点をご用意しました。これまでの解説はそのまま残していますので、内容が減ることはありません。',createdAt:'2026-08-03T11:25:00',type:'サイト更新',target:'all',status:'draft',commit:'722e649'}
 ];
 
 /* 処理済み（公開または破棄）の下書きIDを記録し、固定配列から復活させない */
