@@ -1239,22 +1239,22 @@ section.active{display:block}
         <p style="font-size:.75rem;color:var(--purple3);margin-top:.5rem;font-weight:600">→ 十二宮を見る</p>
       </div>
       <div class="card" style="cursor:pointer" onclick="showConceptModal('shika')">
-        <h3>四化星</h3>
+        <h3 data-yomi="四化星">四化星</h3>
         <p>化禄・化権・化科・化忌の四化星が宮の星に作用し、特別な力を与えます。</p>
         <p style="font-size:.75rem;color:var(--purple3);margin-top:.5rem;font-weight:600">→ 基礎知識を見る</p>
       </div>
       <div class="card" style="cursor:pointer" onclick="showConceptModal('daigen')">
-        <h3>大限・太歳</h3>
+        <h3 data-yomi-multi="大限,太歳">大限・太歳</h3>
         <p>10年ごとの大限と1年ごとの太歳で、時代ごとの運勢の流れを読みます。</p>
         <p style="font-size:.75rem;color:var(--purple3);margin-top:.5rem;font-weight:600">→ 基礎知識を見る</p>
       </div>
       <div class="card" style="cursor:pointer" onclick="showConceptModal('gogyo')">
-        <h3>五行局</h3>
+        <h3 data-yomi="五行局">五行局</h3>
         <p>水二局・木三局・金四局・土五局・火六局があなたの先天的エネルギーの質を表します。</p>
         <p style="font-size:.75rem;color:var(--purple3);margin-top:.5rem;font-weight:600">→ 基礎知識を見る</p>
       </div>
       <div class="card" style="cursor:pointer" onclick="showConceptModal('tokasei')">
-        <h3>桃花星</h3>
+        <h3 data-yomi="桃花星">桃花星</h3>
         <p>貪狼・廉貞・破軍などの桃花星は恋愛運・異性からの人気・魅力を司ります。</p>
         <p style="font-size:.75rem;color:var(--purple3);margin-top:.5rem;font-weight:600">→ 星の解説を見る</p>
       </div>
@@ -4726,7 +4726,7 @@ var ENC_STAR={
     desc:'太陽の光のように周囲を照らす輝きの星。父・男性・上司・社会的地位・公的活動を象徴します。置かれた宮を「公の場・社会との接点」として活性化します。',
     points:['社会貢献・公的活動への志','父や男性との縁を示す','昼（寅〜未）は光輝く旺状態','夜（申〜丑）は陥落し力が弱まる','官禄宮に入ると社会的成功が約束されやすい'],
     luck:'○ 旺地では大吉。陥落地では虚勢・燃え尽きに注意'},
-  '武曲':{category:'北斗星',yomi:'ぶきょく',gogyou:'金（陰金）',color:'enc-metal',
+  '武曲':{category:'北斗星',yomi:'ぶごく',gogyou:'金（陰金）',color:'enc-metal',
     role:'財・行動力・孤独な強さ',
     desc:'武の力と財を司る実行力の星。金属の硬さと鋭さを持ち、実業・財務・軍事的決断力を象徴します。孤独を厭わず物事を独力でやり遂げる強さがあります。',
     points:['財運・実業・投資との強い縁','行動力と決断の速さ','孤独感・寡黙な傾向','夫妻宮に入ると刑克（縁の障害）の意が強まる','財帛宮では最良の財星の一つ'],
@@ -4852,7 +4852,7 @@ var ENC_STAR={
     points:['刑傷・事故・外科手術との縁','突破力・一点集中の強さ','命宮では激しい人生・英雄的個性','財帛宮では浮き沈みが激しい'],
     luck:'× 凶星だが格局により英雄的力に変化'},
 
-  '三台':{category:'吉星（副星）',yomi:'さんたい',gogyou:'土',color:'enc-earth',
+  '三台':{category:'吉星（副星）',yomi:'さんだい',gogyou:'土',color:'enc-earth',
     role:'官位・名誉・地位向上',
     desc:'三公（三つの高位）を象徴する吉星。命宮・官禄宮に入ると地位や名誉が高まりやすくなります。穏やかな補佐的吉作用を持ちます。',
     points:['地位・名誉の向上','官職・公職との縁','穏やかな吉作用'],
@@ -4872,7 +4872,7 @@ var ENC_STAR={
     desc:'天から授かる才能・幸運・贈り物を象徴する吉星。恩光と対をなし、命宮に入ると生まれながらの才能や天運を示します。',
     points:['生まれながらの才能','天運・幸運の後押し','恩光と組むと効果倍増'],
     luck:'○ 吉星。天から授かる才能の星'},
-  '台輔':{category:'吉星（副星）',yomi:'だいほ',gogyou:'土',color:'enc-earth',
+  '台輔':{category:'吉星（副星）',yomi:'たいほ',gogyou:'土',color:'enc-earth',
     role:'輔佐・補助・縁の下の力',
     desc:'縁の下で支える補佐の吉星。封誥と対をなし、協力者・サポート体制を強化します。',
     points:['縁の下の力持ち','協力者に恵まれる','補佐・事務能力'],
@@ -6285,7 +6285,7 @@ function showFreePreview(type){
       +'<div style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);border-radius:10px;padding:.7rem .9rem"><strong style="color:var(--purple3)">紫微星（しびせい）</strong>　帝王の星。強烈な存在感・領導力・貴人縁。北斗の主。</div>'
       +'<div style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);border-radius:10px;padding:.7rem .9rem"><strong style="color:var(--purple3)">天機星（てんきせい）</strong>　知謀の星。変化・機転・計算力。流動的な人生を歩む。</div>'
       +'<div style="background:rgba(220,140,20,.07);border:1px solid rgba(220,140,20,.2);border-radius:10px;padding:.7rem .9rem"><strong style="color:var(--gold)">太陽星（たいようせい）</strong>　太陽の星。博愛・名声・社会的影響力。男縁に関係。</div>'
-      +'<div style="background:rgba(220,140,20,.07);border:1px solid rgba(220,140,20,.2);border-radius:10px;padding:.7rem .9rem"><strong style="color:var(--gold)">武曲星（ぶきょくせい）</strong>　財帛の星。実力・蓄財・行動力。金属・商業と縁深い。</div>'
+      +'<div style="background:rgba(220,140,20,.07);border:1px solid rgba(220,140,20,.2);border-radius:10px;padding:.7rem .9rem"><strong style="color:var(--gold)">武曲星（ぶごくせい）</strong>　財帛の星。実力・蓄財・行動力。金属・商業と縁深い。</div>'
       +'<div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);border-radius:10px;padding:.7rem .9rem"><strong style="color:#059669">天同星（てんどうせい）</strong>　福徳の星。温和・享楽・長命。精神的な豊かさを持つ。</div>'
       +'<div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:10px;padding:.7rem .9rem"><strong style="color:#dc2626">廉貞星（れんていせい）</strong>　囚星。情熱・美・桃花。感情表現が豊かで波があり。</div>'
       +'<div style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);border-radius:10px;padding:.7rem .9rem"><strong style="color:var(--purple3)">天府星（てんぷせい）</strong>　財庫の星。蓄財・保守・安定。南斗の主。命盤を安定化。</div>'
@@ -6308,13 +6308,13 @@ function showFreePreview(type){
     'palaces':'<div style="font-size:.8rem;color:var(--text2);line-height:1.8"><p style="margin-bottom:.8rem">12の宮（きゅう）それぞれの司るテーマです。各宮に配置された星との組み合わせで読み解きます。</p>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">'
       +'<div style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);border-radius:9px;padding:.6rem .75rem"><strong style="color:var(--purple3)">命宮（めいきゅう）</strong><br>本質・才能・性格・生き方の根本</div>'
-      +'<div style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);border-radius:9px;padding:.6rem .75rem"><strong style="color:var(--purple3)">兄弟宮（きょうだいきゅう）</strong><br>兄弟縁・友人・協力者</div>'
+      +'<div style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);border-radius:9px;padding:.6rem .75rem"><strong style="color:var(--purple3)">兄弟宮（けいていきゅう）</strong><br>兄弟縁・友人・協力者</div>'
       +'<div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:9px;padding:.6rem .75rem"><strong style="color:#dc2626">夫妻宮（ふさいきゅう）</strong><br>恋愛・結婚・パートナー縁</div>'
       +'<div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);border-radius:9px;padding:.6rem .75rem"><strong style="color:#059669">子女宮（しじょきゅう）</strong><br>子縁・部下・創造物</div>'
       +'<div style="background:rgba(220,140,20,.07);border:1px solid rgba(220,140,20,.2);border-radius:9px;padding:.6rem .75rem"><strong style="color:var(--gold)">財帛宮（ざいはくきゅう）</strong><br>金銭・財運・稼ぎ方の才能</div>'
       +'<div style="background:rgba(107,114,128,.06);border:1px solid rgba(107,114,128,.18);border-radius:9px;padding:.6rem .75rem"><strong style="color:var(--text2)">疾厄宮（しつやくきゅう）</strong><br>健康・体質・精神的弱点</div>'
       +'<div style="background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.18);border-radius:9px;padding:.6rem .75rem"><strong style="color:#6366f1">遷移宮（せんいきゅう）</strong><br>外部環境・旅・社会との関係</div>'
-      +'<div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);border-radius:9px;padding:.6rem .75rem"><strong style="color:#059669">奴僕宮（どぼくきゅう）</strong><br>部下・仲間・交友関係</div>'
+      +'<div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);border-radius:9px;padding:.6rem .75rem"><strong style="color:#059669">奴僕宮（ぬぼくきゅう）</strong><br>部下・仲間・交友関係</div>'
       +'<div style="background:rgba(220,140,20,.07);border:1px solid rgba(220,140,20,.2);border-radius:9px;padding:.6rem .75rem"><strong style="color:var(--gold)">官禄宮（かんろくきゅう）</strong><br>仕事・キャリア・社会的地位</div>'
       +'<div style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);border-radius:9px;padding:.6rem .75rem"><strong style="color:var(--purple3)">田宅宮（でんたくきゅう）</strong><br>家庭・不動産・生活環境</div>'
       +'<div style="background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.18);border-radius:9px;padding:.6rem .75rem"><strong style="color:#6366f1">福徳宮（ふくとくきゅう）</strong><br>精神的幸福・趣味・余暇・老後</div>'
@@ -6329,8 +6329,8 @@ function showFreePreview(type){
       +'</div><p style="margin-top:.8rem;font-size:.76rem;color:var(--text2)">※ 飛化（ひか）：宮干から別の宮に四化が飛ぶ連鎖も重要な読み解きポイントです。</p></div>',
     'basics-daigen':'<div style="font-size:.8rem;color:var(--text2);line-height:1.8">'
       +'<p style="margin-bottom:.7rem"><strong>大限（だいげん）</strong>：10年ごとに命盤の12宮を一周する運気の流れ。現在の大限宮がそのステージの主テーマになります。</p>'
-      +'<p style="margin-bottom:.7rem"><strong>流年（りゅうねん）/ 太歳（たいさい）</strong>：1年ごとの年運。大限と組み合わせることで具体的なチャンス・注意点が浮かび上がります。</p>'
-      +'<p style="margin-bottom:.7rem"><strong>流月（りゅうげつ）</strong>：月ごとの運気。より細かい時期読みに使います。</p>'
+      +'<p style="margin-bottom:.7rem"><strong>流年（るねん）/ 太歳（たいさい）</strong>：1年ごとの年運。大限と組み合わせることで具体的なチャンス・注意点が浮かび上がります。</p>'
+      +'<p style="margin-bottom:.7rem"><strong>流月（るげつ）</strong>：月ごとの運気。より細かい時期読みに使います。</p>'
       +'<div style="background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.18);border-radius:9px;padding:.65rem .85rem;margin-top:.5rem">大限 → 太歳 → 流月 の3層で読む「重ね合わせ鑑定」が紫微斗数の醍醐味です。</div>'
       +'</div>',
     'basics-gogyo':'<div style="font-size:.8rem;color:var(--text2);line-height:1.8"><p style="margin-bottom:.8rem"><strong>五行局（ごぎょうきょく）</strong>：命盤の先天エネルギーの質。大限の始まり年齢を決定します。</p>'
@@ -7222,6 +7222,64 @@ const MEI_STAR_READING={
   '天府':'天府は「蔵（くら）」にたとえられる星です。豊かさを蓄え、必要なときに惜しみなく差し出せる度量が最大の魅力。人の話を最後まで聞ける落ち着きがあり、その安心感が自然と信頼を集めます。\n\n命宮にあることで、その落ち着きが「その人そのもの」として表に出ます。慌てない、急かさない、まず受け止める——初対面でも「この人なら大丈夫そう」と感じさせる雰囲気を持っています。\n\n人生の選択でも、勢いより堅実さを選ぶ場面が多いでしょう。時間をかけて積み上げたものが、あとから大きな財産に変わりやすく、数字や資産を扱う分野、人を育てる立場でも力を発揮します。\n\n一方で、安心できる場所が心地よいぶん、変化のタイミングを先延ばしにしがちな面もあります。「今が動きどきかもしれない」と感じたら、いつもより少し早めに一歩を踏み出すことで、天府の豊かさがさらに大きく育っていきます。'
 };
 /* 統合鑑定文があるかどうか（命宮＝palIdx 0 のときのみ使用） */
+/* 修正⑬：読み仮名マスター（Excel「読み仮名マスター_入力用.xlsx」から生成・唯一の正）
+ * 漢字名称をキーにするため、同じ読みの別名称（天機/天貴/天喜など）が混同されることはない。
+ * 空欄の項目は登録しない＝推測で補完しない。 */
+const YOMI_DICT={
+  /* ①14主星 */
+  '紫微':'しび', '天機':'てんき', '太陽':'たいよう', '武曲':'ぶごく', '天同':'てんどう', '廉貞':'れんてい', '天府':'てんぷ', '太陰':'たいいん', '貪狼':'どんろう', '巨門':'こもん', '天相':'てんそう', '天梁':'てんりょう', '七殺':'しちさつ', '破軍':'はぐん',
+  /* ②副星 */
+  '文昌':'もんしょう', '文曲':'もんごく', '左輔':'さほ', '右弼':'うひつ', '天魁':'てんかい', '天鉞':'てんえつ', '禄存':'ろくぞん', '天馬':'てんま', '火星':'かせい', '鈴星':'れいせい', '地空':'ちくう', '地劫':'ちごう', '陀羅':'だら', '擎羊':'けいよう', '羊刃':'ようじん', '天傷':'てんしょう', '天使':'てんし', '三台':'さんだい', '八座':'はちざ', '恩光':'おんこう', '天貴':'てんき', '台輔':'たいほ', '天才':'てんさい', '龍池':'りゅうち', '鳳閣':'ほうかく', '天刑':'てんけい', '天空':'てんくう', '陰煞':'いんさつ',
+  /* ③十二宮 */
+  '命宮':'めいきゅう', '兄弟宮':'けいていきゅう', '夫妻宮':'ふさいきゅう', '子女宮':'しじょきゅう', '財帛宮':'ざいはくきゅう', '疾厄宮':'しつやくきゅう', '遷移宮':'せんいきゅう', '奴僕宮':'ぬぼくきゅう', '官禄宮':'かんろくきゅう', '田宅宮':'でんたくきゅう', '福徳宮':'ふくとくきゅう', '父母宮':'ふぼきゅう', '身宮':'しんきゅう',
+  /* ④四化星 */
+  '四化星':'しかせい', '化禄':'かろく', '化権':'かけん', '化科':'かか', '化忌':'かき', '生年四化':'せいねんしか', '自化':'じか', '飛化':'ひか',
+  /* ⑤五行局 */
+  '五行局':'ごぎょうきょく', '水二局':'すいにきょく', '木三局':'もくさんきょく', '金四局':'きんしきょく', '土五局':'どごきょく', '火六局':'かろっきょく',
+  /* ⑥運気用語 */
+  '大限':'だいげん', '太歳':'たいさい', '流年':'るねん', '流月':'るげつ', '小限':'しょうげん', '斗君':'とくん', '宮干':'きゅうかん', '命主':'めいしゅ', '身主':'しんしゅ',
+  /* ⑦桃花星 */
+  '桃花星':'とうかせい', '紅鸞':'こうらん', '天喜':'てんき', '天姚':'てんよう', '咸池':'かんち', '沐浴':'もくよく', '大耗':'たいもう',
+  /* ⑧十二支 */
+  '子':'ね', '丑':'うし', '寅':'とら', '卯':'う', '辰':'たつ', '巳':'み', '午':'うま', '未':'ひつじ', '申':'さる', '酉':'とり', '戌':'いぬ', '亥':'い',
+  /* ⑨その他専門用語 */
+  '紫微斗数':'しびとすう', '命盤':'めいばん', '三方四正':'さんぽうしせい', '同宮':'どうきゅう', '対宮':'たいきゅう', '空宮':'くうきゅう', '三合':'さんごう', '加会':'かかい', '六吉星':'ろっきちせい', '六凶星':'ろっきょうせい', '禄馬交馳':'ろくばこうち', '殺破狼':'さっぱろう', '機月同梁':'きげつどうりょう', '府相朝垣':'ふしょうちょうたん', '北斗星':'ほくとせい', '南斗星':'なんとせい', '中天星':'ちゅうてんせい', '甲級主星':'こうきゅうしゅせい', '乙級副星':'おつきゅうふくせい'
+};
+/* 読みを取得（未登録なら null） */
+function yomiOf(name){ return (name && YOMI_DICT[name]) || null; }
+/* 「漢字（よみ）」形式。未登録なら漢字のみを返す（空括弧・undefinedを出さない） */
+function withYomi(name,opt){
+  var y=yomiOf(name);
+  if(!y)return name;
+  return name+"（"+y+"）";
+}
+
+
+/* 修正⑬：data-yomi 属性を持つ見出しに、YOMI_DICT から読みを付与する。
+ * 漢字表記は書き換えず、読みだけを小さく添える。未登録なら何も足さない。 */
+function applyYomiLabels(){
+  document.querySelectorAll('[data-yomi]').forEach(function(el){
+    if(el.dataset.yomiDone)return;
+    var y=yomiOf(el.dataset.yomi);
+    if(!y)return;
+    var sp=document.createElement('span');
+    sp.style.cssText='font-size:.62em;font-weight:600;opacity:.72;margin-left:.28em';
+    sp.textContent='（'+y+'）';
+    el.appendChild(sp);
+    el.dataset.yomiDone='1';
+  });
+  document.querySelectorAll('[data-yomi-multi]').forEach(function(el){
+    if(el.dataset.yomiDone)return;
+    var ys=el.dataset.yomiMulti.split(',').map(function(n){return yomiOf(n);});
+    if(ys.some(function(v){return !v;}))return;
+    var sp=document.createElement('span');
+    sp.style.cssText='font-size:.62em;font-weight:600;opacity:.72;margin-left:.28em';
+    sp.textContent='（'+ys.join('・')+'）';
+    el.appendChild(sp);
+    el.dataset.yomiDone='1';
+  });
+}
+
 /* 修正⑩：星名に「星」を付ける（火星・鈴星のように既に「星」で終わる名は二重に付けない） */
 function starLabel(n){ return /星$/.test(n) ? n : n+'星'; }
 
@@ -13678,6 +13736,7 @@ function doInit(){
   _restoreWorkerSession();
   // 公開データ（プロフィール・お知らせ・LINE URL）をリモートから読み込み
   _loadRemoteConfig();
+  applyYomiLabels();   /* 修正⑬：TOPカードの読み仮名を辞書から付与 */
   updateRoleBadge();
   // LINEボタンのURLを読み込み直後に全反映（従来は命盤計算後まで href="#" のままだった）
   _refreshAllLineUrls();
@@ -14168,7 +14227,8 @@ var SITE_UPDATE_DRAFTS=[
   {id:'upd-072d6fa',title:'プロフィール画像の保存と表示を改善しました',body:'スマホからプロフィール画像を保存できない不具合を修正しました。あわせて、スマホでのプロフィール表示を見やすく調整し、自己紹介文が画像の下に横幅いっぱいで表示されるようになりました。',createdAt:'2026-07-27T00:00:00',type:'サイト更新',target:'all',status:'draft',commit:'072d6fa'},
   {id:'upd-232c007',title:'旧暦の変換精度を改善し、命宮の解説を充実させました',body:'旧暦への変換方法を、冬至を基準とする正式な計算方法へ見直しました。これにより、閏月のある年に生まれた方や、旧正月より前に生まれた方の命盤が、より正確に表示されるようになりました。あわせて、命宮の解説に「星が持つ本来の力」として、14の主星それぞれの読み解きを新しく追加しています。これまでの解説は「星の特徴を詳しく見る」を開くとご覧いただけます。文字が途中で切れていた箇所の表示と、一部の文字色の見やすさも改善しました。',createdAt:'2026-07-31T16:45:00',type:'サイト更新',target:'all',status:'draft',commit:'232c007'},
   {id:'upd-fd99617',title:'十二宮の解説の重複を整理し、読みやすくしました',body:'これまで、同じ鑑定文が一つの宮の中で二度表示されていた箇所がありました。今回、主星の宮ごとの解説と、副星の影響について、それぞれ一度だけ表示されるように整理しています。あわせて、星そのものの説明は「○○星の本質を詳しく見る」を開くとご覧いただける形にまとめました。鑑定文の内容そのものは変更していません。表示される位置を整えただけですので、これまでお読みいただいた内容がなくなることはありません。',createdAt:'2026-07-31T20:45:00',type:'サイト更新',target:'all',status:'draft',commit:'fd99617'},
-  {id:'upd-6197759',title:'お知らせの表示とショップへのリンクを改善しました',body:'お知らせが最新の内容に更新されない場合があった不具合を修正しました。お知らせページを開いたまま最新の内容へ自動で切り替わるようになり、タブを開き直す必要がなくなっています。通信が一時的に不安定なときも、これまでに届いたお知らせが消えないようにしました。あわせて、サイト情報の「特定商取引法」内にあるショップページへのリンクが正しく開くよう修正しています。',createdAt:'2026-08-01T13:20:00',type:'サイト更新',target:'all',status:'draft',commit:'6197759'}
+  {id:'upd-6197759',title:'お知らせの表示とショップへのリンクを改善しました',body:'お知らせが最新の内容に更新されない場合があった不具合を修正しました。お知らせページを開いたまま最新の内容へ自動で切り替わるようになり、タブを開き直す必要がなくなっています。通信が一時的に不安定なときも、これまでに届いたお知らせが消えないようにしました。あわせて、サイト情報の「特定商取引法」内にあるショップページへのリンクが正しく開くよう修正しています。',createdAt:'2026-08-01T13:20:00',type:'サイト更新',target:'all',status:'draft',commit:'6197759'},
+  {id:'upd-a23f290',title:'恋愛・お金・仕事・社会運の鑑定文を追加しました',body:'これまで命宮だけでご覧いただけた詳しい鑑定文を、夫妻宮（恋愛・結婚）、財帛宮（お金・豊かさ）、官禄宮（仕事・働き方）、遷移宮（社会・外の世界）にも追加しました。14の主星それぞれについて、その宮ならではの読み解きをご用意しています。あわせて、各宮の「星の特徴を詳しく見る」を開くと、その宮に合わせた3つの視点（例：恋愛で出やすい癖、お金との付き合い方など）もご覧いただけます。これまでの解説はそのまま残していますので、内容が減ることはありません。',createdAt:'2026-08-01T17:05:00',type:'サイト更新',target:'all',status:'draft',commit:'a23f290'}
 ];
 
 /* 処理済み（公開または破棄）の下書きIDを記録し、固定配列から復活させない */
@@ -14894,7 +14954,7 @@ var CONCEPT_DATA={
   tokasei:{
     title:'桃花星とは',
     emoji:'❤️',
-    free:'<p style="font-size:.85rem;color:var(--text2);line-height:1.9;margin:0 0 .9rem">「桃花星（たかばなぼし）」とは、恋愛・異性縁・魅力を司る星たちの総称です。命盤に桃花星が多い人は、異性からの人気が高く、人を惹きつける磁力を自然に放っています。</p>'
+    free:'<p style="font-size:.85rem;color:var(--text2);line-height:1.9;margin:0 0 .9rem">「桃花星（とうかせい）」とは、恋愛・異性縁・魅力を司る星たちの総称です。命盤に桃花星が多い人は、異性からの人気が高く、人を惹きつける磁力を自然に放っています。</p>'
       +'<div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;margin-bottom:.9rem">'
       +'<div style="font-size:.72rem;font-weight:800;color:var(--purple3);margin-bottom:.6rem">✨ 主な桃花星</div>'
       +'<div style="font-size:.82rem;color:var(--text2);line-height:1.9">'
@@ -14906,7 +14966,7 @@ var CONCEPT_DATA={
   gogyo:{
     title:'五行局とは',
     emoji:'⭐',
-    free:'<p style="font-size:.85rem;color:var(--text2);line-height:1.9;margin:0 0 .9rem">「五行局（ごぎょうく）」とは、命盤のエネルギーの質を示すもので、生年月日時の旧暦情報から五種類に分類されます。</p>'
+    free:'<p style="font-size:.85rem;color:var(--text2);line-height:1.9;margin:0 0 .9rem">「五行局（ごぎょうきょく）」とは、命盤のエネルギーの質を示すもので、生年月日時の旧暦情報から五種類に分類されます。</p>'
       +'<div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;margin-bottom:.9rem">'
       +'<div style="font-size:.72rem;font-weight:800;color:var(--purple3);margin-bottom:.6rem">✨ 5種類の五行局</div>'
       +'<div style="font-size:.82rem;color:var(--text2);line-height:2">'
@@ -14921,7 +14981,7 @@ var CONCEPT_DATA={
   daigen:{
     title:'大限・太歳とは',
     emoji:'⏱️',
-    free:'<p style="font-size:.85rem;color:var(--text2);line-height:1.9;margin:0 0 .9rem">紫微斗数の運気には、大きくて10年単位の「大限（たいけん）」と、１年単位の「太歳（たいさい）」の２層構造があります。</p>'
+    free:'<p style="font-size:.85rem;color:var(--text2);line-height:1.9;margin:0 0 .9rem">紫微斗数の運気には、大きくて10年単位の「大限（だいげん）」と、１年単位の「太歳（たいさい）」の２層構造があります。</p>'
       +'<div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;margin-bottom:.9rem">'
       +'<div style="font-size:.72rem;font-weight:800;color:var(--purple3);margin-bottom:.6rem">⏳ 大限と太歳の違い</div>'
       +'<div style="font-size:.82rem;color:var(--text2);line-height:2">'
@@ -14933,7 +14993,7 @@ var CONCEPT_DATA={
   shika:{
     title:'四化星とは',
     emoji:'✨',
-    free:'<p style="font-size:.85rem;color:var(--text2);line-height:1.9;margin:0 0 .9rem">「四化星（しかほし）」とは、命盤の星に付く特別なマークで、「化禄・化権・化科・化忌」の4種類があります。生まれた年の天干（十干）によって、どの星に四化が付くかが決まります。</p>'
+    free:'<p style="font-size:.85rem;color:var(--text2);line-height:1.9;margin:0 0 .9rem">「四化星（しかせい）」とは、命盤の星に付く特別なマークで、「化禄・化権・化科・化忌」の4種類があります。生まれた年の天干（十干）によって、どの星に四化が付くかが決まります。</p>'
       +'<div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;margin-bottom:.9rem">'
       +'<div style="font-size:.72rem;font-weight:800;color:var(--purple3);margin-bottom:.6rem">✨ 4つの四化</div>'
       +'<div style="font-size:.82rem;color:var(--text2);line-height:2">'
