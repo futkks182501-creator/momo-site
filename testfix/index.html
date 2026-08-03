@@ -7280,6 +7280,12 @@ function applyYomiLabels(){
   });
 }
 
+/* 修正⑬：小さな読み仮名を返す（未登録なら空文字＝空括弧やundefinedを出さない） */
+function withYomiSmall(name){
+  var y=yomiOf(name);
+  return y ? '<span style="font-size:.72em;opacity:.7;margin-left:.2em">（'+y+'）</span>' : '';
+}
+
 /* 修正⑩：星名に「星」を付ける（火星・鈴星のように既に「星」で終わる名は二重に付けない） */
 function starLabel(n){ return /星$/.test(n) ? n : n+'星'; }
 
@@ -15011,18 +15017,18 @@ var CONCEPT_DATA={
       +'<div style="background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;margin-bottom:.9rem">'
       +'<div style="font-size:.72rem;font-weight:800;color:var(--purple3);margin-bottom:.6rem">🏠 12の宮一覧</div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem .8rem;font-size:.79rem;color:var(--text2);line-height:1.7">'
-      +'<div><span style="color:var(--text3);font-weight:700">命宮</span> 自己・人生テーマ</div>'
-      +'<div><span style="color:var(--text3);font-weight:700">兄弟宮</span> 人脈・友人</div>'
-      +'<div><span style="color:var(--text3);font-weight:700">夫妻宮</span> 恋愛・パートナー</div>'
-      +'<div><span style="color:var(--text3);font-weight:700">子女宮</span> 子ども・部下</div>'
-      +'<div><span style="color:var(--text3);font-weight:700">財帛宮</span> 財運・稼ぎ方</div>'
-      +'<div><span style="color:var(--text3);font-weight:700">疾厄宮</span> 健康・身体</div>'
-      +'<div><span style="color:var(--text3);font-weight:700">遷移宮</span> 外出・現地の自分</div>'
-      +'<div><span style="color:var(--text3);font-weight:700">奴僕宮</span> 部下・人間関係</div>'
-      +'<div><span style="color:var(--text3);font-weight:700">官禄宮</span> 仕事・キャリア</div>'
-      +'<div><span style="color:var(--text3);font-weight:700">田宅宮</span> 不動産・家庭</div>'
-      +'<div><span style="color:var(--text3);font-weight:700">福徳宮</span> 精神・趣味</div>'
-      +'<div><span style="color:var(--text3);font-weight:700">父母宮</span> 親・目上</div>'
+      +'<div><span style="color:var(--text3);font-weight:700">命宮</span>'+withYomiSmall('命宮')+' 自己・人生テーマ</div>'
+      +'<div><span style="color:var(--text3);font-weight:700">兄弟宮</span>'+withYomiSmall('兄弟宮')+' 人脈・友人</div>'
+      +'<div><span style="color:var(--text3);font-weight:700">夫妻宮</span>'+withYomiSmall('夫妻宮')+' 恋愛・パートナー</div>'
+      +'<div><span style="color:var(--text3);font-weight:700">子女宮</span>'+withYomiSmall('子女宮')+' 子ども・部下</div>'
+      +'<div><span style="color:var(--text3);font-weight:700">財帛宮</span>'+withYomiSmall('財帛宮')+' 財運・稼ぎ方</div>'
+      +'<div><span style="color:var(--text3);font-weight:700">疾厄宮</span>'+withYomiSmall('疾厄宮')+' 健康・身体</div>'
+      +'<div><span style="color:var(--text3);font-weight:700">遷移宮</span>'+withYomiSmall('遷移宮')+' 外出・現地の自分</div>'
+      +'<div><span style="color:var(--text3);font-weight:700">奴僕宮</span>'+withYomiSmall('奴僕宮')+' 部下・人間関係</div>'
+      +'<div><span style="color:var(--text3);font-weight:700">官禄宮</span>'+withYomiSmall('官禄宮')+' 仕事・キャリア</div>'
+      +'<div><span style="color:var(--text3);font-weight:700">田宅宮</span>'+withYomiSmall('田宅宮')+' 不動産・家庭</div>'
+      +'<div><span style="color:var(--text3);font-weight:700">福徳宮</span>'+withYomiSmall('福徳宮')+' 精神・趣味</div>'
+      +'<div><span style="color:var(--text3);font-weight:700">父母宮</span>'+withYomiSmall('父母宮')+' 親・目上</div>'
       +'</div></div>'
       +'<p style="font-size:.83rem;color:var(--text2);line-height:1.85">命宮が「その人そのもの」を示し、他の宮が人生の各領域を映し出します。宮に入る星の組み合わせで、そのテーマの運命が読み解けます。</p>',
     lock:'各宮の詳細な意味・宮ごとの吉凶の読み方・三方四正（宮どうしの影響関係）・宮どうしが重なる時の強化の読み方'
