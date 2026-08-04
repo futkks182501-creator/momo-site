@@ -1055,6 +1055,30 @@ section.active{display:block}
 #line-cta-bar{display:none!important}
 #line-cta-section{display:none!important}
 #unsei-line-cta{display:none!important}
+/* ── 修正⑰：生年月日 3分割セレクト（年・月・日）──────────────
+ * ブラウザ標準の date picker はタブレットで年を直接選べず、月送り矢印しか
+ * 使えないため、全端末共通の select 方式へ変更。端末判定は行わない。
+ * 内部値は従来どおり hidden の #inp-date に "YYYY-MM-DD" で保持する。 */
+.ymd-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.ymd-cell{display:flex;align-items:center;gap:.2rem;flex:1 1 auto;min-width:0}
+.ymd-sel{
+  flex:1 1 auto;min-width:0;width:100%;
+  padding:.6rem .5rem;font-size:.95rem;line-height:1.3;
+  border:1px solid rgba(180,130,80,.25);border-radius:10px;
+  background:var(--glass);color:var(--text);
+  -webkit-appearance:menulist;appearance:menulist;
+  min-height:44px;                     /* タップ領域の確保 */
+}
+.ymd-sel:focus{outline:2px solid rgba(109,40,217,.35);outline-offset:1px}
+.ymd-cell:nth-child(1){flex:1.5 1 96px}
+.ymd-cell:nth-child(2){flex:1 1 68px}
+.ymd-cell:nth-child(3){flex:1 1 68px}
+.ymd-unit{font-size:.82rem;color:var(--text2);flex-shrink:0}
+.ymd-error{margin-top:.4rem;font-size:.78rem;color:#b91c1c;line-height:1.6}
+@media(max-width:380px){
+  .ymd-sel{font-size:.88rem;padding:.55rem .35rem}
+  .ymd-unit{font-size:.75rem}
+}
 /* モバイル・タブレット縦向きでのアコーディオン順序
  * 修正⑯: #calc .container が flex になるのは max-width:768px のため、
  * ここも 768px に揃える。640px のままだと 641〜768px でアコーディオンの
@@ -1498,9 +1522,13 @@ section.active{display:block}
       <div class="form-row">
         <div class="form-group" style="flex:2;min-width:200px">
           <label>生年月日（西暦）</label>
-          <div style="display:flex;gap:.5rem;align-items:center">
-            <input type="date" id="inp-date" value="1990-01-15" min="1930-01-01" max="2025-12-31" style="flex:1">
+          <div class="ymd-row">
+            <div class="ymd-cell"><select id="inp-y" class="ymd-sel" aria-label="生まれた年"></select><span class="ymd-unit">年</span></div>
+            <div class="ymd-cell"><select id="inp-m" class="ymd-sel" aria-label="生まれた月"></select><span class="ymd-unit">月</span></div>
+            <div class="ymd-cell"><select id="inp-d" class="ymd-sel" aria-label="生まれた日"></select><span class="ymd-unit">日</span></div>
+            <input type="hidden" id="inp-date" value="1990-01-15">
           </div>
+          <div id="ymd-error" class="ymd-error" style="display:none"></div>
         </div>
         <div class="form-group">
           <label>性別</label>
@@ -5920,6 +5948,105 @@ function syncShichenFromHour(h){
   const sc=hourToShichen(Number(h));
   selectShichen(sc);
 }
+
+/* ── 修正⑰：生年月日 年・月・日セレクト ─────────────────────────
+ * ・全端末共通（UA判定・画面幅判定は行わない）
+ * ・内部値は従来どおり hidden の #inp-date に "YYYY-MM-DD" で保持
+ * ・calculate() / 保存 / 読込 / カルテ / ログアウト初期化 は無変更。
+ *   #inp-date.value への代入をインスタンス単位でフックし、
+ *   どの経路から書き換えられても3つのセレクトへ自動反映する。
+ * ・年の範囲：1900年〜今年。未来の日付は選択肢に出さない。 */
+var YMD_MIN_YEAR=1900;
+function _ymdToday(){var d=new Date();return {y:d.getFullYear(),m:d.getMonth()+1,d:d.getDate()};}
+function _ymdDaysIn(y,m){
+  if(m===2) return ((y%4===0&&y%100!==0)||y%400===0)?29:28;
+  return [4,6,9,11].indexOf(m)>=0?30:31;
+}
+function _ymdEls(){
+  return {y:document.getElementById('inp-y'),m:document.getElementById('inp-m'),
+          d:document.getElementById('inp-d'),h:document.getElementById('inp-date')};
+}
+function _ymdFill(sel,from,to,cur){
+  if(!sel)return;
+  var v=(cur!==undefined&&cur!==null&&cur!=='')?String(cur):sel.value;
+  var out='';
+  for(var i=from;i<=to;i++) out+='<option value="'+i+'">'+i+'</option>';
+  sel.innerHTML=out;
+  var n=parseInt(v,10);
+  if(!isNaN(n)){ if(n<from)n=from; if(n>to)n=to; sel.value=String(n); }
+  else sel.value=String(from);
+}
+/* 月・日の選択肢を、選ばれている年月と「今日」に合わせて作り直す */
+function ymdRebuild(){
+  var e=_ymdEls(); if(!e.y||!e.m||!e.d)return;
+  var T=_ymdToday();
+  var y=parseInt(e.y.value,10)||T.y;
+  var maxM=(y===T.y)?T.m:12;
+  _ymdFill(e.m,1,maxM,e.m.value);
+  var m=parseInt(e.m.value,10)||1;
+  var maxD=_ymdDaysIn(y,m);
+  if(y===T.y&&m===T.m) maxD=Math.min(maxD,T.d);
+  _ymdFill(e.d,1,maxD,e.d.value);
+}
+/* 3セレクト → hidden(#inp-date) へ書き戻す */
+function ymdSync(){
+  var e=_ymdEls(); if(!e.y||!e.h)return;
+  ymdRebuild();
+  var y=parseInt(e.y.value,10),m=parseInt(e.m.value,10),d=parseInt(e.d.value,10);
+  var err=document.getElementById('ymd-error');
+  if(!y||!m||!d){ if(err){err.style.display='none';} return; }
+  var s=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  _ymdSetRaw(e.h,s);
+  if(err){err.style.display='none';err.textContent='';}
+}
+/* hidden(#inp-date) → 3セレクトへ反映（保存データ・カルテ・初期化から呼ばれる） */
+function ymdFromDate(){
+  var e=_ymdEls(); if(!e.y||!e.h)return;
+  var T=_ymdToday();
+  var v=String(_ymdGetRaw(e.h)||'');
+  var mm=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  var y,m,d;
+  if(mm){ y=+mm[1]; m=+mm[2]; d=+mm[3]; }
+  else  { y=1990; m=1; d=15; }          /* 未入力・不正時は既定値（従来の value と同じ） */
+  if(y<YMD_MIN_YEAR)y=YMD_MIN_YEAR;
+  if(y>T.y)y=T.y;
+  _ymdFill(e.y,YMD_MIN_YEAR,T.y,y);
+  e.y.value=String(y);
+  var maxM=(y===T.y)?T.m:12; if(m<1)m=1; if(m>maxM)m=maxM;
+  _ymdFill(e.m,1,maxM,m); e.m.value=String(m);
+  var maxD=_ymdDaysIn(y,m); if(y===T.y&&m===T.m)maxD=Math.min(maxD,T.d);
+  if(d<1)d=1; if(d>maxD)d=maxD;         /* 例：2024/2/29 → 2023年へ変更で 2/28 に調整 */
+  _ymdFill(e.d,1,maxD,d); e.d.value=String(d);
+  /* 調整後の値を hidden へ戻す（YYYY-MM-DD を常に正とする） */
+  var s=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  if(_ymdGetRaw(e.h)!==s) _ymdSetRaw(e.h,s);
+}
+/* hidden の value を素の setter/getter で読み書き（フックの再帰を避ける） */
+var _ymdDesc=null;
+function _ymdSetRaw(el,v){ if(_ymdDesc)_ymdDesc.set.call(el,v); else el.setAttribute('value',v); }
+function _ymdGetRaw(el){ return _ymdDesc?_ymdDesc.get.call(el):el.getAttribute('value'); }
+function ymdInit(){
+  var e=_ymdEls(); if(!e.y||!e.h)return;
+  /* #inp-date.value への代入をこの要素だけフック（既存コードは変更不要） */
+  if(!_ymdDesc){
+    _ymdDesc=Object.getOwnPropertyDescriptor(Object.getPrototypeOf(e.h),'value');
+    try{
+      Object.defineProperty(e.h,'value',{
+        configurable:true,
+        get:function(){return _ymdDesc.get.call(this);},
+        set:function(v){ _ymdDesc.set.call(this,v); try{ymdFromDate();}catch(err){} }
+      });
+    }catch(err){}
+  }
+  var T=_ymdToday();
+  _ymdFill(e.y,YMD_MIN_YEAR,T.y,1990);
+  ymdFromDate();
+  e.y.addEventListener('change',ymdSync);
+  e.m.addEventListener('change',ymdSync);
+  e.d.addEventListener('change',ymdSync);
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ymdInit);
+else ymdInit();
 
 function calculate(){
   const dateVal=document.getElementById('inp-date').value;
