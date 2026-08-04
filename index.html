@@ -1055,8 +1055,11 @@ section.active{display:block}
 #line-cta-bar{display:none!important}
 #line-cta-section{display:none!important}
 #unsei-line-cta{display:none!important}
-/* モバイルでのアコーディオン順序 */
-@media(max-width:640px){
+/* モバイル・タブレット縦向きでのアコーディオン順序
+ * 修正⑯: #calc .container が flex になるのは max-width:768px のため、
+ * ここも 768px に揃える。640px のままだと 641〜768px でアコーディオンの
+ * order が初期値0となり、命盤計算フォーム（order:2）より前に出てしまう。 */
+@media(max-width:768px){
   #calc #acc-basic{order:10}
   #calc #acc-unsei{order:11}
   #calc #acc-ai{order:12}
