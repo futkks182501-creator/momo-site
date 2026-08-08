@@ -4209,22 +4209,66 @@ const STAR_LOVE_TYPE={
 
 // ── 相性タイプ判定（100点満点）──
 const AISEI_TYPE_RANGES=[
-  {min:85,max:100,type:'運命級・深縁タイプ',title:'魂が強く反応する相性',color:'#7c3aed',
-   text:'本質・恋愛・魂の層で響き合いやすく、出会った意味を感じやすい相性です。ただし縁が濃いほど、相手を通して自分の本音も映し出されます。',
+  {min:90,max:100,type:'深いご縁タイプ',title:'強く響き合う部分が多い関係',color:'#7c3aed',
+   text:'本質・関係性・心の安心感など、多くの層で自然に噛み合いやすい組み合わせです。一緒にいる意味を感じやすい一方で、響き合う力が強いぶん、相手を通して自分の本音や課題も映し出されやすくなります。',
+   strong:'言葉にしなくても伝わる感覚があり、価値観のすり合わせに時間がかかりにくい関係です。',
+   issue:'噛み合う心地よさに慣れると、相手の変化や小さな違和感に気づきにくくなります。',
+   hint:'分かり合えている前提を置かず、節目ごとに気持ちを言葉で確認し合うと、関係が長く保たれます。',
    premium:'詳細鑑定では、なぜこの相手に惹かれるのかを宮ごとに深掘りできます。'},
-  {min:70,max:84,type:'安定成長タイプ',title:'一緒に育てるほど強くなる相性',color:'#059669',
-   text:'最初から派手に燃えるというより、関わるほど信頼が育つ相性です。現実面の歩幅を合わせることで長く続きやすくなります。',
+  {min:78,max:89,type:'安定成長タイプ',title:'信頼を育てながら伸びていく関係',color:'#059669',
+   text:'出会った瞬間に強く惹かれるというより、関わる時間の中で信頼が積み上がっていく組み合わせです。生活のペースや価値観を合わせていくほど、関係が安定して深まります。',
+   strong:'急がずに進められるため、無理のない距離感を保ちやすい関係です。',
+   issue:'安定を優先するあまり、言いにくいことを後回しにしやすくなります。',
+   hint:'小さな要望や違和感を早めに共有すると、信頼がさらに厚くなります。',
    premium:'結婚観・生活面の相性を見ると、今後の育て方が明確になります。'},
-  {min:55,max:69,type:'学び合いタイプ',title:'違いが成長に変わる相性',color:'#0f766e',
-   text:'価値観の違いはありますが、その違いが刺激となり視野を広げてくれる相性です。言葉にしない期待を減らすほど関係が安定します。',
+  {min:62,max:77,type:'学び合いタイプ',title:'違いがお互いの成長につながる関係',color:'#0f766e',
+   text:'価値観や感じ方に違いはありますが、その違いが刺激となって視野を広げてくれる組み合わせです。同じであることより、違いをどう扱うかが関係の質を決めます。',
+   strong:'相手を通して新しい考え方や世界に触れやすく、関わるほど自分の幅が広がります。',
+   issue:'「言わなくても分かるはず」という期待が積もると、すれ違いになりやすくなります。',
+   hint:'期待を言葉にして伝えることを習慣にすると、違いが摩擦ではなく刺激として働きます。',
    premium:'相手の星があなたのどこを刺激しているかを見ると、課題が整理できます。'},
-  {min:40,max:54,type:'調整必要タイプ',title:'惹かれるほど丁寧さが必要な相性',color:'#b45309',
-   text:'惹かれる要素はあるものの、感情やペースのズレが出やすい相性です。焦って答えを出すより、境界線と確認が大切です。',
+  {min:45,max:61,type:'調整必要タイプ',title:'違いを理解し、調整することで育っていく関係',color:'#b45309',
+   text:'惹かれる要素はありながら、感情の動き方やペースにズレが出やすい組み合わせです。自然に噛み合う部分が少ないぶん、意識的な調整が関係を育てる力になります。',
+   strong:'合わせる工夫を重ねる過程で、相手を深く理解する力が育ちます。',
+   issue:'タイミングや温度感がずれやすく、片方だけが我慢する形になりがちです。',
+   hint:'焦って答えを出さず、お互いの境界線を確認しながら進めると関係が落ち着いていきます。',
    premium:'詳細鑑定では、衝突しやすい宮と乗り越え方を具体的に出せます。'},
-  {min:0,max:39,type:'カルマ課題タイプ',title:'強い学びを持つ相性',color:'#9f1239',
-   text:'相手を通して不安・執着・過去のパターンが出やすい相性です。悪い縁と決めつけず、何を学ぶ関係なのかを見ることが大切です。',
+  {min:0,max:44,type:'カルマ課題タイプ',title:'強い課題や学びを持って出会う関係',color:'#9f1239',
+   text:'相手を通して、自分の不安・執着・繰り返しやすいパターンが表に出やすい組み合わせです。感情が揺さぶられる場面が多く、学びや変化のテーマが強く働きます。点数が低いことは、縁が悪いという意味ではありません。',
+   strong:'自分でも気づいていなかった本音や課題が見えやすく、向き合うほど自分自身が変化していきます。',
+   issue:'同じすれ違いを繰り返しやすく、感情が大きく動くぶん消耗もしやすくなります。',
+   hint:'相手を変えようとするより、「この関係で何が自分に起きているか」を観察すると、繰り返しから抜けやすくなります。距離を置く時期があっても、それは失敗ではありません。',
    premium:'深い鑑定では、この関係が教えている魂の課題を読み解きます。'},
 ];
+/* ── 修正⑱：相性スコアの共通注意書き（全タイプで常時表示） ── */
+const AISEI_SCORE_NOTE='相性スコアは、ふたりの関係の「良い・悪い」を決めるものではありません。自然に噛み合う部分や、理解・調整が必要な部分、ご縁の特徴を読み解くための目安です。';
+/* ── 修正⑱：関係宮の配分（主軸／補助）。出典：REL_TYPES の focusPalaceIdx と crossHint ── */
+const AISEI_REL_ALLOC={
+  love:        [[2,15]],
+  divorcedlove:[[2,10],[3,5]],
+  marriage:    [[2,7],[4,4],[9,4]],
+  friend:      [[1,10],[6,5]],
+  boss:        [[11,10],[8,5]],
+  sub:         [[7,10],[3,5]],
+  colleague:   [[8,7],[7,4],[6,4]],
+  parent:      [[11,7],[9,4],[5,4]],
+  child:       [[3,10],[9,5]],
+  reunion:     [[2,10],[10,5]]
+};
+/* ── 修正⑱：②関係性の表示ラベル ── */
+const AISEI_REL_LABEL={love:'恋愛の関係性',divorcedlove:'恋愛の関係性',marriage:'結婚生活の関係性',
+  friend:'友人としての関係性',boss:'目上との関係性',sub:'後進との関係性',colleague:'職場での関係性',
+  parent:'家族としての関係性',child:'育てる関係性',reunion:'復縁の関係性'};
+/* ── 修正⑱：桃花・貴人・課題の星（出典：05_副星_桃花_凶星加減点） ── */
+const AISEI_TOUKA=['紅鸞','天喜','天姚','咸池'];
+const AISEI_KIJIN=['左輔','右弼','天魁','天鉞'];
+const AISEI_KADAI=['擎羊','陀羅','火星','鈴星','地空','地劫','天空'];
+/* 向き合うテーマの3区分（実測4,191組の分布に基づく：0〜3個=21.3%／4〜6個=59.6%／7個以上=19.1%） */
+function aiseiKadaiBand(n){
+  if(n<=3) return {label:'少なめ',color:'#059669'};
+  if(n<=6) return {label:'ほどほど',color:'#b45309'};
+  return {label:'多め',color:'#9f1239'};
+}
 
 // ── 副星・吉化・凶星 相性加減点 ──
 const AISEI_SUB_STAR_BONUS={
@@ -12051,39 +12095,122 @@ function renderAiseiResult(rA,rB,nameA,nameB,relType='love'){
     </div>`;
   }).join('');
 
-  // ── 総合相性スコア計算 ──
-  const _scaleMatrix=(v,max)=>Math.round((v+3)/6*max); // -3..3 → 0..max
-  const bMeiStar2=bMeiStars[1]||'';
-  const aMeiStar2=aMeiStars[1]||'';
-  // 命宮相性 (25pt)
-  const _mScore=(s1,s2)=>(s1&&s2&&STAR_COMPAT_MATRIX[s1])?STAR_COMPAT_MATRIX[s1][s2]??0:0;
-  let _meiPts=25/2; // 基準50%
-  if(aMeiStar&&bMeiStar) _meiPts=_scaleMatrix(_mScore(aMeiStar,bMeiStar),25);
-  // 夫妻宮相性 (20pt) — 相手の命宮主星が自分の夫妻宮に合うか
-  const aFuusaiStars=getMainStarsAtBranch(rA,(rA.meiPos-2+12)%12);
-  const bFuusaiStars=getMainStarsAtBranch(rB,(rB.meiPos-2+12)%12);
-  const aFuusai=aFuusaiStars[0]||'';const bFuusai=bFuusaiStars[0]||'';
-  let _fuuPts=10;
-  if(aFuusai&&bMeiStar) _fuuPts=Math.round((_scaleMatrix(_mScore(aFuusai,bMeiStar),20)+_scaleMatrix(_mScore(bFuusai,aMeiStar),20))/2);
-  // 福徳宮相性 (20pt)
-  const aFukuStars=getMainStarsAtBranch(rA,(rA.meiPos-10+12)%12);
-  const bFukuStars=getMainStarsAtBranch(rB,(rB.meiPos-10+12)%12);
-  const aFuku=aFukuStars[0]||'';const bFuku=bFukuStars[0]||'';
-  let _fukuPts=10;
-  if(aFuku&&bFuku) _fukuPts=_scaleMatrix(_mScore(aFuku,bFuku),20);
-  // 副星加点（桃花・貴人・吉化）最大20pt
-  const _getSubNames=(rX)=>Object.values(rX.subStars||{}).flat().map(s=>s.name);
-  const subNamesA=_getSubNames(rA);const subNamesB=_getSubNames(rB);
-  let _subPts=0;
-  [...subNamesA,...subNamesB].forEach(sn=>{const e=AISEI_SUB_STAR_BONUS[sn];if(e)_subPts+=e.pt;});
-  _subPts=Math.max(-15,Math.min(20,Math.round(_subPts/2)));
-  // 六合ボーナス
-  const _ryugoBonus=ryugoPair?5:0;
-  // 支合ボーナス（十二支の支合：相生法）
-  const _shigoPair=checkShigo(BR[rA.meiPos],BR[rB.meiPos]);
-  const _shigoBonus=_shigoPair?3:0;
-  // 総合点 (0〜100)
-  const _totalScore=Math.max(0,Math.min(100,Math.round(_meiPts+_fuuPts+_fukuPts+_subPts+_ryugoBonus+_shigoBonus)));
+  /* ── 修正⑱：総合相性スコア（100点／8項目・関係タイプ連動）──────────────
+   * 出典：紫微斗数_相性計算ロジック_サイト実装用.xlsx
+   *   01_総合スコア設定／02_宮別チェック配点（合計100）／03_主星相性マトリクス
+   *   05_副星_桃花_凶星加減点／09_実装メモ（同宮複数主星は全組み合わせの平均）
+   * 旧仕様との違い：夫妻宮20・福徳宮20の固定を廃し、関係宮15をタイプ別に配分。
+   *   身宮10・三方四正10を新設。副星は桃花/貴人/課題に分離し集計範囲を限定。
+   *   六合+5・支合+3は資料に根拠がないため廃止。 */
+  const _norm=(v,max)=>(v===null||v===undefined)?max*0.5:Math.max(0,Math.min(max,(v+3)/6*max));
+  const _mScore=(s1,s2)=>(s1&&s2&&STAR_COMPAT_MATRIX[s1]&&STAR_COMPAT_MATRIX[s1][s2]!==undefined)?STAR_COMPAT_MATRIX[s1][s2]:null;
+  /* 同宮に複数主星がある場合は全組み合わせの平均（09_実装メモ）。空宮はnull＝中立 */
+  const _pairAvg=(A,B)=>{
+    const v=[];
+    for(let x=0;x<A.length;x++)for(let y=0;y<B.length;y++){
+      const s1=_mScore(A[x],B[y]), s2=_mScore(B[y],A[x]);
+      if(s1!==null&&s2!==null)v.push((s1+s2)/2);
+      else if(s1!==null)v.push(s1);
+      else if(s2!==null)v.push(s2);
+    }
+    return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;
+  };
+  const _starsAt=(r,pal)=>getMainStarsAtBranch(r,(r.meiPos-pal+12)%12);
+  const _starsAtBranch=(r,br)=>getMainStarsAtBranch(r,br);
+  /* ① 本質の相性 20pt — 命宮×命宮 */
+  const _p1=Math.round(_norm(_pairAvg(_starsAt(rA,0),_starsAt(rB,0)),20));
+  /* ② 関係性 15pt — 関係宮×相手の命宮（双方向平均）。タイプ別に主軸/補助へ配分 */
+  const _alloc=AISEI_REL_ALLOC[relType]||AISEI_REL_ALLOC.love;
+  let _p2=0; const _p2Detail=[];
+  _alloc.forEach(([pIdx,pt])=>{
+    const f=_pairAvg(_starsAt(rA,pIdx),_starsAt(rB,0));
+    const g=_pairAvg(_starsAt(rB,pIdx),_starsAt(rA,0));
+    const v=(f!==null&&g!==null)?(f+g)/2:(f!==null?f:g);
+    const got=_norm(v,pt);
+    _p2+=got; _p2Detail.push({palace:PALACE_NAMES[pIdx],pt:pt,got:Math.round(got)});
+  });
+  _p2=Math.round(_p2);
+  /* ③ 心の安心感 15pt — 福徳宮×福徳宮 */
+  const _p3=Math.round(_norm(_pairAvg(_starsAt(rA,10),_starsAt(rB,10)),15));
+  /* ④ 人生の方向性 10pt — 身宮×身宮 */
+  const _p4=Math.round(_norm(_pairAvg(_starsAtBranch(rA,rA.shinPos),_starsAtBranch(rB,rB.shinPos)),10));
+  /* ⑤ ご縁の重なり 10pt — 主軸関係宮の三方四正での重複主星数（02_宮別チェック配点 No.5） */
+  const _mainRelIdx=_alloc[0][0];
+  const _sanpoOf=(p)=>[p,(p+4)%12,(p+8)%12,(p+6)%12];
+  const _spA=[],_spB=[];
+  _sanpoOf(_mainRelIdx).forEach(p=>{_spA.push(..._starsAt(rA,p));_spB.push(..._starsAt(rB,p));});
+  const _dupCount=_spA.filter(s=>_spB.includes(s)).length;
+  const _p5=Math.min(10,Math.round(_dupCount*3.3));
+  /* ⑥⑦⑧ 副星 — 集計範囲は命宮＋主軸関係宮＋その三方四正（05の「同宮・三方四正」に準拠）
+   * 宮インデックスは Set で重複排除し、同じ宮を二重に数えない */
+  const _subPals=[...new Set([0,_mainRelIdx,..._sanpoOf(_mainRelIdx)])];
+  const _subIn=(r)=>{
+    const out=[],all=r.subStars||{};
+    _subPals.forEach(p=>{const br=(r.meiPos-p+12)%12;(all[br]||[]).forEach(s=>out.push(s.name));});
+    return out;
+  };
+  const _subAll=[..._subIn(rA),..._subIn(rB)];
+  const _cTouka=_subAll.filter(s=>AISEI_TOUKA.includes(s)).length;
+  const _cKijin=_subAll.filter(s=>AISEI_KIJIN.includes(s)).length;
+  const _cKadai=_subAll.filter(s=>AISEI_KADAI.includes(s)).length;
+  const _p6=Math.min(10,Math.round(_cTouka*2.5));
+  const _p7=Math.min(10,Math.round(_cKijin*2.5));
+  const _p8=10-Math.min(10,Math.round(_cKadai*1.7));
+  const _kadaiBand=aiseiKadaiBand(_cKadai);
+  /* 総合点（内部は8項目の合計と一致） */
+  const _totalScore=Math.max(0,Math.min(100,_p1+_p2+_p3+_p4+_p5+_p6+_p7+_p8));
+  const _breakdown=[
+    {key:'p1',label:'本質の相性',   got:_p1,max:20},
+    {key:'p2',label:(AISEI_REL_LABEL[relType]||'関係性'),got:_p2,max:15},
+    {key:'p3',label:'心の安心感',   got:_p3,max:15},
+    {key:'p4',label:'人生の方向性', got:_p4,max:10},
+    {key:'p5',label:'ご縁の重なり', got:_p5,max:10},
+    {key:'p6',label:'惹かれやすさ', got:_p6,max:10},
+    {key:'p7',label:'支え合う力',   got:_p7,max:10}
+  ];
+  /* ── 修正⑱：スコアカードHTML（タイプ名を主役に。点数はその下） ── */
+  const _aiseiScoreBlockHTML=(()=>{
+    const c=_aiseiType.color;
+    const bar=(lb,got,max)=>{
+      const pct=Math.max(0,Math.min(100,Math.round(got/max*100)));
+      return '<div style="display:flex;align-items:center;gap:.5rem;margin:.28rem 0">'
+        +'<span style="flex:0 0 6.6em;font-size:.73rem;color:var(--text2)">'+escHtml(lb)+'</span>'
+        +'<span style="flex:1;height:8px;border-radius:4px;background:rgba(0,0,0,.07);overflow:hidden;display:block">'
+        +'<span style="display:block;height:100%;width:'+pct+'%;background:'+c+';border-radius:4px"></span></span>'
+        +'<span style="flex:0 0 3.2em;text-align:right;font-size:.72rem;color:var(--text2);font-variant-numeric:tabular-nums">'+got+' / '+max+'</span></div>';
+    };
+    let H='';
+    /* ① タイプ名（最も大きく） ② 一言キャッチ ③ 総合スコア */
+    H+='<div style="text-align:center;margin:.5rem 0 .7rem">';
+    H+='<div style="font-size:1.35rem;font-weight:900;color:'+c+';line-height:1.35">'+escHtml(_aiseiType.type)+'</div>';
+    H+='<div style="font-size:.9rem;color:var(--text2);margin-top:.2rem">'+escHtml(_aiseiType.title)+'</div>';
+    H+='<div style="margin-top:.55rem;font-size:1.05rem;font-weight:700;color:var(--text2);font-variant-numeric:tabular-nums">'
+      +'<span style="font-size:1.5rem;font-weight:900;color:'+c+'">'+_totalScore+'</span>'
+      +'<span style="font-size:.85rem;opacity:.7"> / 100</span></div>';
+    H+='</div>';
+    /* ④ 注意書き（全タイプ共通・常時表示） */
+    H+='<div style="padding:.55rem .8rem;background:rgba(0,0,0,.035);border-radius:8px;font-size:.75rem;color:var(--text2);line-height:1.75;margin-bottom:.7rem">※ '+escHtml(AISEI_SCORE_NOTE)+'</div>';
+    /* ⑤ タイプ説明 */
+    H+='<div style="padding:.65rem .9rem;background:'+c+'10;border-radius:8px;font-size:.83rem;color:var(--text2);line-height:1.8">'+escHtml(_aiseiType.text)+'</div>';
+    /* ⑥⑦⑧ 強み／課題／ヒント */
+    const row=(icon,ttl,txt)=>'<div style="margin-top:.5rem;padding:.55rem .85rem;background:var(--glass);border:1px solid var(--border);border-radius:8px">'
+      +'<div style="font-size:.75rem;font-weight:700;color:'+c+';margin-bottom:.15rem">'+icon+' '+ttl+'</div>'
+      +'<div style="font-size:.79rem;color:var(--text2);line-height:1.8">'+escHtml(txt)+'</div></div>';
+    if(_aiseiType.strong) H+=row('✨','この関係の強み',_aiseiType.strong);
+    if(_aiseiType.issue)  H+=row('⚡','違い・課題が出やすい部分',_aiseiType.issue);
+    if(_aiseiType.hint)   H+=row('🌱','関係を育てるヒント',_aiseiType.hint);
+    /* ⑨ 相性の内訳 */
+    H+='<div style="margin-top:.9rem;padding-top:.7rem;border-top:1px solid var(--border)">';
+    H+='<div style="font-size:.8rem;font-weight:700;color:'+c+';margin-bottom:.4rem">相性の内訳</div>';
+    _breakdown.forEach(b=>{H+=bar(b.label,b.got,b.max);});
+    /* 向き合うテーマ：点数ではなく3区分で表示 */
+    H+='<div style="display:flex;align-items:center;gap:.5rem;margin:.45rem 0 .2rem">'
+      +'<span style="flex:0 0 6.6em;font-size:.73rem;color:var(--text2)">向き合うテーマ</span>'
+      +'<span style="font-size:.78rem;font-weight:700;color:'+_kadaiBand.color+';background:'+_kadaiBand.color+'14;border:1px solid '+_kadaiBand.color+'40;border-radius:6px;padding:.12rem .6rem">'+_kadaiBand.label+'</span></div>';
+    H+='<div style="font-size:.7rem;color:var(--text2);opacity:.85;line-height:1.7;margin-top:.35rem">※ 向き合うテーマが多いほど、違いや課題が表れやすい関係です。相性の良し悪しを示すものではありません。</div>';
+    H+='</div>';
+    return H;
+  })();
   const _aiseiType=AISEI_TYPE_RANGES.find(t=>_totalScore>=t.min&&_totalScore<=t.max)||AISEI_TYPE_RANGES[AISEI_TYPE_RANGES.length-1];
 
   // ── relType別ラベル ──
@@ -12181,31 +12308,7 @@ function renderAiseiResult(rA,rB,nameA,nameB,relType='love'){
     <!-- 総合相性スコア（無料） -->
     <div class="aisei-card" style="border-left:4px solid ${_aiseiType.color};background:linear-gradient(135deg,${_aiseiType.color}0a,transparent)">
       <h3>✦ 総合相性スコア</h3>
-      <div style="display:flex;align-items:center;gap:1.2rem;margin:.6rem 0">
-        <div style="position:relative;width:80px;height:80px;flex-shrink:0">
-          <svg viewBox="0 0 80 80" style="width:80px;height:80px;transform:rotate(-90deg)">
-            <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(0,0,0,.1)" stroke-width="8"/>
-            <circle cx="40" cy="40" r="32" fill="none" stroke="${_aiseiType.color}" stroke-width="8"
-              stroke-dasharray="${2*Math.PI*32}" stroke-dashoffset="${2*Math.PI*32*(1-_totalScore/100)}"
-              stroke-linecap="round"/>
-          </svg>
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-            <span style="font-size:1.4rem;font-weight:900;color:${_aiseiType.color};line-height:1">${_totalScore}</span>
-            <span style="font-size:.6rem;color:var(--text2)">/ 100</span>
-          </div>
-        </div>
-        <div style="flex:1">
-          <div style="font-size:1rem;font-weight:800;color:${_aiseiType.color};margin-bottom:.2rem">${_aiseiType.type}</div>
-          <div style="font-size:.82rem;color:var(--text2);margin-bottom:.5rem">${_aiseiType.title}</div>
-          <div style="display:flex;gap:.3rem;flex-wrap:wrap">
-            <span style="font-size:.67rem;padding:2px 7px;border-radius:4px;background:${_aiseiType.color}15;border:1px solid ${_aiseiType.color}40;color:${_aiseiType.color}">本質${_meiPts}pt</span>
-            <span style="font-size:.67rem;padding:2px 7px;border-radius:4px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--gold)">${_fuuLabel}${_fuuPts}pt</span>
-            <span style="font-size:.67rem;padding:2px 7px;border-radius:4px;background:rgba(109,40,217,.1);border:1px solid rgba(109,40,217,.3);color:var(--teal)">魂${_fukuPts}pt</span>
-            <span style="font-size:.67rem;padding:2px 7px;border-radius:4px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.3);color:var(--purple)">縁${Math.max(0,_subPts)}pt</span>
-          </div>
-        </div>
-      </div>
-      <div style="padding:.65rem .9rem;background:${_aiseiType.color}10;border-radius:8px;font-size:.83rem;color:var(--text2);line-height:1.8">${_aiseiType.text}</div>
+      ${_aiseiScoreBlockHTML}
     </div>
     <!-- 恋愛タイプ × 相性の傾向（無料） -->
     ${loveTypeCardHTML}
@@ -12226,31 +12329,7 @@ function renderAiseiResult(rA,rB,nameA,nameB,relType='love'){
     <!-- 総合相性スコア -->
     <div class="aisei-card" style="border-left:4px solid ${_aiseiType.color};background:linear-gradient(135deg,${_aiseiType.color}0a,transparent)">
       <h3>✦ 総合相性スコア</h3>
-      <div style="display:flex;align-items:center;gap:1.2rem;margin:.6rem 0">
-        <div style="position:relative;width:80px;height:80px;flex-shrink:0">
-          <svg viewBox="0 0 80 80" style="width:80px;height:80px;transform:rotate(-90deg)">
-            <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(0,0,0,.1)" stroke-width="8"/>
-            <circle cx="40" cy="40" r="32" fill="none" stroke="${_aiseiType.color}" stroke-width="8"
-              stroke-dasharray="${2*Math.PI*32}" stroke-dashoffset="${2*Math.PI*32*(1-_totalScore/100)}"
-              stroke-linecap="round"/>
-          </svg>
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-            <span style="font-size:1.4rem;font-weight:900;color:${_aiseiType.color};line-height:1">${_totalScore}</span>
-            <span style="font-size:.6rem;color:var(--text2)">/ 100</span>
-          </div>
-        </div>
-        <div style="flex:1">
-          <div style="font-size:1rem;font-weight:800;color:${_aiseiType.color};margin-bottom:.2rem">${_aiseiType.type}</div>
-          <div style="font-size:.82rem;color:var(--text2);margin-bottom:.5rem">${_aiseiType.title}</div>
-          <div style="display:flex;gap:.3rem;flex-wrap:wrap">
-            <span style="font-size:.67rem;padding:2px 7px;border-radius:4px;background:${_aiseiType.color}15;border:1px solid ${_aiseiType.color}40;color:${_aiseiType.color}">本質${_meiPts}pt</span>
-            <span style="font-size:.67rem;padding:2px 7px;border-radius:4px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--gold)">${_fuuLabel}${_fuuPts}pt</span>
-            <span style="font-size:.67rem;padding:2px 7px;border-radius:4px;background:rgba(109,40,217,.1);border:1px solid rgba(109,40,217,.3);color:var(--teal)">魂${_fukuPts}pt</span>
-            <span style="font-size:.67rem;padding:2px 7px;border-radius:4px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.3);color:var(--purple)">縁${Math.max(0,_subPts)}pt</span>
-          </div>
-        </div>
-      </div>
-      <div style="padding:.65rem .9rem;background:${_aiseiType.color}10;border-radius:8px;font-size:.83rem;color:var(--text2);line-height:1.8">${_aiseiType.text}</div>
+      ${_aiseiScoreBlockHTML}
       <div style="margin-top:.5rem;padding:.45rem .8rem;background:rgba(124,58,237,.06);border-radius:6px;font-size:.76rem;color:var(--purple3);line-height:1.7;font-style:italic">💡 ${_aiseiType.premium}</div>
     </div>
 
@@ -14559,7 +14638,9 @@ var SITE_UPDATE_DRAFTS=[
   {id:'upd-6197759',title:'お知らせの表示とショップへのリンクを改善しました',body:'お知らせが最新の内容に更新されない場合があった不具合を修正しました。お知らせページを開いたまま最新の内容へ自動で切り替わるようになり、タブを開き直す必要がなくなっています。通信が一時的に不安定なときも、これまでに届いたお知らせが消えないようにしました。あわせて、サイト情報の「特定商取引法」内にあるショップページへのリンクが正しく開くよう修正しています。',createdAt:'2026-08-01T13:20:00',type:'サイト更新',target:'all',status:'draft',commit:'6197759'},
   {id:'upd-a23f290',title:'恋愛・お金・仕事・社会運の鑑定文を追加しました',body:'これまで命宮だけでご覧いただけた詳しい鑑定文を、夫妻宮（恋愛・結婚）、財帛宮（お金・豊かさ）、官禄宮（仕事・働き方）、遷移宮（社会・外の世界）にも追加しました。14の主星それぞれについて、その宮ならではの読み解きをご用意しています。あわせて、各宮の「星の特徴を詳しく見る」を開くと、その宮に合わせた3つの視点（例：恋愛で出やすい癖、お金との付き合い方など）もご覧いただけます。これまでの解説はそのまま残していますので、内容が減ることはありません。',createdAt:'2026-08-01T17:05:00',type:'サイト更新',target:'all',status:'draft',commit:'a23f290'},
   {id:'upd-26105b0',title:'星や宮の読み仮名を見直しました',body:'サイト内で表示している星名・宮名・専門用語の読み仮名を、あらためて整理して見直しました。一部の読みを正しい表記に改めたほか、これまで読み仮名が付いていなかった用語にも追加しています。ふりがなが付いたことで、はじめて紫微斗数に触れる方にも読み進めやすくなりました。鑑定内容や命盤の計算結果には変更ありません。',createdAt:'2026-08-03T10:10:00',type:'サイト更新',target:'all',status:'draft',commit:'26105b0'},
-  {id:'upd-722e649',title:'十二宮すべてに詳しい鑑定文が揃いました',body:'これまで一部の宮だけでご覧いただけた詳しい鑑定文を、十二宮すべてに追加しました。兄弟宮（仲間とのつながり）、子女宮（育てるもの）、疾厄宮（心と体）、奴僕宮（協力者との関係）、田宅宮（住まいと家庭）、福徳宮（心の豊かさ）、父母宮（目上との縁）が新しく加わっています。14の主星それぞれについて、その宮ならではの読み解きと、宮に合わせた3つの視点をご用意しました。これまでの解説はそのまま残していますので、内容が減ることはありません。',createdAt:'2026-08-03T11:25:00',type:'サイト更新',target:'all',status:'draft',commit:'722e649'}
+  {id:'upd-722e649',title:'十二宮すべてに詳しい鑑定文が揃いました',body:'これまで一部の宮だけでご覧いただけた詳しい鑑定文を、十二宮すべてに追加しました。兄弟宮（仲間とのつながり）、子女宮（育てるもの）、疾厄宮（心と体）、奴僕宮（協力者との関係）、田宅宮（住まいと家庭）、福徳宮（心の豊かさ）、父母宮（目上との縁）が新しく加わっています。14の主星それぞれについて、その宮ならではの読み解きと、宮に合わせた3つの視点をご用意しました。これまでの解説はそのまま残していますので、内容が減ることはありません。',createdAt:'2026-08-03T11:25:00',type:'サイト更新',target:'all',status:'draft',commit:'722e649'},
+  {id:'upd-d418d1f',title:'鑑定士向けの専門解説を追加しました（鑑定士・管理人のみ）',body:'十二宮それぞれに「🔐 鑑定士向け専門解説」を追加しました。鑑定士・管理人でログインしている場合のみ表示され、命盤の各宮をタップすると開閉できます。宮ごとの共通の見方と、その宮に実際に配置されている主星の専門ポイント（主な傾向／吉の面・活かし方／注意点・影の面／その宮に応じた対象の傾向／鑑定時の確認ポイント）をまとめています。資料の裏付けがある星のみを表示し、資料がない星は表示しません。疾厄宮には医療的判断を行うものではない旨の注意書きを添えています。無料版の表示内容はこれまでと変わりません。',createdAt:'2026-08-04T10:57:00',type:'サイト更新',target:'kante',status:'draft',commit:'d418d1f'},
+  {id:'upd-eeb12ad',title:'タブレットで命盤作成ページの並び順が入れ替わる不具合を修正しました',body:'画面の横幅が641〜768pxのタブレット（iPadを縦向きにした場合など）で、命盤作成ページの並び順が入れ替わり、命盤計算の入力フォームが各解説の下に表示されてしまう不具合を修正しました。見出し・入力フォーム・保存したデータ・各解説の順で表示されます。スマートフォンとパソコンの表示、および入力欄の見た目や操作方法は変更していません。',createdAt:'2026-08-04T12:41:00',type:'サイト更新',target:'all',status:'draft',commit:'eeb12ad'}
 ];
 
 /* 処理済み（公開または破棄）の下書きIDを記録し、固定配列から復活させない */
