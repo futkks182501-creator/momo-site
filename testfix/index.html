@@ -12168,6 +12168,7 @@ function renderAiseiResult(rA,rB,nameA,nameB,relType='love'){
     {key:'p6',label:'惹かれやすさ', got:_p6,max:10},
     {key:'p7',label:'支え合う力',   got:_p7,max:10}
   ];
+  const _aiseiType=AISEI_TYPE_RANGES.find(t=>_totalScore>=t.min&&_totalScore<=t.max)||AISEI_TYPE_RANGES[AISEI_TYPE_RANGES.length-1];
   /* ── 修正⑱：スコアカードHTML（タイプ名を主役に。点数はその下） ── */
   const _aiseiScoreBlockHTML=(()=>{
     const c=_aiseiType.color;
@@ -12211,7 +12212,6 @@ function renderAiseiResult(rA,rB,nameA,nameB,relType='love'){
     H+='</div>';
     return H;
   })();
-  const _aiseiType=AISEI_TYPE_RANGES.find(t=>_totalScore>=t.min&&_totalScore<=t.max)||AISEI_TYPE_RANGES[AISEI_TYPE_RANGES.length-1];
 
   // ── relType別ラベル ──
   const _fuuLabel={love:'恋愛',marriage:'婚縁',friend:'交友',boss:'上位縁',sub:'育縁',colleague:'同僚縁',parent:'家族縁',child:'子縁',reunion:'復縁',divorcedlove:'婚縁'}[relType]||'縁';
