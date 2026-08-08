@@ -12102,6 +12102,8 @@ function renderAiseiResult(rA,rB,nameA,nameB,relType='love'){
    * 旧仕様との違い：夫妻宮20・福徳宮20の固定を廃し、関係宮15をタイプ別に配分。
    *   身宮10・三方四正10を新設。副星は桃花/貴人/課題に分離し集計範囲を限定。
    *   六合+5・支合+3は資料に根拠がないため廃止。 */
+  /* 支合（相生法）— 表示用。修正⑱ではスコア加点に使わない（資料に根拠がないため） */
+  const _shigoPair=checkShigo(BR[rA.meiPos],BR[rB.meiPos]);
   const _norm=(v,max)=>(v===null||v===undefined)?max*0.5:Math.max(0,Math.min(max,(v+3)/6*max));
   const _mScore=(s1,s2)=>(s1&&s2&&STAR_COMPAT_MATRIX[s1]&&STAR_COMPAT_MATRIX[s1][s2]!==undefined)?STAR_COMPAT_MATRIX[s1][s2]:null;
   /* 同宮に複数主星がある場合は全組み合わせの平均（09_実装メモ）。空宮はnull＝中立 */
