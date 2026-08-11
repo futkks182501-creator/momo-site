@@ -503,3 +503,33 @@ love=[夫妻15] / divorcedlove=[夫妻10,子女5] / marriage=[夫妻7,財帛4,�
 `calculate` / `solarToLunar` / `loadSavedChart` / `clearPersonalInputs` / `saveCurrentChart` / `checkShigo`（六合・支合の判定） / `ymdSync` / `ymdFromDate` / `ymdInit` / `buildProSection` / `openChartFromKarte`。`renderAiseiResult` のみ六合・支合の注記2件分だけ増加。
 
 専門解説167本・YOMI_DICT 116件・相性タイプ5区分・配点10種類・生年月日3分割入力・保存データ形式・認証・D1構造はすべて維持。
+
+## 修正㉑ ファビコン（サイトアイコン）の設定
+
+- **本番**: （このコミット）／**ロールバック先**: `50ff7b8`
+- **testfix**: `47e9a9d`
+
+これまでサイトにファビコンの指定が1件も無く、ブラウザ標準アイコンが表示されていた。ももさん作成の円形イラスト（1254×1254 PNG）を**トリミングせず全体のまま**アイコン化して設定。
+
+### 追加ファイル（リポジトリ直下）
+
+| ファイル | 内容 | サイズ |
+|---|---|---|
+| `favicon.ico` | 16 / 32 / 48px の3サイズをPNG形式で内包 | 6,082 bytes |
+| `apple-touch-icon.png` | 180px（iPhone・Androidのホーム画面用） | 28,310 bytes |
+
+### index.html の変更（`<head>` に3行追加のみ・+200字）
+
+```html
+<link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" type="image/png" sizes="180x180" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+```
+
+相対パス指定のため、リポジトリ直下と `testfix/` の双方で同一のHTMLがそのまま動作する。
+
+### 無変更を確認（バイト照合）
+
+本番 index.html から上記3行を取り除くと、修正⑳時点（`50ff7b8`・1,133,023字）と**1バイトの差もなく一致**。CSS・JS・データ・Worker・D1・認証には一切触れていない。
+
+Consoleエラー0件。実機（PC・iPhone・Androidタブレット）でタブ表示・ホーム画面追加を確認済み。
