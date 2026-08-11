@@ -1055,6 +1055,30 @@ section.active{display:block}
 #line-cta-bar{display:none!important}
 #line-cta-section{display:none!important}
 #unsei-line-cta{display:none!important}
+/* ── 修正⑲：生年月日入力をタブレット幅（769〜1024px）でのみ3分割セレクトへ ──────
+ * 目的：タブレットの標準カレンダーは年を直接選べず、月送り矢印しか使えないため。
+ * 方針：DOMには常に両方を置き、CSSの表示切替のみで出し分ける（JSの端末判定は行わない）。
+ *   ・769px未満（スマホ）／1025px以上（PC）：<input type="date"> を表示（本番と同一）
+ *   ・769〜1024px（タブレット）：3分割セレクトを表示し date input を隠す
+ * 内部値は常に #inp-date（YYYY-MM-DD）が正。calculate()／保存／読込は無変更。 */
+.ymd-row{display:none}
+@media(min-width:769px) and (max-width:1024px){
+  #inp-date{display:none}
+  .ymd-row{display:flex;gap:.5rem;align-items:center;flex:1;min-width:0}
+  .ymd-cell{display:flex;align-items:center;gap:.2rem;min-width:0}
+  .ymd-cell:nth-child(1){flex:1.5 1 96px}
+  .ymd-cell:nth-child(2){flex:1 1 68px}
+  .ymd-cell:nth-child(3){flex:1 1 68px}
+  .ymd-sel{
+    flex:1 1 auto;min-width:0;width:100%;
+    padding:.55rem .5rem;font-size:.95rem;line-height:1.3;
+    border:1px solid rgba(180,130,80,.25);border-radius:10px;
+    background:var(--glass);color:var(--text);
+    -webkit-appearance:menulist;appearance:menulist;min-height:44px;
+  }
+  .ymd-sel:focus{outline:2px solid rgba(109,40,217,.35);outline-offset:1px}
+  .ymd-unit{font-size:.82rem;color:var(--text2);flex-shrink:0}
+}
 /* モバイル・タブレット縦向きでのアコーディオン順序
  * 修正⑯: #calc .container が flex になるのは max-width:768px のため、
  * ここも 768px に揃える。640px のままだと 641〜768px でアコーディオンの
@@ -1500,6 +1524,11 @@ section.active{display:block}
           <label>生年月日（西暦）</label>
           <div style="display:flex;gap:.5rem;align-items:center">
             <input type="date" id="inp-date" value="1990-01-15" min="1930-01-01" max="2025-12-31" style="flex:1">
+            <div class="ymd-row" id="ymd-row" aria-hidden="true">
+              <div class="ymd-cell"><select id="inp-y" class="ymd-sel" aria-label="生まれた年"></select><span class="ymd-unit">年</span></div>
+              <div class="ymd-cell"><select id="inp-m" class="ymd-sel" aria-label="生まれた月"></select><span class="ymd-unit">月</span></div>
+              <div class="ymd-cell"><select id="inp-d" class="ymd-sel" aria-label="生まれた日"></select><span class="ymd-unit">日</span></div>
+            </div>
           </div>
         </div>
         <div class="form-group">
@@ -5964,6 +5993,99 @@ function syncShichenFromHour(h){
   const sc=hourToShichen(Number(h));
   selectShichen(sc);
 }
+
+/* ── 修正⑲：生年月日3分割セレクト（タブレット幅でのみ表示）────────────────
+ * ・表示の出し分けは CSS のメディアクエリのみ（UA判定・幅のJS判定は行わない）
+ * ・内部値は常に #inp-date（type="date", "YYYY-MM-DD"）が正
+ * ・#inp-date.value への代入をこの要素だけフックし、保存データ読込・カルテ・
+ *   ログアウト初期化など既存のどの経路から書き換えられても3セレクトへ反映する
+ *   （既存関数は1行も変更しない）
+ * ・年の範囲は #inp-date の min/max 属性に合わせる（勝手に広げない） */
+function _ymdEls(){return {y:document.getElementById('inp-y'),m:document.getElementById('inp-m'),
+  d:document.getElementById('inp-d'),h:document.getElementById('inp-date')};}
+function _ymdDaysIn(y,m){
+  if(m===2) return ((y%4===0&&y%100!==0)||y%400===0)?29:28;
+  return [4,6,9,11].indexOf(m)>=0?30:31;
+}
+function _ymdRange(){
+  var h=document.getElementById('inp-date');
+  var mn=(h&&h.getAttribute('min'))||'1930-01-01';
+  var mx=(h&&h.getAttribute('max'))||'2025-12-31';
+  return {min:mn.split('-').map(Number),max:mx.split('-').map(Number)};
+}
+function _ymdFill(sel,from,to,cur){
+  if(!sel)return;
+  var out='';
+  for(var i=from;i<=to;i++) out+='<option value="'+i+'">'+i+'</option>';
+  sel.innerHTML=out;
+  var n=parseInt(cur,10);
+  if(isNaN(n))n=from;
+  if(n<from)n=from; if(n>to)n=to;
+  sel.value=String(n);
+}
+var _ymdDesc=null;
+function _ymdSetRaw(el,v){ if(_ymdDesc)_ymdDesc.set.call(el,v); else el.setAttribute('value',v); }
+function _ymdGetRaw(el){ return _ymdDesc?_ymdDesc.get.call(el):el.getAttribute('value'); }
+/* 3セレクト → #inp-date へ書き戻す */
+function ymdSync(){
+  var e=_ymdEls(); if(!e.y||!e.h)return;
+  var R=_ymdRange();
+  var y=parseInt(e.y.value,10)||R.min[0];
+  /* 年に応じて月の範囲を作り直す（min/max年の端では月を制限） */
+  var mFrom=(y===R.min[0])?R.min[1]:1, mTo=(y===R.max[0])?R.max[1]:12;
+  _ymdFill(e.m,mFrom,mTo,e.m.value);
+  var m=parseInt(e.m.value,10)||mFrom;
+  var dFrom=(y===R.min[0]&&m===R.min[1])?R.min[2]:1;
+  var dTo=_ymdDaysIn(y,m);
+  if(y===R.max[0]&&m===R.max[1]) dTo=Math.min(dTo,R.max[2]);
+  _ymdFill(e.d,dFrom,dTo,e.d.value);
+  var d=parseInt(e.d.value,10)||dFrom;
+  var s=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  if(_ymdGetRaw(e.h)!==s) _ymdSetRaw(e.h,s);
+}
+/* #inp-date → 3セレクトへ反映 */
+function ymdFromDate(){
+  var e=_ymdEls(); if(!e.y||!e.h)return;
+  var R=_ymdRange();
+  var v=String(_ymdGetRaw(e.h)||'');
+  var mm=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  var y,m,d;
+  if(mm){y=+mm[1];m=+mm[2];d=+mm[3];} else {y=1990;m=1;d=15;}
+  if(y<R.min[0])y=R.min[0]; if(y>R.max[0])y=R.max[0];
+  _ymdFill(e.y,R.min[0],R.max[0],y);
+  var mFrom=(y===R.min[0])?R.min[1]:1, mTo=(y===R.max[0])?R.max[1]:12;
+  if(m<mFrom)m=mFrom; if(m>mTo)m=mTo;
+  _ymdFill(e.m,mFrom,mTo,m);
+  var dFrom=(y===R.min[0]&&m===R.min[1])?R.min[2]:1;
+  var dTo=_ymdDaysIn(y,m);
+  if(y===R.max[0]&&m===R.max[1]) dTo=Math.min(dTo,R.max[2]);
+  if(d<dFrom)d=dFrom; if(d>dTo)d=dTo;   /* 例：2024/2/29 → 2023年へ変更で 2/28 */
+  _ymdFill(e.d,dFrom,dTo,d);
+  var s=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  if(_ymdGetRaw(e.h)!==s) _ymdSetRaw(e.h,s);
+}
+function ymdInit(){
+  var e=_ymdEls(); if(!e.y||!e.h)return;
+  if(!_ymdDesc){
+    _ymdDesc=Object.getOwnPropertyDescriptor(Object.getPrototypeOf(e.h),'value');
+    try{
+      Object.defineProperty(e.h,'value',{
+        configurable:true,
+        get:function(){return _ymdDesc.get.call(this);},
+        set:function(v){ _ymdDesc.set.call(this,v); try{ymdFromDate();}catch(err){} }
+      });
+    }catch(err){}
+  }
+  ymdFromDate();
+  e.y.addEventListener('change',ymdSync);
+  e.m.addEventListener('change',ymdSync);
+  e.d.addEventListener('change',ymdSync);
+  /* PC・スマホでカレンダーから選んだ場合も3セレクトを追従させる */
+  e.h.addEventListener('change',function(){try{ymdFromDate();}catch(err){}});
+  e.h.addEventListener('input', function(){try{ymdFromDate();}catch(err){}});
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ymdInit);
+else ymdInit();
 
 function calculate(){
   const dateVal=document.getElementById('inp-date').value;
@@ -14642,7 +14764,8 @@ var SITE_UPDATE_DRAFTS=[
   {id:'upd-26105b0',title:'星や宮の読み仮名を見直しました',body:'サイト内で表示している星名・宮名・専門用語の読み仮名を、あらためて整理して見直しました。一部の読みを正しい表記に改めたほか、これまで読み仮名が付いていなかった用語にも追加しています。ふりがなが付いたことで、はじめて紫微斗数に触れる方にも読み進めやすくなりました。鑑定内容や命盤の計算結果には変更ありません。',createdAt:'2026-08-03T10:10:00',type:'サイト更新',target:'all',status:'draft',commit:'26105b0'},
   {id:'upd-722e649',title:'十二宮すべてに詳しい鑑定文が揃いました',body:'これまで一部の宮だけでご覧いただけた詳しい鑑定文を、十二宮すべてに追加しました。兄弟宮（仲間とのつながり）、子女宮（育てるもの）、疾厄宮（心と体）、奴僕宮（協力者との関係）、田宅宮（住まいと家庭）、福徳宮（心の豊かさ）、父母宮（目上との縁）が新しく加わっています。14の主星それぞれについて、その宮ならではの読み解きと、宮に合わせた3つの視点をご用意しました。これまでの解説はそのまま残していますので、内容が減ることはありません。',createdAt:'2026-08-03T11:25:00',type:'サイト更新',target:'all',status:'draft',commit:'722e649'},
   {id:'upd-d418d1f',title:'鑑定士向けの専門解説を追加しました（鑑定士・管理人のみ）',body:'十二宮それぞれに「🔐 鑑定士向け専門解説」を追加しました。鑑定士・管理人でログインしている場合のみ表示され、命盤の各宮をタップすると開閉できます。宮ごとの共通の見方と、その宮に実際に配置されている主星の専門ポイント（主な傾向／吉の面・活かし方／注意点・影の面／その宮に応じた対象の傾向／鑑定時の確認ポイント）をまとめています。資料の裏付けがある星のみを表示し、資料がない星は表示しません。疾厄宮には医療的判断を行うものではない旨の注意書きを添えています。無料版の表示内容はこれまでと変わりません。',createdAt:'2026-08-04T10:57:00',type:'サイト更新',target:'kante',status:'draft',commit:'d418d1f'},
-  {id:'upd-eeb12ad',title:'タブレットで命盤作成ページの並び順が入れ替わる不具合を修正しました',body:'画面の横幅が641〜768pxのタブレット（iPadを縦向きにした場合など）で、命盤作成ページの並び順が入れ替わり、命盤計算の入力フォームが各解説の下に表示されてしまう不具合を修正しました。見出し・入力フォーム・保存したデータ・各解説の順で表示されます。スマートフォンとパソコンの表示、および入力欄の見た目や操作方法は変更していません。',createdAt:'2026-08-04T12:41:00',type:'サイト更新',target:'all',status:'draft',commit:'eeb12ad'}
+  {id:'upd-eeb12ad',title:'タブレットで命盤作成ページの並び順が入れ替わる不具合を修正しました',body:'画面の横幅が641〜768pxのタブレット（iPadを縦向きにした場合など）で、命盤作成ページの並び順が入れ替わり、命盤計算の入力フォームが各解説の下に表示されてしまう不具合を修正しました。見出し・入力フォーム・保存したデータ・各解説の順で表示されます。スマートフォンとパソコンの表示、および入力欄の見た目や操作方法は変更していません。',createdAt:'2026-08-04T12:41:00',type:'サイト更新',target:'all',status:'draft',commit:'eeb12ad'},
+  {id:'upd-664f070',title:'相性鑑定のスコアとタイプ表示をリニューアルしました',body:'相性鑑定の総合スコアを見直しました。これまでは鑑定する関係の種類を切り替えても点数が変わりませんでしたが、恋愛・結婚・友人・上司・部下・同僚・両親・子供など、関係の種類ごとに見る宮を変えて計算するようになりました。あわせて、点数よりも「相性タイプ」を大きく表示する形に変更しています。深いご縁タイプ／安定成長タイプ／学び合いタイプ／調整必要タイプ／カルマ課題タイプの5種類で、それぞれ「この関係の強み」「違い・課題が出やすい部分」「関係を育てるヒント」をご覧いただけます。相性の内訳も、本質の相性・関係性・心の安心感・人生の方向性・ご縁の重なり・惹かれやすさ・支え合う力・向き合うテーマの8項目で表示されます。なお相性スコアは、ふたりの関係の「良い・悪い」を決めるものではありません。自然に噛み合う部分や、理解・調整が必要な部分を読み解くための目安としてご覧ください。',createdAt:'2026-08-08T19:56:00',type:'サイト更新',target:'all',status:'draft',commit:'664f070'}
 ];
 
 /* 処理済み（公開または破棄）の下書きIDを記録し、固定配列から復活させない */
