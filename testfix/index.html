@@ -1498,7 +1498,7 @@ section.active{display:block}
         <p style="font-size:.73rem;color:var(--text2);line-height:2">
           ・本サイトの鑑定結果は、自己理解・エンターテインメントを目的とした参考情報です。結果に基づく行動・判断の結果について、運営者は一切の責任を負いかねます。<br>
           ・医療・法律・金融など専門的な判断の代替にはなりません。重要な決断は必ず各分野の専門家にご相談ください。<br>
-          ・入力された命盤データはお使いのブラウザ（ローカルストレージ）にのみ保存されます。サーバーへのデータ送信・収集は一切行っておりません。<br>
+          ・入力された命盤データは、通常お使いのブラウザ（ローカルストレージ）に保存されます。一般利用者の命盤データを運営側が収集する仕組みにはしていません。鑑定士・管理人のログイン認証やサイト共通設定については、サーバーと通信します。<br>
           ・本サイトのコンテンツ・計算ロジック・テキストの無断転載・複製・商用利用を禁じます。<br>
           ・サービス内容・仕様は予告なく変更・終了する場合があります。あらかじめご了承ください。
         </p>
@@ -1593,7 +1593,7 @@ section.active{display:block}
         <span class="saved-count-badge" id="saved-count">0件</span>
         <span class="saved-arrow" id="saved-arrow">▼</span>
       </div>
-      <div id="saved-list-wrap" class="saved-list-wrap" style="display:none">
+      <div style="margin:.5rem 0 .6rem;padding:.55rem .8rem;background:rgba(0,0,0,.035);border-radius:8px;font-size:.74rem;color:var(--text2);line-height:1.75">※ 保存したデータは、お使いのブラウザ内に保存されます。ブラウザの履歴・サイトデータを削除した場合や、別の端末・ブラウザから開いた場合は表示されないことがあります。大切なデータは下の「バックアップ（データ移行・復元）」から書き出しておくことをおすすめします。</div><div id="saved-list-wrap" class="saved-list-wrap" style="display:none">
         <div style="padding:.5rem .6rem .2rem;display:flex;align-items:center">
           <input id="saved-search" type="text" placeholder="🎂 誕生日で検索（例：1990-03）" oninput="renderSavedList()" style="flex:1;padding:.4rem .75rem;border:1.5px solid var(--border);border-radius:8px;background:var(--card);color:var(--text1);font-size:.82rem;outline:none">
         </div>
@@ -1691,7 +1691,7 @@ section.active{display:block}
           <div style="font-size:.7rem;color:rgba(5,150,105,.75);margin-top:.4rem;padding-top:.35rem;border-top:1px solid rgba(16,185,129,.2)">🔐 有料版では：才能が活きる職種・起業適性・金運ピーク・出世パターンを詳しく鑑定</div>
         </div>
       </div>
-      <div style="font-size:.72rem;color:var(--text2);margin-top:.7rem">🔐 その他の9宮は鑑定士専用です。詳細は鑑定士にお問い合わせください。</div>
+      <div style="font-size:.72rem;color:var(--text2);margin-top:.7rem">🔐 その他の9宮は鑑定士専用です。また、鑑定士・管理人がログインすると、12宮それぞれに、鑑定時に使用する専門的な補足解説が表示されます。</div>
     </div>
 
     <!-- LINE CTA（旧・CSS display:none!important で非表示） -->
@@ -2192,7 +2192,7 @@ section.active{display:block}
         <p>※ メールアドレス等の連絡先は、お問い合わせ時にご提供いただいた場合のみ取得します。命盤計算のみの利用では不要です。</p>
 
         <h4>サーバーへの保存について</h4>
-        <p><strong>本サイトは静的HTMLファイルで構成されており、外部サーバーへの情報送信・保存は一切行っておりません。</strong>入力いただいた生年月日・出生時刻等はお使いのブラウザ内のみで処理され、命盤計算後は画面上に表示されるだけです。鑑定士向けのカルテデータ等は、お使いのデバイスのローカルストレージ（ブラウザ内）に保存されるのみです。</p>
+        <p><strong>命盤の計算・表示は、お使いのブラウザ内で行われます。</strong>生年月日・出生時刻など命盤作成のために入力した情報や、保存した命盤・カルテ・スケジュールは、通常お使いのデバイスのブラウザ内（ローカルストレージ）に保存され、一般利用者の命盤データを運営側が収集する仕組みにはしていません。<br><br>一方、鑑定士・管理人のログイン認証や、お知らせ・プロフィール・各種リンクなどのサイト共通設定については、複数の端末で同じ内容をご利用いただくためサーバー（Cloudflare Workers）と通信します。</p>
 
         <h4>利用目的</h4>
         <ul>
@@ -2577,7 +2577,7 @@ section.active{display:block}
   <div class="container">
     <div class="section-header">
       <h2>相性鑑定</h2>
-      <p>二人の命盤を重ねて相性を深く読み解きます。夫妻宮・六合・支合（相生法）・命宮干クロス・化忌カルマで鑑定します。</p>
+      <p>二人の命盤を重ねて、関係性に合わせた相性を読み解きます。恋愛・結婚・友人・仕事・家族など、選んだ関係によって見る宮を切り替え、命宮・関係宮・福徳宮・身宮・三方四正、桃花星・貴人星・課題星などから総合的に鑑定します。六合・支合（相生法）、命宮干クロス、化忌カルマなども、二人のご縁を読み解く参考情報として確認できます。</p>
     </div>
     <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:.8rem 1.1rem;font-size:.82rem;color:var(--text2);margin-bottom:1rem">
       💡 保存済み命盤から本人（A）と相手（B）を選んで鑑定します。先に「命盤計算」タブで二人分の命盤を保存してください。
@@ -12448,7 +12448,7 @@ function renderAiseiResult(rA,rB,nameA,nameB,relType='love'){
     ${loveTypeCardHTML}
     <!-- ロックセクション -->
     ${_lkA('⭐ 命宮主星 × 相性スコア詳細')}
-    ${_lkA('🏠 夫妻宮・フォーカス宮の鑑定')}
+    ${_lkA('🏠 選んだ関係に応じた宮の鑑定')}
     ${_lkA('☯ 命宮の地支 × 六合チェック')}
     ${_lkA('✦ 命宮干のエネルギー × クロス分析')}
     ${_lkA('🌑 生年化忌（カルマ・無意識の重さ）')}
@@ -12516,14 +12516,14 @@ function renderAiseiResult(rA,rB,nameA,nameB,relType='love'){
       </div>
       ${ryugoPair?`<div style="padding:.8rem 1rem;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.32);border-radius:8px;margin-top:.5rem;line-height:1.8">
         <div style="font-weight:700;color:var(--gold);margin-bottom:.3rem">✦ 六合（${ryugoPair[2]}）成立！</div>
-        <div style="font-size:.82rem;color:var(--text2)">${ryugoPair[3]}</div>
+        <div style="font-size:.82rem;color:var(--text2)">${ryugoPair[3]}</div><div style="margin-top:.45rem;font-size:.72rem;color:var(--text2);opacity:.85;line-height:1.7">※ 六合・支合は、ご縁の特徴を読み解くための参考情報です。現在の総合相性スコアへの加点項目には含まれていません。</div>
         <div style="font-size:.77rem;margin-top:.5rem;color:#9f1239;background:rgba(244,63,94,.06);padding:.4rem .7rem;border-radius:6px;line-height:1.7">⚠ 六合は「強すぎる縁」を意味します。陰陽の結婚は最高に輝く一方、依存・執着に発展しやすいリスクも持ちます。</div>
       </div>`:`<div style="padding:.6rem 1rem;background:rgba(255,255,255,.5);border-radius:8px;font-size:.82rem;color:var(--text2)">
         六合の関係ではありません（${BR[rA.meiPos]}×${BR[rB.meiPos]}）。縁の強さは他の要素から読み解きます。
       </div>`}
       ${_shigoPair?`<div style="padding:.75rem 1rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.3);border-radius:8px;margin-top:.5rem;line-height:1.8">
         <div style="font-weight:700;color:#10b981;margin-bottom:.3rem">🤝 支合（${_shigoPair.pair[0]}×${_shigoPair.pair[1]}）成立！</div>
-        <div style="font-size:.82rem;color:var(--text2)">${_shigoPair.desc}</div>
+        <div style="font-size:.82rem;color:var(--text2)">${_shigoPair.desc}</div><div style="margin-top:.45rem;font-size:.72rem;color:var(--text2);opacity:.85;line-height:1.7">※ 六合・支合は、ご縁の特徴を読み解くための参考情報です。現在の総合相性スコアへの加点項目には含まれていません。</div>
         <div style="font-size:.76rem;margin-top:.4rem;color:var(--teal);font-style:italic">支合（相生法）＝困難にぶつかった時に理性で越えられる縁。長期的な信頼と安定を育む間柄を示します。</div>
       </div>`:''}
     </div>
