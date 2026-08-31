@@ -17961,7 +17961,7 @@ function openAndScrollAcc(id){
   /* 流月：#ryugetsu-cards */
   function cardsRyugetsu(){
     var c=document.getElementById('ryugetsu-cards');
-    if(!c||!c.children.length) return none('流月は「流月」タブを開いてから印刷すると12ヶ月分が入ります。');
+    if(!c||!c.children.length) return none('流月データを取得できませんでした。');
     var out='',i,j,L,m,k,v,rest;
     for(i=0;i<c.children.length;i++){
       L=lines(c.children[i]);
@@ -18021,13 +18021,60 @@ function openAndScrollAcc(id){
     return '<div class="zw-usum"><div class="t zw-mc zw-num">'+esc(title)+'　年運スコア</div><div class="g">'+g+'</div></div>';
   }
 
+  /* 流月の枚数 */
+  function rgCount(){ var c=document.getElementById('ryugetsu-cards'); return c? c.children.length : 0; }
+  /* 固定時間で待たず、12ヶ月分のDOMが生成されたことを確認して次へ進む */
+  function waitRyugetsu(limitMs, cb){
+    if(rgCount()>=12){ cb(true); return; }
+    var t0=Date.now(), done=false, obs=null, timer=null;
+    function fin(ok){ if(done) return; done=true; if(obs){try{obs.disconnect();}catch(e){}} if(timer) clearInterval(timer); cb(ok); }
+    var el=document.getElementById('ryugetsu-cards');
+    if(el && window.MutationObserver){
+      try{ obs=new MutationObserver(function(){ if(rgCount()>=12) fin(true); }); obs.observe(el,{childList:true,subtree:false}); }catch(e){}
+    }
+    timer=setInterval(function(){
+      if(rgCount()>=12) fin(true);
+      else if(Date.now()-t0>limitMs) fin(false);
+    },40);
+  }
+  /* 未生成なら既存の流月生成処理を呼ぶ。画面のタブ・表示状態は変更しない */
+  function ensureRyugetsu(cb){
+    if(rgCount()>=12){ cb(true); return; }
+    var sel=document.getElementById('ryugetsu-year-select');
+    var y=(sel&&sel.value)? parseInt(sel.value,10) : NaN;
+    if(!y||isNaN(y)) y=new Date().getFullYear();
+    var called=false;
+    if(typeof renderRyugetsuChart==='function'){
+      try{ renderRyugetsuChart(y); called=true; }catch(e){ called=false; }
+    }
+    if(!called && typeof switchDgInnerTab==='function'){
+      /* 予備手段：既存のタブ切替で生成し、生成後に必ず元のタブへ戻す */
+      var dgp=document.getElementById('dg-panel-daigen');
+      var prev=(dgp&&getComputedStyle(dgp).display!=='none')?'daigen':'ryugetsu';
+      try{ switchDgInnerTab('ryugetsu'); }catch(e){}
+      waitRyugetsu(8000,function(ok){
+        if(prev!=='ryugetsu'){ try{ switchDgInnerTab(prev); }catch(e){} }
+        cb(ok);
+      });
+      return;
+    }
+    waitRyugetsu(8000,cb);
+  }
+  var zwUnseiBusy=false;
   window.zwPrintUnsei=function(){
     /* 権限チェック（実行時にも既存の権限情報を確認する） */
     if(!canUnsei()){ alert('運気一覧の印刷は鑑定士・管理人のみご利用いただけます。'); return; }
-    var rg=document.getElementById('ryugetsu-cards');
-    if(!rg||!rg.children.length){
-      if(!confirm('流月がまだ表示されていません。\n「流月」タブを開いてから印刷すると12ヶ月分が含まれます。\n\nこのまま印刷しますか？')) return;
-    }
+    if(zwUnseiBusy) return;
+    zwUnseiBusy=true;
+    var btn=document.getElementById('zw-btn-unsei');
+    if(btn){ btn.disabled=true; btn.style.opacity='.6'; }
+    var release=function(){ zwUnseiBusy=false; if(btn){ btn.disabled=false; btn.style.opacity=''; } };
+    ensureRyugetsu(function(ok){
+      if(!ok || rgCount()<12){ release(); alert('流月データを取得できませんでした。もう一度お試しください。'); return; }
+      try{ zwBuildUnseiSheet(); } finally { release(); }
+    });
+  };
+  function zwBuildUnseiSheet(){
     var r=root(), nm=nameVal();
     var meta=[];
     var info=document.getElementById('meiban-info');
@@ -18055,7 +18102,7 @@ function openAndScrollAcc(id){
      +memo(3,true)+foot()+'</div>';
     r.appendChild(sheet);
     run('landscape');
-  };
+  }
 
   /* ══════════ ボタンの表示制御（既存の権限ロジックは変更しない） ══════════ */
   function sync(){
