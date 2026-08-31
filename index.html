@@ -1124,6 +1124,125 @@ section.active{display:block}
 #today-unsei-section{margin-top:1.2rem!important}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<style id="zw-print-css">
+/* ===== A4印刷・PDF保存（命盤／運気一覧）2026-08-31 追加 ===== */
+#zw-print-root{display:none}
+#zw-print-root{--zwp:#FDFBF6;--zwg:#BE8B4A;--zwgl:#CBA774;--zwgt:#96702F;--zwl:#9C86D8;--zwll:#C6B8EC;--zwlt:#6B57A8;--zwi:#3A2A1E;--zwi2:#75604F;--zwi3:#9C8873;--zwh:#E7DCC9;--zwh2:#F0E8DA;--zwgs:#FFFEFB}
+@media print{
+  @page{margin:0}
+  html body.zw-printing{background:#fff!important;margin:0!important;padding:0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body.zw-printing>*{display:none!important}
+  body.zw-printing>#zw-print-root{display:block!important}
+  #zw-print-root *{box-sizing:border-box!important;margin:0;padding:0;animation:none!important;transition:none!important;box-shadow:none!important;text-shadow:none!important;float:none!important;position:static}
+  #zw-print-root{font-family:'Noto Sans JP','Hiragino Sans','Meiryo',sans-serif;color:var(--zwi);line-height:1.4}
+  #zw-print-root .zw-mc{font-family:'Yu Mincho','YuMincho','Hiragino Mincho ProN','MS PMincho','Noto Serif JP',serif}
+  #zw-print-root .zw-num{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1}
+  #zw-print-root .zw-sheet{position:relative;overflow:hidden;background:var(--zwp);page-break-after:avoid;page-break-inside:avoid;break-inside:avoid}
+  #zw-print-root .zw-sheet.zw-pt{width:210mm;height:296.6mm}
+  #zw-print-root .zw-sheet.zw-ls{width:297mm;height:209.6mm}
+  #zw-print-root .zw-aurora{position:absolute;inset:0;pointer-events:none;background:
+    radial-gradient(ellipse 30% 18% at 2% 1%,rgba(196,164,255,.22),transparent 64%),
+    radial-gradient(ellipse 26% 16% at 98% 2%,rgba(255,206,140,.20),transparent 62%),
+    radial-gradient(ellipse 28% 16% at 2% 99%,rgba(126,222,214,.15),transparent 62%),
+    radial-gradient(ellipse 30% 18% at 98% 98%,rgba(255,178,196,.17),transparent 64%)}
+  #zw-print-root .zw-frame{position:absolute;inset:14mm;border:.28pt solid var(--zwgl);opacity:.9}
+  #zw-print-root .zw-orn{position:absolute;pointer-events:none;z-index:1;line-height:0}
+  #zw-print-root .zw-orn.tl{top:11.4mm;left:11.4mm}
+  #zw-print-root .zw-orn.tr{top:11.4mm;right:11.4mm;transform:scaleX(-1)}
+  #zw-print-root .zw-orn.bl{bottom:11.4mm;left:11.4mm;transform:scaleY(-1)}
+  #zw-print-root .zw-orn.br{bottom:11.4mm;right:11.4mm;transform:scale(-1)}
+  #zw-print-root .zw-inner{position:absolute;inset:17.5mm;display:flex;flex-direction:column;z-index:2}
+  /* --- タイトル --- */
+  #zw-print-root .zw-head{flex-shrink:0;text-align:center;position:relative;padding:3mm 0;margin-bottom:3mm}
+  #zw-print-root .zw-head::after{content:'';position:absolute;left:0;right:0;bottom:0;border-bottom:.28pt solid var(--zwh)}
+  #zw-print-root .zw-deco-top{position:absolute;top:0;left:50%;transform:translateX(-50%);opacity:.9}
+  #zw-print-root .zw-title{position:relative;font-size:5.2mm;color:var(--zwgt);letter-spacing:.46em;text-indent:.46em;line-height:1.35;font-weight:400}
+  #zw-print-root .zw-pname{position:relative;font-size:3.9mm;color:var(--zwi);letter-spacing:.24em;text-indent:.24em;margin-top:2.4mm;line-height:1.3;font-weight:400}
+  /* --- 基本情報（#meiban-info の複製）--- */
+  #zw-print-root .zw-info{flex-shrink:0;display:grid;grid-template-columns:repeat(5,1fr);background:var(--zwgs);border:.28pt solid var(--zwh);border-radius:2.4mm;margin-bottom:3mm}
+  #zw-print-root .zw-info .info-item{display:block;padding:1.7mm 2mm;border-right:.28pt solid var(--zwh2);background:none;border-radius:0;min-width:0}
+  #zw-print-root .zw-info .info-item:last-child{border-right:none}
+  #zw-print-root .zw-info .info-item label{display:block;font-size:2.25mm;color:var(--zwi3);margin-bottom:.7mm;line-height:1.25;letter-spacing:.06em;font-weight:400}
+  #zw-print-root .zw-info .info-item span{display:block;font-size:3.05mm;color:var(--zwgt);font-weight:600;line-height:1.3;font-variant-numeric:tabular-nums}
+  /* --- 命盤（#meiban-grid の複製）--- */
+  #zw-print-root .zw-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,minmax(0,1fr));gap:1.3mm}
+  #zw-print-root .zw-grid .palace,#zw-print-root .zw-grid .palace-center{background:var(--zwgs);border:.28pt solid var(--zwh);border-radius:2mm;padding:1.4mm 1.6mm;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:visible;cursor:auto}
+  #zw-print-root .zw-grid .palace.highlight{border:.7pt solid var(--zwgl);background:#FFFCF4}
+  #zw-print-root .zw-grid .palace.body-palace{border:.7pt solid var(--zwll);background:#FCFAFE}
+  #zw-print-root .zw-grid .palace.highlight.body-palace{border:.7pt solid var(--zwgl);background:#FFFCF4}
+  #zw-print-root .zw-grid .p-header{display:flex;justify-content:space-between;align-items:baseline;gap:1mm;border-bottom:.28pt solid var(--zwh2);padding:0 0 .9mm;margin-bottom:1mm;flex-shrink:0;background:none}
+  #zw-print-root .zw-grid .p-branch{font-family:'Yu Mincho','Hiragino Mincho ProN','Noto Serif JP',serif;font-size:3.3mm;font-weight:600;color:var(--zwi);letter-spacing:.05em}
+  #zw-print-root .zw-grid .p-name{font-size:2.75mm;color:var(--zwgt);letter-spacing:.06em;font-weight:400}
+  #zw-print-root .zw-grid .p-stem{font-size:2.35mm;color:var(--zwi3)}
+  #zw-print-root .zw-grid .p-stars{flex:1;min-height:0;display:flex;flex-wrap:wrap;align-content:flex-start;gap:.8mm;overflow:visible}
+  #zw-print-root .zw-grid .p-stars>span{font-size:2.4mm;color:var(--zwi2);border:.28pt solid var(--zwh);border-radius:1.2mm;padding:.25mm 1.1mm;line-height:1.4;background:#fff;white-space:nowrap}
+  #zw-print-root .zw-grid .star-main{font-size:2.95mm!important;font-weight:600!important;color:var(--zwi)!important;border:.35pt solid var(--zwll)!important;background:#FDFCFF!important;padding:.3mm 1.4mm!important;letter-spacing:.02em}
+  #zw-print-root .zw-grid .lucky{border-color:var(--zwgl)!important;background:#FFFDF6!important;color:var(--zwgt)!important}
+  #zw-print-root .zw-grid .unlucky{border-color:#DDD2C2!important;color:var(--zwi3)!important}
+  #zw-print-root .zw-grid .p-kika{display:flex;flex-wrap:wrap;gap:.8mm;flex-shrink:0;margin-top:.5mm}
+  #zw-print-root .zw-grid .p-kika>span{font-size:2.2mm;padding:.2mm 1.1mm;border-radius:1.2mm;border:.28pt solid var(--zwgl);color:var(--zwgt);line-height:1.45;background:#fff;white-space:nowrap}
+  #zw-print-root .zw-grid .p-badges{display:flex;gap:.9mm;flex-wrap:wrap;flex-shrink:0;margin-top:.6mm}
+  #zw-print-root .zw-grid .badge{font-size:2.2mm;padding:.2mm 1.1mm;border-radius:1.2mm;border:.28pt solid var(--zwh);color:var(--zwi3);line-height:1.45;background:#fff;white-space:nowrap;font-variant-numeric:tabular-nums}
+  #zw-print-root .zw-grid .badge-mei{border-color:var(--zwgl);color:var(--zwgt)}
+  #zw-print-root .zw-grid .badge-shin{border-color:var(--zwll);color:var(--zwlt)}
+  #zw-print-root .zw-grid .palace-center{padding:2.1mm 2.4mm;align-items:center;border:.35pt solid var(--zwh)}
+  #zw-print-root .zw-grid .ci-birth{font-size:2.55mm;color:var(--zwi2);text-align:center;line-height:1.6;margin-bottom:1.6mm;padding-bottom:1.3mm;border-bottom:.28pt solid var(--zwh2);width:100%;font-variant-numeric:tabular-nums}
+  #zw-print-root .zw-grid .ci-grid{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:1mm 1.6mm}
+  #zw-print-root .zw-grid .ci-row{border-bottom:.28pt solid var(--zwh2);padding:.5mm .4mm .8mm;min-width:0}
+  #zw-print-root .zw-grid .ci-mission{grid-column:1/-1}
+  #zw-print-root .zw-grid .ci-label{display:block;font-size:2.15mm;color:var(--zwi3);line-height:1.3;letter-spacing:.04em}
+  #zw-print-root .zw-grid .ci-val{display:block;font-size:2.85mm;font-weight:600;color:var(--zwi);line-height:1.35}
+  /* --- 鑑定メモ／フッター --- */
+  #zw-print-root .zw-memo{flex-shrink:0;height:44mm;margin-top:3mm;padding:0 1mm;display:flex;flex-direction:column}
+  #zw-print-root .zw-memo.zw-s{height:18mm;margin-top:3mm}
+  #zw-print-root .zw-memo-t{font-size:2.9mm;color:var(--zwgt);letter-spacing:.36em;text-indent:.36em;margin-bottom:2mm;flex-shrink:0;font-weight:400}
+  #zw-print-root .zw-memo-l{flex:1;display:flex;flex-direction:column;justify-content:space-between}
+  #zw-print-root .zw-memo-l div{border-bottom:.28pt solid var(--zwh2);height:0}
+  #zw-print-root .zw-foot{flex-shrink:0;position:relative;display:flex;justify-content:space-between;align-items:center;padding-top:2mm;margin-top:2.4mm;font-size:2.3mm;color:var(--zwi3);letter-spacing:.04em}
+  #zw-print-root .zw-foot::before{content:'';position:absolute;top:0;left:0;right:0;border-top:.28pt solid var(--zwh2)}
+  #zw-print-root .zw-foot .zw-cr{color:var(--zwgt)}
+  /* --- 運気一覧（A4横）--- */
+  #zw-print-root .zw-uhead{flex-shrink:0;display:flex;justify-content:space-between;align-items:flex-end;gap:6mm;position:relative;padding-bottom:2.6mm;margin-bottom:3mm}
+  #zw-print-root .zw-uhead::after{content:'';position:absolute;left:0;right:0;bottom:0;border-bottom:.28pt solid var(--zwh)}
+  #zw-print-root .zw-utitle{font-size:4.8mm;color:var(--zwgt);letter-spacing:.4em;text-indent:.4em;line-height:1.35;font-weight:400;margin-top:4mm}
+  #zw-print-root .zw-uname{font-size:3.5mm;color:var(--zwi);letter-spacing:.18em;margin-top:1.8mm;font-weight:400}
+  #zw-print-root .zw-umeta{text-align:right;font-size:2.55mm;color:var(--zwi2);line-height:1.75;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+  #zw-print-root .zw-ubody{flex:1;min-height:0;display:grid;grid-template-columns:1.22fr 1fr 1fr;gap:3.4mm}
+  #zw-print-root .zw-ucol{display:flex;flex-direction:column;gap:2.8mm;min-height:0}
+  #zw-print-root .zw-ucard{background:var(--zwgs);border:.28pt solid var(--zwh);border-radius:2.4mm;padding:2.2mm 2.4mm;display:flex;flex-direction:column;min-height:0}
+  #zw-print-root .zw-ucard h4{font-size:2.85mm;color:var(--zwgt);letter-spacing:.22em;text-indent:.22em;margin-bottom:1.2mm;padding-bottom:.9mm;border-bottom:.28pt solid var(--zwh2);flex-shrink:0;font-weight:400}
+  #zw-print-root .zw-ucard h4 .zw-lg{font-size:2.1mm;color:var(--zwi3);letter-spacing:.04em;font-family:'Noto Sans JP',sans-serif}
+  #zw-print-root .zw-urow{display:grid;align-items:baseline;column-gap:2mm;padding:.68mm 0;border-bottom:.28pt solid var(--zwh2)}
+  #zw-print-root .zw-urow:last-child{border-bottom:none}
+  #zw-print-root .zw-urow>.k{font-size:2.5mm;color:var(--zwi2);white-space:nowrap;letter-spacing:.02em;font-variant-numeric:tabular-nums;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  #zw-print-root .zw-urow>.p,#zw-print-root .zw-urow>.p2{font-size:2.45mm;color:var(--zwi3);letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  #zw-print-root .zw-urow>.v{font-size:2.85mm;color:var(--zwi);font-weight:600;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;min-width:0}
+  #zw-print-root .zw-urow.now{position:relative}
+  #zw-print-root .zw-urow.now>.k{color:var(--zwgt);font-weight:600}
+  #zw-print-root .zw-urow.now::before{content:'';position:absolute;left:-2.4mm;top:.9mm;bottom:.9mm;width:.5mm;background:var(--zwgl);border-radius:1mm}
+  #zw-print-root .g-dg .zw-urow{grid-template-columns:17mm 1fr 8mm}
+  #zw-print-root .g-now .zw-urow{grid-template-columns:30mm 1fr 8mm}
+  #zw-print-root .g-ry .zw-urow{grid-template-columns:15mm 1fr 8mm}
+  #zw-print-root .g-rg .zw-urow{grid-template-columns:9mm 1fr 8mm}
+  #zw-print-root .g-sg .zw-urow{grid-template-columns:16mm 1.15fr 1fr}
+  #zw-print-root .zw-usum{border:.28pt solid var(--zwh);border-radius:2.4mm;padding:2.2mm 2.4mm;flex-shrink:0;background:var(--zwgs)}
+  #zw-print-root .zw-usum .t{font-size:2.6mm;color:var(--zwgt);letter-spacing:.12em;margin-bottom:1.6mm;font-weight:400;font-variant-numeric:tabular-nums}
+  #zw-print-root .zw-usum .g{display:grid;grid-template-columns:repeat(5,1fr);gap:2mm;text-align:center}
+  #zw-print-root .zw-usum .g div{padding:.4mm 0;border-left:.28pt solid var(--zwh2)}
+  #zw-print-root .zw-usum .g div:first-child{border-left:none}
+  #zw-print-root .zw-usum .g b{display:block;font-size:4.2mm;color:var(--zwi);font-weight:500;line-height:1.3;font-variant-numeric:tabular-nums}
+  #zw-print-root .zw-usum .g span{display:block;font-size:2.15mm;color:var(--zwi3);margin-top:.5mm;letter-spacing:.06em}
+  #zw-print-root .zw-none{font-size:2.4mm;color:var(--zwi3);padding:1.5mm 0;line-height:1.7}
+}
+/* 画面上のボタン（既存の画像保存ボタンは変更していません） */
+.zw-pbtn{display:inline-flex;align-items:center;justify-content:center;gap:.3rem;padding:.5rem 1rem;background:#fffdf7;color:#96702F;border:1.4px solid #CBA774;border-radius:8px;font-size:.79rem;font-weight:700;white-space:nowrap;cursor:pointer;font-family:inherit}
+.zw-pbtn:hover{background:#fdf6e8}
+.zw-ubtn{display:inline-flex;align-items:center;justify-content:center;gap:.3rem;padding:.5rem 1rem;background:#fdfcff;color:#6B57A8;border:1.4px solid #C6B8EC;border-radius:8px;font-size:.79rem;font-weight:700;white-space:nowrap;cursor:pointer;font-family:inherit}
+.zw-ubtn:hover{background:#f6f2ff}
+.zw-guide{font-size:.68rem;color:#7a6547;line-height:1.65;margin-top:.45rem;max-width:34rem}
+@media (max-width:520px){.zw-pbtn,.zw-ubtn{width:100%}}
+</style>
+
 </head>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -1647,6 +1766,10 @@ section.active{display:block}
         <button onclick="downloadMeiban()" style="display:flex;align-items:center;gap:.35rem;padding:.45rem 1rem;background:linear-gradient(135deg,#b45309,#92400e);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(180,83,9,.3);white-space:nowrap">
           📷 命盤を画像保存
         </button>
+        <button class="zw-pbtn" type="button" onclick="zwPrintMeiban()">🖨 A4印刷・PDF保存</button>
+
+        <div class="zw-guide">印刷画面で「PDFに保存」も選べます。用紙はA4縦、余白は「なし」、「ヘッダーとフッター」はOFFを推奨します。</div>
+
       </div>
       <div id="kakkyoku-section" class="kakkyoku-section" style="display:none"></div>
       <!-- 宮詳細インラインパネル -->
@@ -2722,6 +2845,11 @@ section.active{display:block}
     <!-- 運気グラフパート -->
     <div id="unsei-graph-section" style="display:none">
       <h3 style="font-size:.95rem;font-weight:700;color:var(--gold);margin-bottom:.8rem;border-left:3px solid var(--gold);padding-left:.7rem">運気グラフ</h3>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin:.2rem 0 .9rem">
+            <button id="zw-btn-unsei" class="zw-ubtn" type="button" style="display:none" onclick="zwPrintUnsei()">🖨 運気一覧をA4印刷・PDF保存</button>
+            <div class="zw-guide">印刷画面で「PDFに保存」も選べます。用紙はA4横、余白は「なし」、「ヘッダーとフッター」はOFFを推奨します。<br>※この印刷は鑑定士・管理人のみご利用いただけます。</div>
+          </div>
+
       <div style="margin-bottom:1rem;padding:.7rem 1rem;background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.15);border-radius:10px;font-size:.78rem;color:var(--text2)">
         大限（10年周期）と流年（年単位）の運気推移を恋愛・金運・仕事・健康の4軸でグラフ化します。グラフは「命盤計算」タブで命盤を生成すると更新されます。
       </div>
@@ -17617,6 +17745,411 @@ function openAndScrollAcc(id){
   else initFreeAiObs();
 })();
 </script>
+<script>
+/* ============================================================
+   A4印刷・PDF保存（命盤／運気一覧）  2026-08-31 追加
+   ・既存の認証／権限ロジック（getSession / getCurrentRole / isKante）は変更せず参照のみ
+   ・命盤の計算は行わず、#meiban-info / #meiban-grid を複製する
+   ・運気は既存の描画済みDOMからテキストを読み取るのみ（再計算しない）
+   ============================================================ */
+(function(){
+  'use strict';
+  var SPK='M7 0 L8.1 5.9 L14 7 L8.1 8.1 L7 14 L5.9 8.1 L0 7 L5.9 5.9 Z';
+
+  /* ── 中国結び（盤長結）＋タッセル ── */
+  function knot(){
+    return '<g stroke="#BE8B4A" fill="none" stroke-width=".55" stroke-linecap="round" stroke-linejoin="round" opacity=".8">'
+     +'<path d="M20 5 L31 16 L20 27 L9 16 Z"/>'
+     +'<path d="M20 11 L25 16 L20 21 L15 16 Z" opacity=".85"/>'
+     +'<path d="M14.5 10.5 L25.5 21.5" opacity=".6"/><path d="M25.5 10.5 L14.5 21.5" opacity=".6"/>'
+     +'<path d="M20 27 V30.4"/></g>'
+     +'<ellipse cx="20" cy="32.4" rx="2.1" ry="1.7" fill="none" stroke="#BE8B4A" stroke-width=".45" opacity=".75"/>'
+     +'<g stroke="#CBA774" stroke-width=".38" stroke-linecap="round" opacity=".62">'
+     +'<path d="M17.2 34.2 Q16.6 39 16.8 43.6"/><path d="M18.6 34.4 Q18.3 40 18.4 45"/>'
+     +'<path d="M20 34.5 V46"/><path d="M21.4 34.4 Q21.7 40 21.6 45"/>'
+     +'<path d="M22.8 34.2 Q23.4 39 23.2 43.6"/></g>'
+     +'<g fill="#9C86D8" opacity=".4" transform="translate(30,32) scale(.24)"><path d="'+SPK+'"/></g>';
+  }
+  /* ── 中国結び（双銭結）＋短いタッセル ── */
+  function knot2(){
+    return '<g stroke="#BE8B4A" fill="none" stroke-width=".55" stroke-linecap="round" stroke-linejoin="round" opacity=".8">'
+     +'<path d="M20 3 V7"/>'
+     +'<path d="M20 7 C13.2 7 9 10.6 9 15 C9 19.4 13.2 23 20 23 C26.8 23 31 19.4 31 15 C31 10.6 26.8 7 20 7 Z"/>'
+     +'<circle cx="15.2" cy="15" r="4.4" opacity=".85"/><circle cx="24.8" cy="15" r="4.4" opacity=".85"/>'
+     +'<path d="M20 23 V26.6"/></g>'
+     +'<ellipse cx="20" cy="28.4" rx="2" ry="1.6" fill="none" stroke="#BE8B4A" stroke-width=".45" opacity=".75"/>'
+     +'<g stroke="#CBA774" stroke-width=".38" stroke-linecap="round" opacity=".6">'
+     +'<path d="M17.5 30.1 Q17 34.6 17.2 38.6"/><path d="M18.7 30.3 Q18.5 35.4 18.6 39.8"/>'
+     +'<path d="M20 30.4 V40.6"/><path d="M21.3 30.3 Q21.5 35.4 21.4 39.8"/>'
+     +'<path d="M22.5 30.1 Q23 34.6 22.8 38.6"/></g>'
+     +'<g fill="#9C86D8" opacity=".38" transform="translate(31,26) scale(.24)"><path d="'+SPK+'"/></g>';
+  }
+  function corner(kind){
+    var base='<g stroke="#CBA774" fill="none" stroke-width=".5" opacity=".8"><path d="M0 20 H20 V0"/></g>'
+     +'<g stroke="#CBA774" fill="none" stroke-width=".3" opacity=".4"><path d="M0 27 H27 V0"/></g>'
+     +'<g fill="#BE8B4A" opacity=".5" transform="translate(16.5,16.5) scale(.42)"><path d="'+SPK+'"/></g>';
+    var art='';
+    if(kind==='knot')  art='<g transform="translate(34,4) scale(.92)">'+knot()+'</g>';
+    if(kind==='knot2') art='<g transform="translate(34,6) scale(.92)">'+knot2()+'</g>';
+    if(kind==='tassel')art='<g transform="translate(36,10) scale(.8)"><ellipse cx="20" cy="4" rx="2" ry="1.6" fill="none" stroke="#BE8B4A" stroke-width=".45" opacity=".7"/>'
+       +'<g stroke="#CBA774" stroke-width=".36" stroke-linecap="round" opacity=".55">'
+       +'<path d="M17.4 6 Q16.9 12 17.1 17"/><path d="M18.7 6.2 Q18.4 13 18.5 18"/><path d="M20 6.3 V19"/>'
+       +'<path d="M21.3 6.2 Q21.6 13 21.5 18"/><path d="M22.6 6 Q23.1 12 22.9 17"/></g></g>';
+    return '<svg width="86" height="72" viewBox="0 0 86 72">'+base+art+'</svg>';
+  }
+  function topDeco(w,cls){
+    w=w||190; var c=w/2;
+    return '<svg class="'+(cls||'zw-deco-top')+'" width="'+w+'" height="18" viewBox="0 0 '+w+' 18">'
+     +'<g stroke="#CBA774" stroke-width=".45" opacity=".55"><line x1="0" y1="9" x2="'+(c-16)+'" y2="9"/>'
+     +'<line x1="'+(c+16)+'" y1="9" x2="'+w+'" y2="9"/></g>'
+     +'<circle cx="'+c+'" cy="9" r="5.4" fill="none" stroke="#BE8B4A" stroke-width=".55" opacity=".8"/>'
+     +'<path d="M'+(c-1.4)+' 4.2 a5.4 5.4 0 1 0 0 9.6 a4.1 4.1 0 1 1 0-9.6" fill="#BE8B4A" opacity=".22"/>'
+     +'<g fill="#BE8B4A" opacity=".6" transform="translate('+(c-24)+',5) scale(.34)"><path d="'+SPK+'"/></g>'
+     +'<g fill="#9C86D8" opacity=".5" transform="translate('+(c+19)+',3) scale(.28)"><path d="'+SPK+'"/></g>'
+     +'<g fill="#9C86D8" opacity=".38" transform="translate('+(c+30)+',10) scale(.22)"><path d="'+SPK+'"/></g></svg>';
+  }
+  function footDeco(){
+    return '<svg width="64" height="10" viewBox="0 0 64 10">'
+     +'<g fill="#BE8B4A" opacity=".45" transform="translate(2,1) scale(.32)"><path d="'+SPK+'"/></g>'
+     +'<g fill="#9C86D8" opacity=".38" transform="translate(16,3) scale(.24)"><path d="'+SPK+'"/></g>'
+     +'<g fill="#BE8B4A" opacity=".28" transform="translate(28,4) scale(.18)"><path d="'+SPK+'"/></g></svg>';
+  }
+  function orn(){
+    return '<div class="zw-orn tl">'+corner('knot2')+'</div><div class="zw-orn tr">'+corner('knot')+'</div>'
+      +'<div class="zw-orn bl">'+corner('tassel')+'</div><div class="zw-orn br">'+corner('tassel')+'</div>';
+  }
+
+  /* ── 共通ユーティリティ ── */
+  function esc(s){var d=document.createElement('span');d.textContent=(s==null?'':String(s));return d.innerHTML;}
+  function tx(el){return el?(el.textContent||'').replace(/\s+/g,' ').trim():'';}
+  function today(){var d=new Date();return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';}
+  function nameVal(){var e=document.getElementById('inp-name');return e&&e.value?e.value.trim():'';}
+  function foot(){
+    return '<div class="zw-foot"><div class="zw-num">作成日：'+esc(today())+'</div><div>'+footDeco()+'</div>'
+      +'<div class="zw-cr zw-mc">&copy; 紫微の魔女もも｜紫微斗数 命盤鑑定</div></div>';
+  }
+  function memo(n,small){
+    var s='';for(var i=0;i<n;i++)s+='<div></div>';
+    return '<div class="zw-memo'+(small?' zw-s':'')+'"><div class="zw-memo-t zw-mc">鑑定メモ</div><div class="zw-memo-l">'+s+'</div></div>';
+  }
+  function root(){
+    var r=document.getElementById('zw-print-root');
+    if(!r){r=document.createElement('div');r.id='zw-print-root';document.body.appendChild(r);}
+    r.innerHTML='';return r;
+  }
+  /* @page の向きは印刷直前に差し替える */
+  function pageStyle(mode){
+    var s=document.getElementById('zw-page-style');
+    if(!s){s=document.createElement('style');s.id='zw-page-style';document.head.appendChild(s);}
+    s.textContent='@page{size:A4 '+mode+';margin:0}';
+  }
+  function run(mode, docTitle){
+    pageStyle(mode);
+    document.body.classList.add('zw-printing');
+    /* PDF保存時の初期ファイル名は document.title が使われるため、印刷直前だけ差し替える。
+       完了・キャンセル・ダイアログを閉じた場合のいずれでも必ず元へ戻す。 */
+    var prevTitle=null, restored=false, mql=null;
+    if(docTitle){ prevTitle=document.title; document.title=docTitle; }
+    var restore=function(){
+      if(restored) return; restored=true;
+      if(prevTitle!==null){ try{ document.title=prevTitle; }catch(e){} }
+      window.removeEventListener('afterprint',onAfter);
+      window.removeEventListener('focus',restore);
+      if(mql){ try{ if(mql.removeEventListener) mql.removeEventListener('change',onMql); else if(mql.removeListener) mql.removeListener(onMql); }catch(e){} }
+    };
+    function onMql(e){ if(!e.matches) clean(); }
+    var clean=function(){
+      document.body.classList.remove('zw-printing');
+      var r=document.getElementById('zw-print-root'); if(r) r.innerHTML='';
+      restore();
+      window.removeEventListener('afterprint',onAfter);
+    };
+    function onAfter(){ clean(); }
+    window.addEventListener('afterprint',onAfter);
+    window.addEventListener('focus',restore);
+    if(window.matchMedia){
+      try{ mql=window.matchMedia('print');
+        if(mql.addEventListener) mql.addEventListener('change',onMql);
+        else if(mql.addListener) mql.addListener(onMql);
+      }catch(e){ mql=null; }
+    }
+    setTimeout(function(){
+      try{ window.print(); }catch(e){}
+      setTimeout(clean,1500);
+      setTimeout(restore,15000); /* 最終保険：タイトルが戻らないままにしない */
+    },60);
+  }
+
+  /* ══════════ ① 命盤印刷（A4縦・全員） ══════════ */
+  window.zwPrintMeiban=function(){
+    var info=document.getElementById('meiban-info');
+    var grid=document.getElementById('meiban-grid');
+    if(!grid||!grid.children.length){alert('先に命盤を計算してください。');return;}
+    var r=root();
+    var nm=nameVal();
+    var sheet=document.createElement('div');
+    sheet.className='zw-sheet zw-pt';
+    sheet.innerHTML='<div class="zw-aurora"></div><div class="zw-frame"></div>'+orn()
+      +'<div class="zw-inner">'
+      +'<div class="zw-head">'+topDeco(190)+'<div class="zw-title zw-mc">紫微斗数　命盤鑑定</div>'
+      +(nm?'<div class="zw-pname zw-mc">'+esc(nm)+'　様</div>':'')+'</div>'
+      +'<div class="zw-info"></div><div class="zw-grid"></div>'
+      +memo(6)+foot()+'</div>';
+    r.appendChild(sheet);
+    /* 計算結果は再取得せず、そのまま複製する */
+    var di=sheet.querySelector('.zw-info'), dg=sheet.querySelector('.zw-grid');
+    if(info){var i;for(i=0;i<info.children.length;i++)di.appendChild(info.children[i].cloneNode(true));}
+    var j;for(j=0;j<grid.children.length;j++)dg.appendChild(grid.children[j].cloneNode(true));
+    run('portrait');
+  };
+
+  /* ══════════ ② 運気一覧印刷（A4横・鑑定士／管理人のみ） ══════════ */
+  function canUnsei(){
+    try{ return (typeof isKante==='function') ? !!isKante() : false; }catch(e){ return false; }
+  }
+  window.zwCanPrintUnsei=canUnsei;
+
+  function lines(card){
+    var a=[],i,t;
+    for(i=0;i<card.children.length;i++){
+      t=tx(card.children[i]);
+      if(!t) continue;
+      if(/^✕$/.test(t)) continue;
+      if(t.indexOf('タップで詳細')>=0) continue;
+      a.push(t);
+    }
+    return a;
+  }
+  function urow(k,p,v,now){
+    return '<div class="zw-urow'+(now?' now':'')+'"><span class="k zw-num">'+esc(k)+'</span>'
+      +'<span class="p">'+esc(p)+'</span><span class="v zw-num">'+esc(v)+'</span></div>';
+  }
+  function none(msg){return '<div class="zw-none">'+esc(msg)+'</div>';}
+
+  /* 大限8期：#daigen-score-cards */
+  function cardsDaigen(){
+    var c=document.getElementById('daigen-score-cards');
+    if(!c||!c.children.length) return none('大限のデータがまだ表示されていません。');
+    var out='',i,L,cur;
+    for(i=0;i<c.children.length;i++){
+      L=lines(c.children[i]);
+      cur=/現在|◀/.test(L.join(' '))?1:0;
+      out+=urow((L[0]||'').replace(/（数え）|\(数え\)/g,'').replace(/◀\s*現在/g,'').trim(), L[1]||'', (L[2]||'').replace(/[^0-9]/g,''), cur);
+    }
+    return out;
+  }
+  /* 流年：#ryunen-score-cards */
+  function cardsRyunen(){
+    var c=document.getElementById('ryunen-score-cards');
+    if(!c||!c.children.length) return none('流年のデータがまだ表示されていません。');
+    var out='',i,L,cur,k;
+    for(i=0;i<c.children.length;i++){
+      L=lines(c.children[i]);
+      k=(L[0]||'');
+      cur=/◀|今年/.test(k)?1:0;
+      k=k.replace(/◀|今年/g,'').trim();
+      out+=urow(k, L[1]||'', (L[2]||'').replace(/[^0-9]/g,''), cur);
+    }
+    return out;
+  }
+  /* 小限・太歳（ダブル流派）：#daigen-year-panel */
+  function cardsShogen(){
+    var p=document.getElementById('daigen-year-panel');
+    if(!p) return none('小限・太歳のデータがまだ表示されていません。');
+    var all=p.getElementsByTagName('div'), g=null, i, q;
+    for(i=0;i<all.length;i++){
+      var k=all[i].children;
+      if(k.length<5) continue;
+      var ok=true;
+      for(q=0;q<k.length;q++){ if(!/^[0-9]{4}年/.test(tx(k[q]))){ ok=false; break; } }
+      if(ok){ g=all[i]; break; }
+    }
+    if(!g) return none('小限・太歳のデータがまだ表示されていません。');
+    var out='',L,y,sg,ts,ex,cur;
+    for(i=0;i<g.children.length;i++){
+      L=lines(g.children[i]);
+      y=((L[0]||'').match(/[0-9]{4}年/)||[''])[0];
+      if(!y) continue;
+      cur=/今年|現在/.test(L[0]||'')?1:0;
+      sg=''; ts=''; ex=[];
+      for(q=1;q<L.length;q++){
+        if(L[q].indexOf('🌀')===0) sg=L[q].replace(/^🌀\s*/,'').trim();
+        else if(/^☀/.test(L[q])) ts=L[q].replace(/^☀️?\s*/,'').trim();
+        else ex.push(L[q]);
+      }
+      if(ex.length) ts=(ts+' '+ex.join(' ')).trim();
+      out+='<div class="zw-urow'+(cur?' now':'')+'"><span class="k zw-num">'+esc(y)+'</span>'
+        +'<span class="p">🌀 '+esc(sg)+'</span><span class="p2">☀ '+esc(ts)+'</span></div>';
+    }
+    return out||none('小限・太歳のデータがまだ表示されていません。');
+  }
+  /* 流月：#ryugetsu-cards */
+  function cardsRyugetsu(){
+    var c=document.getElementById('ryugetsu-cards');
+    if(!c||!c.children.length) return none('流月データを取得できませんでした。');
+    var out='',i,j,L,m,k,v,rest;
+    for(i=0;i<c.children.length;i++){
+      L=lines(c.children[i]);
+      m=(L[0]||'').match(/^([0-9]+月)\s*(.*)$/);
+      k=m?m[1]:(L[0]||''); rest=[]; v='';
+      if(m&&m[2]) rest.push(m[2]);
+      for(j=1;j<L.length;j++){
+        if(/[0-9]+点/.test(L[j])) v=L[j].replace(/[^0-9]/g,'');
+        else rest.push(L[j]);
+      }
+      out+=urow(k, rest.join(' '), v, 0);
+    }
+    return out;
+  }
+  /* 今年の三本柱・年運スコア：#unsei-body */
+  function pillars(){
+    var b=document.getElementById('unsei-body');
+    if(!b) return '';
+    var host=null,i,q;
+    for(i=0;i<b.children.length;i++){
+      var k=b.children[i].children;
+      if(k.length===3 && /^(⏱|☀|🌊)/.test(tx(k[0]))){ host=b.children[i]; break; }
+    }
+    if(!host) return '';
+    var out='',L;
+    for(i=0;i<host.children.length;i++){
+      L=lines(host.children[i]);
+      var head=(L[0]||'').replace(/^[⏱☀️🌊\s]+/,'').trim();
+      var val='—', rest=[];
+      for(q=1;q<L.length;q++){
+        if(/[0-9]+点/.test(L[q])) val=L[q].replace(/[^0-9]/g,'');
+        else rest.push(L[q]);
+      }
+      out+=urow(head, rest.join(' / '), val, 0);
+    }
+    return out;
+  }
+  function summary(){
+    var c=document.getElementById('ryunen-score-cards');
+    var title='', g='';
+    var b=document.getElementById('unsei-body');
+    if(b){var s=b.querySelector('strong'); if(s) title=tx(s);}
+    if(c){
+      var i,cur=null;
+      for(i=0;i<c.children.length;i++){ if(/◀|今年/.test(tx(c.children[i]))) cur=c.children[i]; }
+      if(cur){
+        var L=lines(cur),q;
+        var pairs=[['総合',(L[2]||'').replace(/[^0-9]/g,'')]];
+        for(q=3;q<L.length;q++){
+          var m=L[q].match(/^(\S+?)\s*([0-9]+)点/);
+          if(m) pairs.push([m[1],m[2]]);
+        }
+        for(q=0;q<pairs.length;q++) g+='<div><b class="zw-num">'+esc(pairs[q][1])+'</b><span>'+esc(pairs[q][0])+'</span></div>';
+      }
+    }
+    if(!g) return '';
+    return '<div class="zw-usum"><div class="t zw-mc zw-num">'+esc(title)+'　年運スコア</div><div class="g">'+g+'</div></div>';
+  }
+
+  /* 流月の枚数 */
+  function rgCount(){ var c=document.getElementById('ryugetsu-cards'); return c? c.children.length : 0; }
+  /* 固定時間で待たず、12ヶ月分のDOMが生成されたことを確認して次へ進む */
+  function waitRyugetsu(limitMs, cb){
+    if(rgCount()>=12){ cb(true); return; }
+    var t0=Date.now(), done=false, obs=null, timer=null;
+    function fin(ok){ if(done) return; done=true; if(obs){try{obs.disconnect();}catch(e){}} if(timer) clearInterval(timer); cb(ok); }
+    var el=document.getElementById('ryugetsu-cards');
+    if(el && window.MutationObserver){
+      try{ obs=new MutationObserver(function(){ if(rgCount()>=12) fin(true); }); obs.observe(el,{childList:true,subtree:false}); }catch(e){}
+    }
+    timer=setInterval(function(){
+      if(rgCount()>=12) fin(true);
+      else if(Date.now()-t0>limitMs) fin(false);
+    },40);
+  }
+  /* 未生成なら既存の流月生成処理を呼ぶ。画面のタブ・表示状態は変更しない */
+  function ensureRyugetsu(cb){
+    if(rgCount()>=12){ cb(true); return; }
+    var sel=document.getElementById('ryugetsu-year-select');
+    var y=(sel&&sel.value)? parseInt(sel.value,10) : NaN;
+    if(!y||isNaN(y)) y=new Date().getFullYear();
+    var called=false;
+    if(typeof renderRyugetsuChart==='function'){
+      try{ renderRyugetsuChart(y); called=true; }catch(e){ called=false; }
+    }
+    if(!called && typeof switchDgInnerTab==='function'){
+      /* 予備手段：既存のタブ切替で生成し、生成後に必ず元のタブへ戻す */
+      var dgp=document.getElementById('dg-panel-daigen');
+      var prev=(dgp&&getComputedStyle(dgp).display!=='none')?'daigen':'ryugetsu';
+      try{ switchDgInnerTab('ryugetsu'); }catch(e){}
+      waitRyugetsu(8000,function(ok){
+        if(prev!=='ryugetsu'){ try{ switchDgInnerTab(prev); }catch(e){} }
+        cb(ok);
+      });
+      return;
+    }
+    waitRyugetsu(8000,cb);
+  }
+  var zwUnseiBusy=false;
+  window.zwPrintUnsei=function(){
+    /* 権限チェック（実行時にも既存の権限情報を確認する） */
+    if(!canUnsei()){ alert('運気一覧の印刷は鑑定士・管理人のみご利用いただけます。'); return; }
+    if(zwUnseiBusy) return;
+    zwUnseiBusy=true;
+    var btn=document.getElementById('zw-btn-unsei');
+    if(btn){ btn.disabled=true; btn.style.opacity='.6'; }
+    var release=function(){ zwUnseiBusy=false; if(btn){ btn.disabled=false; btn.style.opacity=''; } };
+    ensureRyugetsu(function(ok){
+      if(!ok || rgCount()<12){ release(); alert('流月データを取得できませんでした。もう一度お試しください。'); return; }
+      try{ zwBuildUnseiSheet(); } finally { release(); }
+    });
+  };
+  function zwBuildUnseiSheet(){
+    var r=root(), nm=nameVal();
+    var meta=[];
+    var info=document.getElementById('meiban-info');
+    if(info){ var i;for(i=0;i<info.children.length;i++){ meta.push(tx(info.children[i].querySelector('span'))); } }
+    var sheet=document.createElement('div');
+    sheet.className='zw-sheet zw-ls';
+    sheet.innerHTML='<div class="zw-aurora"></div><div class="zw-frame"></div>'+orn()
+     +'<div class="zw-inner">'
+     +'<div class="zw-uhead"><div style="position:relative">'
+       +topDeco(150,'zw-deco-none').replace('<svg ','<svg style="opacity:.85" ')
+       +'<div class="zw-utitle zw-mc">紫微斗数　運気一覧</div>'
+       +(nm?'<div class="zw-uname zw-mc">'+esc(nm)+'　様</div>':'')+'</div>'
+     +'<div class="zw-umeta zw-num">'+meta.filter(Boolean).map(esc).join('<br>')+'<br>作成日：'+esc(today())+'</div></div>'
+     +'<div class="zw-ubody">'
+       +'<div class="zw-ucol">'+summary()
+         +'<div class="zw-ucard g-now"><h4 class="zw-mc">今年の三本柱</h4>'+(pillars()||none('今年の運勢がまだ表示されていません。'))+'</div>'
+         +'<div class="zw-ucard g-dg" style="flex:1"><h4 class="zw-mc">大限（10年ごと）</h4>'+cardsDaigen()+'</div>'
+       +'</div>'
+       +'<div class="zw-ucol">'
+         +'<div class="zw-ucard g-ry"><h4 class="zw-mc">流年（年運）</h4>'+cardsRyunen()+'</div>'
+         +'<div class="zw-ucard g-sg" style="flex:1"><h4 class="zw-mc">小限・太歳　<span class="zw-lg">🌀 小限（安星法）／☀ 太歳（飛星派）</span></h4>'+cardsShogen()+'</div>'
+       +'</div>'
+       +'<div class="zw-ucol"><div class="zw-ucard g-rg" style="flex:1"><h4 class="zw-mc">流月</h4>'+cardsRyugetsu()+'</div></div>'
+     +'</div>'
+     +memo(3,true)+foot()+'</div>';
+    r.appendChild(sheet);
+    run('landscape','紫微斗数-命盤鑑定（運気）');
+  }
+
+  /* ══════════ ボタンの表示制御（既存の権限ロジックは変更しない） ══════════ */
+  function sync(){
+    var b=document.getElementById('zw-btn-unsei');
+    if(b) b.style.display=canUnsei()?'':'none';
+  }
+  window.zwSyncPrintButtons=sync;
+  function boot(){
+    sync();
+    var gpl=document.getElementById('unsei-graph-lock-public');
+    if(gpl&&window.MutationObserver){
+      try{ new MutationObserver(sync).observe(gpl,{attributes:true,attributeFilter:['style','class']}); }catch(e){}
+    }
+    document.addEventListener('click',function(){setTimeout(sync,0);},true);
+    window.addEventListener('focus',sync);
+    window.addEventListener('storage',sync);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
+  else boot();
+})();
+</script>
+
 </body>
 </html>
   
