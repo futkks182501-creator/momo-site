@@ -17843,16 +17843,41 @@ function openAndScrollAcc(id){
     if(!s){s=document.createElement('style');s.id='zw-page-style';document.head.appendChild(s);}
     s.textContent='@page{size:A4 '+mode+';margin:0}';
   }
-  function run(mode){
+  function run(mode, docTitle){
     pageStyle(mode);
     document.body.classList.add('zw-printing');
+    /* PDF保存時の初期ファイル名は document.title が使われるため、印刷直前だけ差し替える。
+       完了・キャンセル・ダイアログを閉じた場合のいずれでも必ず元へ戻す。 */
+    var prevTitle=null, restored=false, mql=null;
+    if(docTitle){ prevTitle=document.title; document.title=docTitle; }
+    var restore=function(){
+      if(restored) return; restored=true;
+      if(prevTitle!==null){ try{ document.title=prevTitle; }catch(e){} }
+      window.removeEventListener('afterprint',onAfter);
+      window.removeEventListener('focus',restore);
+      if(mql){ try{ if(mql.removeEventListener) mql.removeEventListener('change',onMql); else if(mql.removeListener) mql.removeListener(onMql); }catch(e){} }
+    };
+    function onMql(e){ if(!e.matches) clean(); }
     var clean=function(){
       document.body.classList.remove('zw-printing');
-      var r=document.getElementById('zw-print-root');if(r)r.innerHTML='';
-      window.removeEventListener('afterprint',clean);
+      var r=document.getElementById('zw-print-root'); if(r) r.innerHTML='';
+      restore();
+      window.removeEventListener('afterprint',onAfter);
     };
-    window.addEventListener('afterprint',clean);
-    setTimeout(function(){ try{window.print();}catch(e){} setTimeout(clean,1500); },60);
+    function onAfter(){ clean(); }
+    window.addEventListener('afterprint',onAfter);
+    window.addEventListener('focus',restore);
+    if(window.matchMedia){
+      try{ mql=window.matchMedia('print');
+        if(mql.addEventListener) mql.addEventListener('change',onMql);
+        else if(mql.addListener) mql.addListener(onMql);
+      }catch(e){ mql=null; }
+    }
+    setTimeout(function(){
+      try{ window.print(); }catch(e){}
+      setTimeout(clean,1500);
+      setTimeout(restore,15000); /* 最終保険：タイトルが戻らないままにしない */
+    },60);
   }
 
   /* ══════════ ① 命盤印刷（A4縦・全員） ══════════ */
@@ -18101,7 +18126,7 @@ function openAndScrollAcc(id){
      +'</div>'
      +memo(3,true)+foot()+'</div>';
     r.appendChild(sheet);
-    run('landscape');
+    run('landscape','紫微斗数-命盤鑑定（運気）');
   }
 
   /* ══════════ ボタンの表示制御（既存の権限ロジックは変更しない） ══════════ */
