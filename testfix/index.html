@@ -1214,17 +1214,17 @@ section.active{display:block}
   #zw-print-root .zw-ucard h4 .zw-lg{font-size:2.1mm;color:var(--zwi3);letter-spacing:.04em;font-family:'Noto Sans JP',sans-serif}
   #zw-print-root .zw-urow{display:grid;align-items:baseline;column-gap:2mm;padding:.85mm 0;border-bottom:.28pt solid var(--zwh2)}
   #zw-print-root .zw-urow:last-child{border-bottom:none}
-  #zw-print-root .zw-urow>.k{font-size:2.5mm;color:var(--zwi2);white-space:nowrap;letter-spacing:.02em;font-variant-numeric:tabular-nums}
-  #zw-print-root .zw-urow>.p,#zw-print-root .zw-urow>.p2{font-size:2.45mm;color:var(--zwi3);letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #zw-print-root .zw-urow>.v{font-size:2.85mm;color:var(--zwi);font-weight:600;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  #zw-print-root .zw-urow>.k{font-size:2.5mm;color:var(--zwi2);white-space:nowrap;letter-spacing:.02em;font-variant-numeric:tabular-nums;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  #zw-print-root .zw-urow>.p,#zw-print-root .zw-urow>.p2{font-size:2.45mm;color:var(--zwi3);letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  #zw-print-root .zw-urow>.v{font-size:2.85mm;color:var(--zwi);font-weight:600;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;min-width:0}
   #zw-print-root .zw-urow.now{position:relative}
   #zw-print-root .zw-urow.now>.k{color:var(--zwgt);font-weight:600}
   #zw-print-root .zw-urow.now::before{content:'';position:absolute;left:-2.4mm;top:.9mm;bottom:.9mm;width:.5mm;background:var(--zwgl);border-radius:1mm}
-  #zw-print-root .g-dg .zw-urow{grid-template-columns:19mm 1fr 8mm}
-  #zw-print-root .g-now .zw-urow{grid-template-columns:26mm 1fr 8mm}
+  #zw-print-root .g-dg .zw-urow{grid-template-columns:17mm 1fr 8mm}
+  #zw-print-root .g-now .zw-urow{grid-template-columns:27mm 1fr 8mm}
   #zw-print-root .g-ry .zw-urow{grid-template-columns:15mm 1fr 8mm}
   #zw-print-root .g-rg .zw-urow{grid-template-columns:9mm 1fr 8mm}
-  #zw-print-root .g-sg .zw-urow{grid-template-columns:14mm 1fr 1fr}
+  #zw-print-root .g-sg .zw-urow{grid-template-columns:16mm 1.15fr 1fr}
   #zw-print-root .zw-usum{border:.28pt solid var(--zwh);border-radius:2.4mm;padding:2.2mm 2.4mm;flex-shrink:0;background:var(--zwgs)}
   #zw-print-root .zw-usum .t{font-size:2.6mm;color:var(--zwgt);letter-spacing:.12em;margin-bottom:1.6mm;font-weight:400;font-variant-numeric:tabular-nums}
   #zw-print-root .zw-usum .g{display:grid;grid-template-columns:repeat(5,1fr);gap:2mm;text-align:center}
@@ -17908,8 +17908,8 @@ function openAndScrollAcc(id){
     var out='',i,L,cur;
     for(i=0;i<c.children.length;i++){
       L=lines(c.children[i]);
-      cur=/現在|◀|今/.test(L.join(' '))?1:0;
-      out+=urow(L[0]||'', L[1]||'', (L[2]||'').replace(/[^0-9]/g,''), cur);
+      cur=/現在|◀/.test(L.join(' '))?1:0;
+      out+=urow((L[0]||'').replace(/（数え）|\(数え\)/g,'').trim(), L[1]||'', (L[2]||'').replace(/[^0-9]/g,''), cur);
     }
     return out;
   }
@@ -17931,25 +17931,28 @@ function openAndScrollAcc(id){
   function cardsShogen(){
     var p=document.getElementById('daigen-year-panel');
     if(!p) return none('小限・太歳のデータがまだ表示されていません。');
-    var cards=p.querySelectorAll('div > div > div');
-    var out='',i,L,y,sg,ts,extra,cur,seen={};
-    var all=p.getElementsByTagName('div');
+    var all=p.getElementsByTagName('div'), g=null, i, q;
     for(i=0;i<all.length;i++){
-      var t=tx(all[i]);
-      if(t.indexOf('🌀')<0||t.indexOf('☀')<0) continue;
-      if(all[i].querySelector('div')===null) continue;
-      L=lines(all[i]);
-      y=(L[0]||'').replace(/（数え年）|\(数え年\)/g,'').trim();
-      if(!y||seen[y]) continue;
-      seen[y]=1;
-      sg=''; ts=''; extra='';
-      for(var q=1;q<L.length;q++){
-        if(L[q].indexOf('🌀')===0) sg=L[q].replace('🌀','').trim();
-        else if(L[q].indexOf('☀')===0) ts=L[q].replace(/^☀️?/,'').trim();
-        else extra+=(extra?' ':'')+L[q];
+      var k=all[i].children;
+      if(k.length<5) continue;
+      var ok=true;
+      for(q=0;q<k.length;q++){ if(!/^[0-9]{4}年/.test(tx(k[q]))){ ok=false; break; } }
+      if(ok){ g=all[i]; break; }
+    }
+    if(!g) return none('小限・太歳のデータがまだ表示されていません。');
+    var out='',L,y,sg,ts,ex,cur;
+    for(i=0;i<g.children.length;i++){
+      L=lines(g.children[i]);
+      y=((L[0]||'').match(/[0-9]{4}年/)||[''])[0];
+      if(!y) continue;
+      cur=/今年|現在/.test(L[0]||'')?1:0;
+      sg=''; ts=''; ex=[];
+      for(q=1;q<L.length;q++){
+        if(L[q].indexOf('🌀')===0) sg=L[q].replace(/^🌀\s*/,'').trim();
+        else if(/^☀/.test(L[q])) ts=L[q].replace(/^☀️?\s*/,'').trim();
+        else ex.push(L[q]);
       }
-      if(extra) ts=(ts+' '+extra).trim();
-      cur=/現在|◀|今年/.test(L.join(' '))?1:0;
+      if(ex.length) ts=(ts+' '+ex.join(' ')).trim();
       out+='<div class="zw-urow'+(cur?' now':'')+'"><span class="k zw-num">'+esc(y)+'</span>'
         +'<span class="p">🌀 '+esc(sg)+'</span><span class="p2">☀ '+esc(ts)+'</span></div>';
     }
@@ -17959,10 +17962,17 @@ function openAndScrollAcc(id){
   function cardsRyugetsu(){
     var c=document.getElementById('ryugetsu-cards');
     if(!c||!c.children.length) return none('流月は「流月」タブを開いてから印刷すると12ヶ月分が入ります。');
-    var out='',i,L;
+    var out='',i,j,L,m,k,v,rest;
     for(i=0;i<c.children.length;i++){
       L=lines(c.children[i]);
-      out+=urow(L[0]||'', L[1]||'', (L[2]||'').replace(/[^0-9]/g,''), 0);
+      m=(L[0]||'').match(/^([0-9]+月)\s*(.*)$/);
+      k=m?m[1]:(L[0]||''); rest=[]; v='';
+      if(m&&m[2]) rest.push(m[2]);
+      for(j=1;j<L.length;j++){
+        if(/[0-9]+点/.test(L[j])) v=L[j].replace(/[^0-9]/g,'');
+        else rest.push(L[j]);
+      }
+      out+=urow(k, rest.join(' '), v, 0);
     }
     return out;
   }
@@ -17970,19 +17980,22 @@ function openAndScrollAcc(id){
   function pillars(){
     var b=document.getElementById('unsei-body');
     if(!b) return '';
-    var out='',i,L,divs=b.getElementsByTagName('div');
-    for(i=0;i<divs.length;i++){
-      var t=tx(divs[i]);
-      if(!/^(⏱|☀️|🌊)/.test(t)) continue;
-      if(divs[i].children.length<2) continue;
-      L=lines(divs[i]);
-      var head=(L[0]||'').replace(/^[⏱☀️🌊]\s*/,'');
+    var host=null,i,q;
+    for(i=0;i<b.children.length;i++){
+      var k=b.children[i].children;
+      if(k.length===3 && /^(⏱|☀|🌊)/.test(tx(k[0]))){ host=b.children[i]; break; }
+    }
+    if(!host) return '';
+    var out='',L;
+    for(i=0;i<host.children.length;i++){
+      L=lines(host.children[i]);
+      var head=(L[0]||'').replace(/^[⏱☀️🌊\s]+/,'').trim();
       var val='—', rest=[];
-      for(var q=1;q<L.length;q++){
-        if(/^\d+点/.test(L[q])) val=L[q].replace(/[^0-9]/g,'');
+      for(q=1;q<L.length;q++){
+        if(/[0-9]+点/.test(L[q])) val=L[q].replace(/[^0-9]/g,'');
         else rest.push(L[q]);
       }
-      out+=urow(head, rest.join(' '), val, 0);
+      out+=urow(head, rest.join(' / '), val, 0);
     }
     return out;
   }
