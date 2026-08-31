@@ -1194,7 +1194,7 @@ section.active{display:block}
   #zw-print-root .zw-grid .ci-val{display:block;font-size:2.85mm;font-weight:600;color:var(--zwi);line-height:1.35}
   /* --- 鑑定メモ／フッター --- */
   #zw-print-root .zw-memo{flex-shrink:0;height:44mm;margin-top:3mm;padding:0 1mm;display:flex;flex-direction:column}
-  #zw-print-root .zw-memo.zw-s{height:22mm;margin-top:3mm}
+  #zw-print-root .zw-memo.zw-s{height:18mm;margin-top:3mm}
   #zw-print-root .zw-memo-t{font-size:2.9mm;color:var(--zwgt);letter-spacing:.36em;text-indent:.36em;margin-bottom:2mm;flex-shrink:0;font-weight:400}
   #zw-print-root .zw-memo-l{flex:1;display:flex;flex-direction:column;justify-content:space-between}
   #zw-print-root .zw-memo-l div{border-bottom:.28pt solid var(--zwh2);height:0}
@@ -1210,9 +1210,9 @@ section.active{display:block}
   #zw-print-root .zw-ubody{flex:1;min-height:0;display:grid;grid-template-columns:1.22fr 1fr 1fr;gap:3.4mm}
   #zw-print-root .zw-ucol{display:flex;flex-direction:column;gap:2.8mm;min-height:0}
   #zw-print-root .zw-ucard{background:var(--zwgs);border:.28pt solid var(--zwh);border-radius:2.4mm;padding:2.2mm 2.4mm;display:flex;flex-direction:column;min-height:0}
-  #zw-print-root .zw-ucard h4{font-size:2.85mm;color:var(--zwgt);letter-spacing:.22em;text-indent:.22em;margin-bottom:1.6mm;padding-bottom:1.1mm;border-bottom:.28pt solid var(--zwh2);flex-shrink:0;font-weight:400}
+  #zw-print-root .zw-ucard h4{font-size:2.85mm;color:var(--zwgt);letter-spacing:.22em;text-indent:.22em;margin-bottom:1.2mm;padding-bottom:.9mm;border-bottom:.28pt solid var(--zwh2);flex-shrink:0;font-weight:400}
   #zw-print-root .zw-ucard h4 .zw-lg{font-size:2.1mm;color:var(--zwi3);letter-spacing:.04em;font-family:'Noto Sans JP',sans-serif}
-  #zw-print-root .zw-urow{display:grid;align-items:baseline;column-gap:2mm;padding:.85mm 0;border-bottom:.28pt solid var(--zwh2)}
+  #zw-print-root .zw-urow{display:grid;align-items:baseline;column-gap:2mm;padding:.68mm 0;border-bottom:.28pt solid var(--zwh2)}
   #zw-print-root .zw-urow:last-child{border-bottom:none}
   #zw-print-root .zw-urow>.k{font-size:2.5mm;color:var(--zwi2);white-space:nowrap;letter-spacing:.02em;font-variant-numeric:tabular-nums;min-width:0;overflow:hidden;text-overflow:ellipsis}
   #zw-print-root .zw-urow>.p,#zw-print-root .zw-urow>.p2{font-size:2.45mm;color:var(--zwi3);letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
@@ -1221,7 +1221,7 @@ section.active{display:block}
   #zw-print-root .zw-urow.now>.k{color:var(--zwgt);font-weight:600}
   #zw-print-root .zw-urow.now::before{content:'';position:absolute;left:-2.4mm;top:.9mm;bottom:.9mm;width:.5mm;background:var(--zwgl);border-radius:1mm}
   #zw-print-root .g-dg .zw-urow{grid-template-columns:17mm 1fr 8mm}
-  #zw-print-root .g-now .zw-urow{grid-template-columns:27mm 1fr 8mm}
+  #zw-print-root .g-now .zw-urow{grid-template-columns:30mm 1fr 8mm}
   #zw-print-root .g-ry .zw-urow{grid-template-columns:15mm 1fr 8mm}
   #zw-print-root .g-rg .zw-urow{grid-template-columns:9mm 1fr 8mm}
   #zw-print-root .g-sg .zw-urow{grid-template-columns:16mm 1.15fr 1fr}
@@ -1230,7 +1230,7 @@ section.active{display:block}
   #zw-print-root .zw-usum .g{display:grid;grid-template-columns:repeat(5,1fr);gap:2mm;text-align:center}
   #zw-print-root .zw-usum .g div{padding:.4mm 0;border-left:.28pt solid var(--zwh2)}
   #zw-print-root .zw-usum .g div:first-child{border-left:none}
-  #zw-print-root .zw-usum .g b{display:block;font-size:4.2mm;color:var(--zwi);font-weight:500;line-height:1.15;font-variant-numeric:tabular-nums}
+  #zw-print-root .zw-usum .g b{display:block;font-size:4.2mm;color:var(--zwi);font-weight:500;line-height:1.3;font-variant-numeric:tabular-nums}
   #zw-print-root .zw-usum .g span{display:block;font-size:2.15mm;color:var(--zwi3);margin-top:.5mm;letter-spacing:.06em}
   #zw-print-root .zw-none{font-size:2.4mm;color:var(--zwi3);padding:1.5mm 0;line-height:1.7}
 }
@@ -17909,7 +17909,7 @@ function openAndScrollAcc(id){
     for(i=0;i<c.children.length;i++){
       L=lines(c.children[i]);
       cur=/現在|◀/.test(L.join(' '))?1:0;
-      out+=urow((L[0]||'').replace(/（数え）|\(数え\)/g,'').trim(), L[1]||'', (L[2]||'').replace(/[^0-9]/g,''), cur);
+      out+=urow((L[0]||'').replace(/（数え）|\(数え\)/g,'').replace(/◀\s*現在/g,'').trim(), L[1]||'', (L[2]||'').replace(/[^0-9]/g,''), cur);
     }
     return out;
   }
