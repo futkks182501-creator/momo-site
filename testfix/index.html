@@ -17890,7 +17890,7 @@ function openAndScrollAcc(id){
      +'function go(){if(done)return;done=true;try{window.focus();}catch(e){}try{window.print();}catch(e){}}'
      +'var im=document.getElementById("zwimg");'
      +'document.getElementById("zwbtn").onclick=function(){done=false;go();};'
-     +'im.onload=function(){requestAnimationFrame(function(){requestAnimationFrame(go);});};'
+     +'im.onload=function(){requestAnimationFrame(function(){requestAnimationFrame(go);});setTimeout(go,1500);};'
      +'im.onerror=function(){};'
      +'im.src='+JSON.stringify(url)+';})();'
      +'<\/script></body></html>';
