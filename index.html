@@ -1126,18 +1126,14 @@ section.active{display:block}
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style id="zw-print-css">
 /* ===== A4印刷・PDF保存（命盤／運気一覧）2026-08-31 追加 ===== */
-#zw-print-root{display:none}
+#zw-print-root{position:fixed;left:-20000px;top:0;width:0;height:0;z-index:-1;pointer-events:none}
 #zw-print-root{--zwp:#FDFBF6;--zwg:#BE8B4A;--zwgl:#CBA774;--zwgt:#96702F;--zwl:#9C86D8;--zwll:#C6B8EC;--zwlt:#6B57A8;--zwi:#3A2A1E;--zwi2:#75604F;--zwi3:#9C8873;--zwh:#E7DCC9;--zwh2:#F0E8DA;--zwgs:#FFFEFB}
-@media print{
-  @page{margin:0}
-  html body.zw-printing{background:#fff!important;margin:0!important;padding:0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  body.zw-printing>*{display:none!important}
-  body.zw-printing>#zw-print-root{display:block!important}
+
   #zw-print-root *{box-sizing:border-box!important;margin:0;padding:0;animation:none!important;transition:none!important;box-shadow:none!important;text-shadow:none!important;float:none!important;position:static}
   #zw-print-root{font-family:'Noto Sans JP','Hiragino Sans','Meiryo',sans-serif;color:var(--zwi);line-height:1.4}
   #zw-print-root .zw-mc{font-family:'Yu Mincho','YuMincho','Hiragino Mincho ProN','MS PMincho','Noto Serif JP',serif}
   #zw-print-root .zw-num{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1}
-  #zw-print-root .zw-sheet{position:relative;overflow:hidden;background:var(--zwp);page-break-after:avoid;page-break-inside:avoid;break-inside:avoid}
+  #zw-print-root .zw-sheet{position:relative;overflow:hidden;background:var(--zwp);page-break-after:avoid;page-break-inside:avoid;break-inside:avoid;box-sizing:border-box;padding:17.5mm;margin:0 auto}
   #zw-print-root .zw-sheet.zw-pt{width:210mm;height:296.6mm}
   #zw-print-root .zw-sheet.zw-ls{width:297mm;height:209.6mm}
   #zw-print-root .zw-aurora{position:absolute;inset:0;pointer-events:none;background:
@@ -1151,7 +1147,8 @@ section.active{display:block}
   #zw-print-root .zw-orn.tr{top:11.4mm;right:11.4mm;transform:scaleX(-1)}
   #zw-print-root .zw-orn.bl{bottom:11.4mm;left:11.4mm;transform:scaleY(-1)}
   #zw-print-root .zw-orn.br{bottom:11.4mm;right:11.4mm;transform:scale(-1)}
-  #zw-print-root .zw-inner{position:absolute;inset:17.5mm;display:flex;flex-direction:column;z-index:2}
+  #zw-print-root .zw-inner{position:relative;width:100%;height:100%;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto;z-index:2;overflow:hidden}
+  #zw-print-root .zw-sheet.zw-ls .zw-inner{grid-template-rows:auto minmax(0,1fr) auto auto}
   /* --- タイトル --- */
   #zw-print-root .zw-head{flex-shrink:0;text-align:center;position:relative;padding:3mm 0;margin-bottom:3mm}
   #zw-print-root .zw-head::after{content:'';position:absolute;left:0;right:0;bottom:0;border-bottom:.28pt solid var(--zwh)}
@@ -1165,16 +1162,17 @@ section.active{display:block}
   #zw-print-root .zw-info .info-item label{display:block;font-size:2.25mm;color:var(--zwi3);margin-bottom:.7mm;line-height:1.25;letter-spacing:.06em;font-weight:400}
   #zw-print-root .zw-info .info-item span{display:block;font-size:3.05mm;color:var(--zwgt);font-weight:600;line-height:1.3;font-variant-numeric:tabular-nums}
   /* --- 命盤（#meiban-grid の複製）--- */
-  #zw-print-root .zw-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,minmax(0,1fr));gap:1.3mm}
-  #zw-print-root .zw-grid .palace,#zw-print-root .zw-grid .palace-center{background:var(--zwgs);border:.28pt solid var(--zwh);border-radius:2mm;padding:1.4mm 1.6mm;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:visible;cursor:auto}
-  #zw-print-root .zw-grid .palace.highlight{border:.7pt solid var(--zwgl);background:#FFFCF4}
-  #zw-print-root .zw-grid .palace.body-palace{border:.7pt solid var(--zwll);background:#FCFAFE}
-  #zw-print-root .zw-grid .palace.highlight.body-palace{border:.7pt solid var(--zwgl);background:#FFFCF4}
+  #zw-print-root .zw-grid{min-height:0;height:100%;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,minmax(0,1fr));gap:1.3mm;align-items:stretch;justify-items:stretch;align-content:stretch}
+  #zw-print-root .palace-locked-hint,#zw-print-root .palace-free-chip{display:none!important}
+  #zw-print-root .zw-grid .palace,#zw-print-root .zw-grid .palace-center{background:var(--zwgs)!important;border:.28pt solid var(--zwh)!important;border-radius:2mm;padding:1.4mm 1.6mm;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:visible;cursor:auto;align-self:stretch!important;justify-self:stretch!important;height:auto!important;max-height:none!important}
+  #zw-print-root .zw-grid .palace.highlight{border:.7pt solid var(--zwgl)!important;background:#FFFCF4!important}
+  #zw-print-root .zw-grid .palace.body-palace{border:.7pt solid var(--zwll)!important;background:#FCFAFE!important}
+  #zw-print-root .zw-grid .palace.highlight.body-palace{border:.7pt solid var(--zwgl)!important;background:#FFFCF4!important}
   #zw-print-root .zw-grid .p-header{display:flex;justify-content:space-between;align-items:baseline;gap:1mm;border-bottom:.28pt solid var(--zwh2);padding:0 0 .9mm;margin-bottom:1mm;flex-shrink:0;background:none}
   #zw-print-root .zw-grid .p-branch{font-family:'Yu Mincho','Hiragino Mincho ProN','Noto Serif JP',serif;font-size:3.3mm;font-weight:600;color:var(--zwi);letter-spacing:.05em}
   #zw-print-root .zw-grid .p-name{font-size:2.75mm;color:var(--zwgt);letter-spacing:.06em;font-weight:400}
   #zw-print-root .zw-grid .p-stem{font-size:2.35mm;color:var(--zwi3)}
-  #zw-print-root .zw-grid .p-stars{flex:1;min-height:0;display:flex;flex-wrap:wrap;align-content:flex-start;gap:.8mm;overflow:visible}
+  #zw-print-root .zw-grid .p-stars{flex:1 1 auto;min-height:0;display:flex;flex-wrap:wrap;align-content:flex-start;gap:.8mm;overflow:visible}
   #zw-print-root .zw-grid .p-stars>span{font-size:2.4mm;color:var(--zwi2);border:.28pt solid var(--zwh);border-radius:1.2mm;padding:.25mm 1.1mm;line-height:1.4;background:#fff;white-space:nowrap}
   #zw-print-root .zw-grid .star-main{font-size:2.95mm!important;font-weight:600!important;color:var(--zwi)!important;border:.35pt solid var(--zwll)!important;background:#FDFCFF!important;padding:.3mm 1.4mm!important;letter-spacing:.02em}
   #zw-print-root .zw-grid .lucky{border-color:var(--zwgl)!important;background:#FFFDF6!important;color:var(--zwgt)!important}
@@ -1207,7 +1205,7 @@ section.active{display:block}
   #zw-print-root .zw-utitle{font-size:4.8mm;color:var(--zwgt);letter-spacing:.4em;text-indent:.4em;line-height:1.35;font-weight:400;margin-top:4mm}
   #zw-print-root .zw-uname{font-size:3.5mm;color:var(--zwi);letter-spacing:.18em;margin-top:1.8mm;font-weight:400}
   #zw-print-root .zw-umeta{text-align:right;font-size:2.55mm;color:var(--zwi2);line-height:1.75;letter-spacing:.02em;font-variant-numeric:tabular-nums}
-  #zw-print-root .zw-ubody{flex:1;min-height:0;display:grid;grid-template-columns:1.22fr 1fr 1fr;gap:3.4mm}
+  #zw-print-root .zw-ubody{min-height:0;height:100%;display:grid;grid-template-columns:1.22fr 1fr 1fr;gap:3.4mm}
   #zw-print-root .zw-ucol{display:flex;flex-direction:column;gap:2.8mm;min-height:0}
   #zw-print-root .zw-ucard{background:var(--zwgs);border:.28pt solid var(--zwh);border-radius:2.4mm;padding:2.2mm 2.4mm;display:flex;flex-direction:column;min-height:0}
   #zw-print-root .zw-ucard h4{font-size:2.85mm;color:var(--zwgt);letter-spacing:.22em;text-indent:.22em;margin-bottom:1.2mm;padding-bottom:.9mm;border-bottom:.28pt solid var(--zwh2);flex-shrink:0;font-weight:400}
@@ -1233,7 +1231,25 @@ section.active{display:block}
   #zw-print-root .zw-usum .g b{display:block;font-size:4.2mm;color:var(--zwi);font-weight:500;line-height:1.3;font-variant-numeric:tabular-nums}
   #zw-print-root .zw-usum .g span{display:block;font-size:2.15mm;color:var(--zwi3);margin-top:.5mm;letter-spacing:.06em}
   #zw-print-root .zw-none{font-size:2.4mm;color:var(--zwi3);padding:1.5mm 0;line-height:1.7}
+
+#zw-pv .zw-pv-b4{background:#fdfcff;color:#6B57A8;border:1.4px solid #C6B8EC}
+#zw-pv .zw-rec{outline:3px solid #f59e0b;outline-offset:2px}
+#zw-pv .zw-pv-hi{color:#96702F;font-weight:700}
+@media print{
+  #zw-pv{display:none!important}
+  #zw-print-root{display:none!important}
 }
+/* 印刷プレビュー（全端末共通） */
+#zw-pv{position:fixed;inset:0;z-index:99999;background:rgba(45,33,22,.86);display:flex;flex-direction:column;overflow:auto;-webkit-overflow-scrolling:touch}
+#zw-pv .zw-pv-bar{position:sticky;top:0;flex-shrink:0;display:flex;gap:.5rem;justify-content:center;align-items:center;flex-wrap:wrap;padding:.6rem .7rem;background:#fffdf7;border-bottom:1px solid #e6dac4}
+#zw-pv button{padding:.55rem 1rem;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;line-height:1.4}
+#zw-pv .zw-pv-b1{background:linear-gradient(135deg,#b45309,#92400e);color:#fff;border:none}
+#zw-pv .zw-pv-b2{background:#fffdf7;color:#96702F;border:1.4px solid #CBA774}
+#zw-pv .zw-pv-b3{background:#fff;color:#6b4226;border:1px solid #ddd}
+#zw-pv .zw-pv-note{width:100%;text-align:center;font-size:.7rem;color:#7a6547;line-height:1.6}
+#zw-pv .zw-pv-bd{padding:12px;text-align:center}
+#zw-pv .zw-pv-bd img{max-width:100%;height:auto;background:#fff;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+@media print{#zw-pv{display:none!important}#zw-print-root{display:none!important}}
 /* 画面上のボタン（既存の画像保存ボタンは変更していません） */
 .zw-pbtn{display:inline-flex;align-items:center;justify-content:center;gap:.3rem;padding:.5rem 1rem;background:#fffdf7;color:#96702F;border:1.4px solid #CBA774;border-radius:8px;font-size:.79rem;font-weight:700;white-space:nowrap;cursor:pointer;font-family:inherit}
 .zw-pbtn:hover{background:#fdf6e8}
@@ -17837,47 +17853,130 @@ function openAndScrollAcc(id){
     if(!r){r=document.createElement('div');r.id='zw-print-root';document.body.appendChild(r);}
     r.innerHTML='';return r;
   }
-  /* @page の向きは印刷直前に差し替える */
-  function pageStyle(mode){
-    var s=document.getElementById('zw-page-style');
-    if(!s){s=document.createElement('style');s.id='zw-page-style';document.head.appendChild(s);}
-    s.textContent='@page{size:A4 '+mode+';margin:0}';
+  /* ── 印刷は「A4の画像」を作ってから行う（端末やブラウザによる差をなくすため）── */
+  /* 印刷：ページ全体を「A4の画像1枚」に差し替えてから印刷する
+     （枠内印刷はiPhoneで効かないため、本体ページを使う） */
+  /* パソコン・Android：画像だけの専用画面を開き、その画面から印刷する */
+  function zwPrintDoc(url, mode, title){
+    var w=null;
+    try{ w=window.open('','_blank'); }catch(e){ w=null; }
+    if(!w||!w.document){
+      alert('印刷画面を開けませんでした。ブラウザのポップアップを許可して、もう一度お試しください。');
+      return;
+    }
+    var land=(mode==='landscape');
+    var mw=land?'295mm':'208mm', mh=land?'207mm':'295mm';
+    var h='<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">'
+     +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+     +'<title>'+esc(title||'紫微斗数-命盤鑑定')+'</title><style>'
+     +'@page{size:A4 '+(land?'landscape':'portrait')+';margin:0}'
+     +'html,body{margin:0;padding:0;background:#fff}'
+     +'#zwimg{display:block;margin:0 auto;width:auto;height:auto;max-width:'+mw+';max-height:'+mh+';'
+     +'page-break-inside:avoid;break-inside:avoid;page-break-after:avoid}'
+     +'#zwbar{text-align:center;padding:12px;font-family:"Noto Sans JP",sans-serif}'
+     +'#zwbtn{padding:.7rem 1.4rem;border:none;border-radius:8px;cursor:pointer;'
+     +'background:linear-gradient(135deg,#b45309,#92400e);color:#fff;font-size:15px;font-weight:700}'
+     +'#zwmsg{margin:.6rem 0 0;font-size:12px;color:#7a6547;line-height:1.7}'
+     +'@media screen{body{background:#e9e3d9}'
+     +'#zwbar{position:sticky;top:0;background:#fffdf7;border-bottom:1px solid #e6dac4}'
+     +'#zwimg{max-width:calc(100% - 16px);max-height:none;margin:12px auto;'
+     +'box-shadow:0 4px 18px rgba(0,0,0,.3)}}'
+     +'@media print{#zwbar{display:none!important}}'
+     +'</style></head><body>'
+     +'<div id="zwbar"><button type="button" id="zwbtn">🖨 印刷する／PDF保存</button>'
+     +'<p id="zwmsg">自動で印刷画面が開かない場合は、このボタンを押してください</p></div>'
+     +'<img id="zwimg" alt="">'
+     +'<script>(function(){var done=false;'
+     +'function go(){if(done)return;done=true;try{window.focus();}catch(e){}try{window.print();}catch(e){}}'
+     +'var im=document.getElementById("zwimg");'
+     +'document.getElementById("zwbtn").onclick=function(){done=false;go();};'
+     +'im.onload=function(){requestAnimationFrame(function(){requestAnimationFrame(go);});setTimeout(go,1500);};'
+     +'im.onerror=function(){};'
+     +'im.src='+JSON.stringify(url)+';})();'
+     +'<\/script></body></html>';
+    try{ w.document.open(); w.document.write(h); w.document.close(); }
+    catch(e){ alert('印刷画面を開けませんでした。ブラウザのポップアップを許可して、もう一度お試しください。'); }
+  }
+  /* iPhone・iPad は本体ページの印刷では差し替えが効かないため、画像だけの画面を開く */
+  /* iPhone・iPad：A4に収めたページを新しい画面で開く（共有→プリントで1枚に印刷できる） */
+  function zwOpenImage(canvas, mode, title){
+    var url=canvas.toDataURL('image/png');
+    var html='<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">'
+      +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+      +'<title>'+esc(title||'紫微斗数-命盤鑑定')+'</title><style>'
+      +'@page{size:A4 '+(mode||'portrait')+';margin:0}'
+      +'html,body{height:100%;margin:0;padding:0;background:#fff}'
+      +'img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;margin:0 auto;'
+      +'page-break-inside:avoid;break-inside:avoid;page-break-after:avoid}'
+      +'@media screen{body{background:#e9e3d9;padding:8px;box-sizing:border-box}'
+      +'img{box-shadow:0 4px 18px rgba(0,0,0,.3);max-height:none}'
+      +'.zw-tip{font:14px/1.7 -apple-system,sans-serif;color:#5b4a36;text-align:center;padding:10px 12px;background:#fffdf7;border-radius:8px;margin:0 0 10px}}'
+      +'@media print{.zw-tip{display:none}}'
+      +'</style></head><body>'
+      +'<p class="zw-tip">画面下の <b>共有ボタン</b> → <b>プリント</b> で印刷・PDF保存ができます</p>'
+      +'<img src="'+url+'" alt=""></body></html>';
+    var w=null;
+    try{ w=window.open('','_blank'); }catch(e){ w=null; }
+    if(w && w.document){
+      try{ w.document.open(); w.document.write(html); w.document.close(); return; }catch(e){}
+    }
+    var u=null;
+    try{ u=URL.createObjectURL(new Blob([html],{type:'text/html'})); }catch(e){ u=null; }
+    if(!u){ try{ w=window.open(url,'_blank'); }catch(e){} if(!w){ try{ location.href=url; }catch(e){} } return; }
+    if(w){ try{ w.location.href=u; return; }catch(e){} }
+    var w2=null;
+    try{ w2=window.open(u,'_blank'); }catch(e){}
+    if(!w2){ try{ location.href=u; }catch(e){} }
+    setTimeout(function(){ try{URL.revokeObjectURL(u);}catch(e){} },180000);
+  }
+  function zwDevice(){
+    var ua=navigator.userAgent||'';
+    if(/iP(hone|od|ad)/.test(ua)) return 'ios';
+    if(/Macintosh/.test(ua) && (navigator.maxTouchPoints||0)>1) return 'ios';
+    if(/Android/.test(ua)) return 'android';
+    return 'pc';
+  }
+  function zwPreview(canvas, mode, title){
+    var url=canvas.toDataURL('image/png');
+    var dev=zwDevice();
+    var old=document.getElementById('zw-pv');
+    if(old&&old.parentNode) old.parentNode.removeChild(old);
+    var ov=document.createElement('div'); ov.id='zw-pv';
+    var youM = dev==='ios' ? 'お使いの端末は <b>iPhone・iPad</b> です。' :
+               dev==='android' ? 'お使いの端末は <b>Android</b> です。' :
+               'お使いの端末は <b>パソコン</b> です。';
+    ov.innerHTML='<div class="zw-pv-bar">'
+      +'<button type="button" class="zw-pv-b1'+(dev==='ios'?'':' zw-rec')+'">🖨 パソコン・Androidで印刷／PDF保存</button>'
+      +'<button type="button" class="zw-pv-b4'+(dev==='ios'?' zw-rec':'')+'">📱 iPhone・iPadで印刷／PDF保存</button>'
+      +'<button type="button" class="zw-pv-b2">📷 画像を保存（全機種）</button>'
+      +'<button type="button" class="zw-pv-b3">閉じる</button>'
+      +'<div class="zw-pv-note">'+youM+'<span class="zw-pv-hi">おすすめのボタンに枠が付いています。</span><br>'
+      +(dev==='ios'
+        ? 'iPhone・iPadは「📱」を押すと、この命盤の画像だけが新しい画面で開きます。<br>その画面で <b>共有ボタン → プリント</b> を選ぶと印刷・PDF保存ができます。'
+        : '用紙はA4'+(mode==='landscape'?'横':'縦')+'、余白は「なし」、「ヘッダーとフッター」はOFFがおすすめです。')
+      +'</div></div>'
+      +'<div class="zw-pv-bd"><img alt=""></div>';
+    document.body.appendChild(ov);
+    ov.querySelector('.zw-pv-bd img').src=url;
+    ov.querySelector('.zw-pv-b1').onclick=function(){ zwPrintDoc(url,mode,title); };
+    ov.querySelector('.zw-pv-b4').onclick=function(){ zwOpenImage(canvas, mode, title); };
+    ov.querySelector('.zw-pv-b2').onclick=function(){
+      try{ if(typeof _deliverMeibanImage==='function'){ _deliverMeibanImage(canvas,title); return; } }catch(e){}
+      try{ var a=document.createElement('a'); a.href=url; a.download=title+'.png';
+        document.body.appendChild(a); a.click(); a.parentNode.removeChild(a); }catch(e){}
+    };
+    ov.querySelector('.zw-pv-b3').onclick=function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); };
   }
   function run(mode, docTitle){
-    pageStyle(mode);
-    document.body.classList.add('zw-printing');
-    /* PDF保存時の初期ファイル名は document.title が使われるため、印刷直前だけ差し替える。
-       完了・キャンセル・ダイアログを閉じた場合のいずれでも必ず元へ戻す。 */
-    var prevTitle=null, restored=false, mql=null;
-    if(docTitle){ prevTitle=document.title; document.title=docTitle; }
-    var restore=function(){
-      if(restored) return; restored=true;
-      if(prevTitle!==null){ try{ document.title=prevTitle; }catch(e){} }
-      window.removeEventListener('afterprint',onAfter);
-      window.removeEventListener('focus',restore);
-      if(mql){ try{ if(mql.removeEventListener) mql.removeEventListener('change',onMql); else if(mql.removeListener) mql.removeListener(onMql); }catch(e){} }
-    };
-    function onMql(e){ if(!e.matches) clean(); }
-    var clean=function(){
-      document.body.classList.remove('zw-printing');
-      var r=document.getElementById('zw-print-root'); if(r) r.innerHTML='';
-      restore();
-      window.removeEventListener('afterprint',onAfter);
-    };
-    function onAfter(){ clean(); }
-    window.addEventListener('afterprint',onAfter);
-    window.addEventListener('focus',restore);
-    if(window.matchMedia){
-      try{ mql=window.matchMedia('print');
-        if(mql.addEventListener) mql.addEventListener('change',onMql);
-        else if(mql.addListener) mql.addListener(onMql);
-      }catch(e){ mql=null; }
-    }
-    setTimeout(function(){
-      try{ window.print(); }catch(e){}
-      setTimeout(clean,1500);
-      setTimeout(restore,15000); /* 最終保険：タイトルが戻らないままにしない */
-    },60);
+    var rt=document.getElementById('zw-print-root');
+    var sheet=rt?rt.querySelector('.zw-sheet'):null;
+    var clear=function(){ if(rt) rt.innerHTML=''; };
+    if(!sheet){ clear(); return; }
+    if(typeof html2canvas!=='function'){ clear(); alert('印刷の準備ができませんでした。ページを再読み込みしてお試しください。'); return; }
+    var title=docTitle||'紫微斗数-命盤鑑定';
+    html2canvas(sheet,{scale:2,useCORS:true,backgroundColor:'#FDFBF6',logging:false})
+      .then(function(canvas){ clear(); zwPreview(canvas, mode, title); })
+      .catch(function(){ clear(); alert('印刷用の画像を作成できませんでした。もう一度お試しください。'); });
   }
 
   /* ══════════ ① 命盤印刷（A4縦・全員） ══════════ */
