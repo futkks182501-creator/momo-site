@@ -17877,7 +17877,9 @@ function openAndScrollAcc(id){
       document.removeEventListener('visibilitychange',onv);
     };
     function onv(){ if(document.visibilityState==='visible') setTimeout(fin,500); }
+    var started=false;
     var go=function(){
+      if(started) return; started=true;
       document.documentElement.setAttribute('data-zwprint','1');
       try{ document.title=title; }catch(e){}
       window.addEventListener('afterprint',fin);
@@ -17886,8 +17888,11 @@ function openAndScrollAcc(id){
       try{ window.print(); }catch(e){}
       setTimeout(fin,120000);
     };
-    if(im.complete) go(); else { im.onload=go; im.onerror=go; setTimeout(go,4000); }
+    /* 画像の読み込みが終わってから印刷する（先に印刷すると白紙になる） */
+    im.onload=go; im.onerror=go;
     im.src=url;
+    if(im.complete && im.naturalWidth>0) go();
+    setTimeout(go,5000);
   }
   function zwOpenImage(canvas){
     try{
