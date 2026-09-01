@@ -1235,6 +1235,8 @@ section.active{display:block}
 /* 印刷時：ページ全体をA4画像1枚に差し替える */
 #zw-print-img{position:fixed;left:-20000px;top:0;width:0;height:0;z-index:-1;overflow:hidden}
 #zw-pv .zw-pv-b4{background:#fdfcff;color:#6B57A8;border:1.4px solid #C6B8EC}
+#zw-pv .zw-rec{outline:3px solid #f59e0b;outline-offset:2px}
+#zw-pv .zw-pv-hi{color:#96702F;font-weight:700}
 @media print{
   html[data-zwprint] body>*{display:none!important}
   html[data-zwprint] body>#zw-print-img{display:block!important;position:static!important;left:auto!important;top:auto!important;width:auto!important;height:auto!important;overflow:visible!important;z-index:auto!important;margin:0!important;padding:0!important}
@@ -17894,32 +17896,52 @@ function openAndScrollAcc(id){
     if(im.complete && im.naturalWidth>0) go();
     setTimeout(go,5000);
   }
-  function zwOpenImage(canvas){
+  /* iPhone・iPad は本体ページの印刷では差し替えが効かないため、画像だけの画面を開く */
+  function zwOpenImage(canvas, note){
+    var open1=function(u){
+      var w=null;
+      try{ w=window.open(u,'_blank'); }catch(e){}
+      if(!w){ try{ location.href=u; }catch(e){} }
+    };
     try{
       if(canvas.toBlob){
         canvas.toBlob(function(b){
-          if(!b) return;
+          if(!b){ open1(canvas.toDataURL('image/png')); return; }
           var u=URL.createObjectURL(b);
-          var w=window.open(u,'_blank');
-          if(!w){ location.href=u; }
-          setTimeout(function(){ try{URL.revokeObjectURL(u);}catch(e){} },120000);
+          open1(u);
+          setTimeout(function(){ try{URL.revokeObjectURL(u);}catch(e){} },180000);
         },'image/png');
         return;
       }
     }catch(e){}
-    try{ window.open(canvas.toDataURL('image/png'),'_blank'); }catch(e){}
+    open1(canvas.toDataURL('image/png'));
+  }
+  function zwDevice(){
+    var ua=navigator.userAgent||'';
+    if(/iP(hone|od|ad)/.test(ua)) return 'ios';
+    if(/Macintosh/.test(ua) && (navigator.maxTouchPoints||0)>1) return 'ios';
+    if(/Android/.test(ua)) return 'android';
+    return 'pc';
   }
   function zwPreview(canvas, mode, title){
     var url=canvas.toDataURL('image/png');
+    var dev=zwDevice();
     var old=document.getElementById('zw-pv');
     if(old&&old.parentNode) old.parentNode.removeChild(old);
     var ov=document.createElement('div'); ov.id='zw-pv';
+    var youM = dev==='ios' ? 'お使いの端末は <b>iPhone・iPad</b> です。' :
+               dev==='android' ? 'お使いの端末は <b>Android</b> です。' :
+               'お使いの端末は <b>パソコン</b> です。';
     ov.innerHTML='<div class="zw-pv-bar">'
-      +'<button type="button" class="zw-pv-b1">🖨 印刷・PDF保存</button>'
-      +'<button type="button" class="zw-pv-b2">📷 画像を保存</button>'
-      +'<button type="button" class="zw-pv-b4">🔎 別のタブで開く</button>'
+      +'<button type="button" class="zw-pv-b1'+(dev==='ios'?'':' zw-rec')+'">🖨 パソコン・Androidで印刷／PDF保存</button>'
+      +'<button type="button" class="zw-pv-b4'+(dev==='ios'?' zw-rec':'')+'">📱 iPhone・iPadで印刷／PDF保存</button>'
+      +'<button type="button" class="zw-pv-b2">📷 画像を保存（全機種）</button>'
       +'<button type="button" class="zw-pv-b3">閉じる</button>'
-      +'<div class="zw-pv-note">用紙はA4'+(mode==='landscape'?'横':'縦')+'、余白は「なし」、「ヘッダーとフッター」はOFFがおすすめです<br>うまく印刷できないときは「画像を保存」または「別のタブで開く」からお試しください</div></div>'
+      +'<div class="zw-pv-note">'+youM+'<span class="zw-pv-hi">おすすめのボタンに枠が付いています。</span><br>'
+      +(dev==='ios'
+        ? 'iPhone・iPadは「📱」を押すと、この命盤の画像だけが新しい画面で開きます。<br>その画面で <b>共有ボタン → プリント</b> を選ぶと印刷・PDF保存ができます。'
+        : '用紙はA4'+(mode==='landscape'?'横':'縦')+'、余白は「なし」、「ヘッダーとフッター」はOFFがおすすめです。')
+      +'</div></div>'
       +'<div class="zw-pv-bd"><img alt=""></div>';
     document.body.appendChild(ov);
     ov.querySelector('.zw-pv-bd img').src=url;
