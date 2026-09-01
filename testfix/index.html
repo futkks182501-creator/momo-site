@@ -1239,9 +1239,9 @@ section.active{display:block}
 #zw-pv .zw-pv-hi{color:#96702F;font-weight:700}
 @media print{
   html[data-zwprint] body>*{display:none!important}
-  html[data-zwprint] body>#zw-print-img{display:block!important;position:static!important;left:auto!important;top:auto!important;width:auto!important;height:auto!important;overflow:visible!important;z-index:auto!important;margin:0!important;padding:0!important}
-  html[data-zwprint] #zw-print-img img{display:block!important;width:100%!important;height:auto!important;max-width:none!important}
-  html[data-zwprint] body{margin:0!important;padding:0!important;background:#fff!important}
+  html[data-zwprint] body>#zw-print-img{display:block!important;position:static!important;left:auto!important;top:auto!important;width:100%!important;height:100%!important;overflow:hidden!important;z-index:auto!important;margin:0!important;padding:0!important}
+  html[data-zwprint] #zw-print-img img{display:block!important;width:auto!important;height:auto!important;max-width:100%!important;max-height:100%!important;margin:0 auto!important;page-break-inside:avoid!important;break-inside:avoid!important;page-break-after:avoid!important}
+  html[data-zwprint],html[data-zwprint] body{height:100%!important;margin:0!important;padding:0!important;background:#fff!important;overflow:hidden!important}
   #zw-pv{display:none!important}
   #zw-print-root{display:none!important}
 }
@@ -17876,16 +17876,13 @@ function openAndScrollAcc(id){
       document.documentElement.removeAttribute('data-zwprint');
       h.innerHTML=''; try{ document.title=prev; }catch(e){}
       window.removeEventListener('afterprint',fin);
-      document.removeEventListener('visibilitychange',onv);
     };
-    function onv(){ if(document.visibilityState==='visible') setTimeout(fin,500); }
     var started=false;
     var go=function(){
       if(started) return; started=true;
       document.documentElement.setAttribute('data-zwprint','1');
       try{ document.title=title; }catch(e){}
       window.addEventListener('afterprint',fin);
-      document.addEventListener('visibilitychange',onv);
       void document.body.offsetHeight;
       try{ window.print(); }catch(e){}
       setTimeout(fin,120000);
@@ -17897,24 +17894,36 @@ function openAndScrollAcc(id){
     setTimeout(go,5000);
   }
   /* iPhone・iPad は本体ページの印刷では差し替えが効かないため、画像だけの画面を開く */
-  function zwOpenImage(canvas, note){
-    var open1=function(u){
-      var w=null;
-      try{ w=window.open(u,'_blank'); }catch(e){}
-      if(!w){ try{ location.href=u; }catch(e){} }
-    };
-    try{
-      if(canvas.toBlob){
-        canvas.toBlob(function(b){
-          if(!b){ open1(canvas.toDataURL('image/png')); return; }
-          var u=URL.createObjectURL(b);
-          open1(u);
-          setTimeout(function(){ try{URL.revokeObjectURL(u);}catch(e){} },180000);
-        },'image/png');
-        return;
-      }
-    }catch(e){}
-    open1(canvas.toDataURL('image/png'));
+  /* iPhone・iPad：A4に収めたページを新しい画面で開く（共有→プリントで1枚に印刷できる） */
+  function zwOpenImage(canvas, mode, title){
+    var url=canvas.toDataURL('image/png');
+    var html='<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">'
+      +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+      +'<title>'+esc(title||'紫微斗数-命盤鑑定')+'</title><style>'
+      +'@page{size:A4 '+(mode||'portrait')+';margin:0}'
+      +'html,body{height:100%;margin:0;padding:0;background:#fff}'
+      +'img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;margin:0 auto;'
+      +'page-break-inside:avoid;break-inside:avoid;page-break-after:avoid}'
+      +'@media screen{body{background:#e9e3d9;padding:8px;box-sizing:border-box}'
+      +'img{box-shadow:0 4px 18px rgba(0,0,0,.3);max-height:none}'
+      +'.zw-tip{font:14px/1.7 -apple-system,sans-serif;color:#5b4a36;text-align:center;padding:10px 12px;background:#fffdf7;border-radius:8px;margin:0 0 10px}}'
+      +'@media print{.zw-tip{display:none}}'
+      +'</style></head><body>'
+      +'<p class="zw-tip">画面下の <b>共有ボタン</b> → <b>プリント</b> で印刷・PDF保存ができます</p>'
+      +'<img src="'+url+'" alt=""></body></html>';
+    var w=null;
+    try{ w=window.open('','_blank'); }catch(e){ w=null; }
+    if(w && w.document){
+      try{ w.document.open(); w.document.write(html); w.document.close(); return; }catch(e){}
+    }
+    var u=null;
+    try{ u=URL.createObjectURL(new Blob([html],{type:'text/html'})); }catch(e){ u=null; }
+    if(!u){ try{ w=window.open(url,'_blank'); }catch(e){} if(!w){ try{ location.href=url; }catch(e){} } return; }
+    if(w){ try{ w.location.href=u; return; }catch(e){} }
+    var w2=null;
+    try{ w2=window.open(u,'_blank'); }catch(e){}
+    if(!w2){ try{ location.href=u; }catch(e){} }
+    setTimeout(function(){ try{URL.revokeObjectURL(u);}catch(e){} },180000);
   }
   function zwDevice(){
     var ua=navigator.userAgent||'';
@@ -17946,7 +17955,7 @@ function openAndScrollAcc(id){
     document.body.appendChild(ov);
     ov.querySelector('.zw-pv-bd img').src=url;
     ov.querySelector('.zw-pv-b1').onclick=function(){ zwPrintDoc(url,mode,title); };
-    ov.querySelector('.zw-pv-b4').onclick=function(){ zwOpenImage(canvas); };
+    ov.querySelector('.zw-pv-b4').onclick=function(){ zwOpenImage(canvas, mode, title); };
     ov.querySelector('.zw-pv-b2').onclick=function(){
       try{ if(typeof _deliverMeibanImage==='function'){ _deliverMeibanImage(canvas,title); return; } }catch(e){}
       try{ var a=document.createElement('a'); a.href=url; a.download=title+'.png';
