@@ -1232,6 +1232,17 @@ section.active{display:block}
   #zw-print-root .zw-usum .g span{display:block;font-size:2.15mm;color:var(--zwi3);margin-top:.5mm;letter-spacing:.06em}
   #zw-print-root .zw-none{font-size:2.4mm;color:var(--zwi3);padding:1.5mm 0;line-height:1.7}
 
+/* 印刷時：ページ全体をA4画像1枚に差し替える */
+#zw-print-img{position:fixed;left:-20000px;top:0;width:0;height:0;z-index:-1;overflow:hidden}
+#zw-pv .zw-pv-b4{background:#fdfcff;color:#6B57A8;border:1.4px solid #C6B8EC}
+@media print{
+  html[data-zwprint] body>*{display:none!important}
+  html[data-zwprint] body>#zw-print-img{display:block!important;position:static!important;left:auto!important;top:auto!important;width:auto!important;height:auto!important;overflow:visible!important;z-index:auto!important;margin:0!important;padding:0!important}
+  html[data-zwprint] #zw-print-img img{display:block!important;width:100%!important;height:auto!important;max-width:none!important}
+  html[data-zwprint] body{margin:0!important;padding:0!important;background:#fff!important}
+  #zw-pv{display:none!important}
+  #zw-print-root{display:none!important}
+}
 /* 印刷プレビュー（全端末共通） */
 #zw-pv{position:fixed;inset:0;z-index:99999;background:rgba(45,33,22,.86);display:flex;flex-direction:column;overflow:auto;-webkit-overflow-scrolling:touch}
 #zw-pv .zw-pv-bar{position:sticky;top:0;flex-shrink:0;display:flex;gap:.5rem;justify-content:center;align-items:center;flex-wrap:wrap;padding:.6rem .7rem;background:#fffdf7;border-bottom:1px solid #e6dac4}
@@ -17847,29 +17858,51 @@ function openAndScrollAcc(id){
     r.innerHTML='';return r;
   }
   /* ── 印刷は「A4の画像」を作ってから行う（端末やブラウザによる差をなくすため）── */
-  function zwFrame(url, mode, title){
-    var old=document.getElementById('zw-print-frame');
-    if(old&&old.parentNode) old.parentNode.removeChild(old);
-    var f=document.createElement('iframe');
-    f.id='zw-print-frame'; f.setAttribute('aria-hidden','true');
-    f.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0;';
-    document.body.appendChild(f);
-    var d=f.contentWindow.document;
-    d.open();
-    d.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(title)+'</title>'
-      +'<style>@page{size:A4 '+mode+';margin:0}html,body{margin:0;padding:0;background:#fff}'
-      +'img{display:block;width:100%;height:auto}</style></head><body>'
-      +'<img src="'+url+'" alt=""></body></html>');
-    d.close();
-    var fired=false;
-    var go=function(){
-      if(fired) return; fired=true;
-      try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){}
-      setTimeout(function(){ if(f.parentNode) f.parentNode.removeChild(f); },120000);
+  /* 印刷：ページ全体を「A4の画像1枚」に差し替えてから印刷する
+     （枠内印刷はiPhoneで効かないため、本体ページを使う） */
+  function zwPrintDoc(url, mode, title){
+    var h=document.getElementById('zw-print-img');
+    if(!h){ h=document.createElement('div'); h.id='zw-print-img'; document.body.appendChild(h); }
+    h.innerHTML='';
+    var im=document.createElement('img'); im.alt=''; h.appendChild(im);
+    var ps=document.getElementById('zw-page-style');
+    if(!ps){ ps=document.createElement('style'); ps.id='zw-page-style'; document.head.appendChild(ps); }
+    ps.textContent='@page{size:A4 '+mode+';margin:0}';
+    var prev=document.title, done=false;
+    var fin=function(){
+      if(done) return; done=true;
+      document.documentElement.removeAttribute('data-zwprint');
+      h.innerHTML=''; try{ document.title=prev; }catch(e){}
+      window.removeEventListener('afterprint',fin);
+      document.removeEventListener('visibilitychange',onv);
     };
-    var img=d.images&&d.images[0];
-    if(img&&!img.complete){ img.onload=go; img.onerror=go; setTimeout(go,4000); }
-    else { setTimeout(go,60); }
+    function onv(){ if(document.visibilityState==='visible') setTimeout(fin,500); }
+    var go=function(){
+      document.documentElement.setAttribute('data-zwprint','1');
+      try{ document.title=title; }catch(e){}
+      window.addEventListener('afterprint',fin);
+      document.addEventListener('visibilitychange',onv);
+      void document.body.offsetHeight;
+      try{ window.print(); }catch(e){}
+      setTimeout(fin,120000);
+    };
+    if(im.complete) go(); else { im.onload=go; im.onerror=go; setTimeout(go,4000); }
+    im.src=url;
+  }
+  function zwOpenImage(canvas){
+    try{
+      if(canvas.toBlob){
+        canvas.toBlob(function(b){
+          if(!b) return;
+          var u=URL.createObjectURL(b);
+          var w=window.open(u,'_blank');
+          if(!w){ location.href=u; }
+          setTimeout(function(){ try{URL.revokeObjectURL(u);}catch(e){} },120000);
+        },'image/png');
+        return;
+      }
+    }catch(e){}
+    try{ window.open(canvas.toDataURL('image/png'),'_blank'); }catch(e){}
   }
   function zwPreview(canvas, mode, title){
     var url=canvas.toDataURL('image/png');
@@ -17879,12 +17912,14 @@ function openAndScrollAcc(id){
     ov.innerHTML='<div class="zw-pv-bar">'
       +'<button type="button" class="zw-pv-b1">🖨 印刷・PDF保存</button>'
       +'<button type="button" class="zw-pv-b2">📷 画像を保存</button>'
+      +'<button type="button" class="zw-pv-b4">🔎 別のタブで開く</button>'
       +'<button type="button" class="zw-pv-b3">閉じる</button>'
-      +'<div class="zw-pv-note">用紙はA4'+(mode==='landscape'?'横':'縦')+'、余白は「なし」、「ヘッダーとフッター」はOFFがおすすめです</div></div>'
+      +'<div class="zw-pv-note">用紙はA4'+(mode==='landscape'?'横':'縦')+'、余白は「なし」、「ヘッダーとフッター」はOFFがおすすめです<br>うまく印刷できないときは「画像を保存」または「別のタブで開く」からお試しください</div></div>'
       +'<div class="zw-pv-bd"><img alt=""></div>';
     document.body.appendChild(ov);
-    ov.querySelector('img').src=url;
-    ov.querySelector('.zw-pv-b1').onclick=function(){ zwFrame(url,mode,title); };
+    ov.querySelector('.zw-pv-bd img').src=url;
+    ov.querySelector('.zw-pv-b1').onclick=function(){ zwPrintDoc(url,mode,title); };
+    ov.querySelector('.zw-pv-b4').onclick=function(){ zwOpenImage(canvas); };
     ov.querySelector('.zw-pv-b2').onclick=function(){
       try{ if(typeof _deliverMeibanImage==='function'){ _deliverMeibanImage(canvas,title); return; } }catch(e){}
       try{ var a=document.createElement('a'); a.href=url; a.download=title+'.png';
