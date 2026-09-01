@@ -1232,16 +1232,10 @@ section.active{display:block}
   #zw-print-root .zw-usum .g span{display:block;font-size:2.15mm;color:var(--zwi3);margin-top:.5mm;letter-spacing:.06em}
   #zw-print-root .zw-none{font-size:2.4mm;color:var(--zwi3);padding:1.5mm 0;line-height:1.7}
 
-/* 印刷時：ページ全体をA4画像1枚に差し替える */
-#zw-print-img{position:fixed;left:-20000px;top:0;width:0;height:0;z-index:-1;overflow:hidden}
 #zw-pv .zw-pv-b4{background:#fdfcff;color:#6B57A8;border:1.4px solid #C6B8EC}
 #zw-pv .zw-rec{outline:3px solid #f59e0b;outline-offset:2px}
 #zw-pv .zw-pv-hi{color:#96702F;font-weight:700}
 @media print{
-  html[data-zwprint] body>*{display:none!important}
-  html[data-zwprint] body>#zw-print-img{display:block!important;position:static!important;left:auto!important;top:auto!important;width:auto!important;height:auto!important;overflow:visible!important;z-index:auto!important;margin:0!important;padding:0!important}
-  html[data-zwprint] #zw-print-img img{display:block!important;width:auto!important;height:auto!important;max-width:100%!important;margin:0 auto!important;page-break-inside:avoid!important;break-inside:avoid!important;page-break-after:avoid!important}
-  html[data-zwprint],html[data-zwprint] body{margin:0!important;padding:0!important;background:#fff!important}
   #zw-pv{display:none!important}
   #zw-print-root{display:none!important}
 }
@@ -17862,39 +17856,46 @@ function openAndScrollAcc(id){
   /* ── 印刷は「A4の画像」を作ってから行う（端末やブラウザによる差をなくすため）── */
   /* 印刷：ページ全体を「A4の画像1枚」に差し替えてから印刷する
      （枠内印刷はiPhoneで効かないため、本体ページを使う） */
+  /* パソコン・Android：画像だけの専用画面を開き、その画面から印刷する */
   function zwPrintDoc(url, mode, title){
-    var h=document.getElementById('zw-print-img');
-    if(!h){ h=document.createElement('div'); h.id='zw-print-img'; document.body.appendChild(h); }
-    h.innerHTML='';
-    var im=document.createElement('img'); im.alt=''; h.appendChild(im);
-    var ps=document.getElementById('zw-page-style');
-    if(!ps){ ps=document.createElement('style'); ps.id='zw-page-style'; document.head.appendChild(ps); }
-    /* 用紙サイズと、はみ出さない最大寸法をミリで指定（1枚に収めるため） */
-    var mw=(mode==='landscape'?'295mm':'208mm'), mh=(mode==='landscape'?'207mm':'295mm');
-    ps.textContent='@page{size:A4 '+mode+';margin:0}'
-      +'@media print{html[data-zwprint] #zw-print-img img{max-width:'+mw+'!important;max-height:'+mh+'!important}}';
-    var prev=document.title, done=false;
-    var fin=function(){
-      if(done) return; done=true;
-      document.documentElement.removeAttribute('data-zwprint');
-      h.innerHTML=''; try{ document.title=prev; }catch(e){}
-      window.removeEventListener('afterprint',fin);
-    };
-    var started=false;
-    var go=function(){
-      if(started) return; started=true;
-      document.documentElement.setAttribute('data-zwprint','1');
-      try{ document.title=title; }catch(e){}
-      window.addEventListener('afterprint',fin);
-      void document.body.offsetHeight;
-      try{ window.print(); }catch(e){}
-      setTimeout(fin,120000);
-    };
-    /* 画像の読み込みが終わってから印刷する（先に印刷すると白紙になる） */
-    im.onload=go; im.onerror=go;
-    im.src=url;
-    if(im.complete && im.naturalWidth>0) go();
-    setTimeout(go,5000);
+    var w=null;
+    try{ w=window.open('','_blank'); }catch(e){ w=null; }
+    if(!w||!w.document){
+      alert('印刷画面を開けませんでした。ブラウザのポップアップを許可して、もう一度お試しください。');
+      return;
+    }
+    var land=(mode==='landscape');
+    var mw=land?'295mm':'208mm', mh=land?'207mm':'295mm';
+    var h='<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">'
+     +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+     +'<title>'+esc(title||'紫微斗数-命盤鑑定')+'</title><style>'
+     +'@page{size:A4 '+(land?'landscape':'portrait')+';margin:0}'
+     +'html,body{margin:0;padding:0;background:#fff}'
+     +'#zwimg{display:block;margin:0 auto;width:auto;height:auto;max-width:'+mw+';max-height:'+mh+';'
+     +'page-break-inside:avoid;break-inside:avoid;page-break-after:avoid}'
+     +'#zwbar{text-align:center;padding:12px;font-family:"Noto Sans JP",sans-serif}'
+     +'#zwbtn{padding:.7rem 1.4rem;border:none;border-radius:8px;cursor:pointer;'
+     +'background:linear-gradient(135deg,#b45309,#92400e);color:#fff;font-size:15px;font-weight:700}'
+     +'#zwmsg{margin:.6rem 0 0;font-size:12px;color:#7a6547;line-height:1.7}'
+     +'@media screen{body{background:#e9e3d9}'
+     +'#zwbar{position:sticky;top:0;background:#fffdf7;border-bottom:1px solid #e6dac4}'
+     +'#zwimg{max-width:calc(100% - 16px);max-height:none;margin:12px auto;'
+     +'box-shadow:0 4px 18px rgba(0,0,0,.3)}}'
+     +'@media print{#zwbar{display:none!important}}'
+     +'</style></head><body>'
+     +'<div id="zwbar"><button type="button" id="zwbtn">🖨 印刷する／PDF保存</button>'
+     +'<p id="zwmsg">自動で印刷画面が開かない場合は、このボタンを押してください</p></div>'
+     +'<img id="zwimg" alt="">'
+     +'<script>(function(){var done=false;'
+     +'function go(){if(done)return;done=true;try{window.focus();}catch(e){}try{window.print();}catch(e){}}'
+     +'var im=document.getElementById("zwimg");'
+     +'document.getElementById("zwbtn").onclick=function(){done=false;go();};'
+     +'im.onload=function(){requestAnimationFrame(function(){requestAnimationFrame(go);});};'
+     +'im.onerror=function(){};'
+     +'im.src='+JSON.stringify(url)+';})();'
+     +'<\/script></body></html>';
+    try{ w.document.open(); w.document.write(h); w.document.close(); }
+    catch(e){ alert('印刷画面を開けませんでした。ブラウザのポップアップを許可して、もう一度お試しください。'); }
   }
   /* iPhone・iPad は本体ページの印刷では差し替えが効かないため、画像だけの画面を開く */
   /* iPhone・iPad：A4に収めたページを新しい画面で開く（共有→プリントで1枚に印刷できる） */
