@@ -3254,6 +3254,7 @@ section.active{display:block}
       <button id="ai-copy-btn" onclick="copyAiPrompt()" style="flex:1;padding:.5rem;background:linear-gradient(135deg,var(--purple3),var(--purple2));color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer">📋 コピーする</button><button type="button" id="zw-help-copy" onclick="zwToggleHelp('copy')" aria-label="このプロンプトの説明" title="このプロンプトの説明" style="width:34px;flex:0 0 34px;padding:.5rem 0;background:#fff;color:var(--purple3);border:1.6px solid var(--purple3);border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;line-height:1">？</button>
       <button onclick="closeAiKanteiOverlay()" style="padding:.5rem 1rem;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:.82rem;cursor:pointer">閉じる</button>
     </div>
+  <style>@media (max-width:430px){#ai-copy-btn{flex:1 1 calc(100% - 42px)!important}}</style>
   <div id="zw-help-copy-box" style="display:none;margin-top:.6rem;padding:.65rem .75rem;background:#faf5eb;border-left:3px solid var(--purple3);border-radius:6px;font-size:.73rem;color:var(--text2);line-height:1.8"></div>
   <div style="display:flex;gap:.7rem;margin-top:.7rem;align-items:stretch">
     <button type="button" id="zw-ai-past-btn" onclick="zwCopyAiWithPast(this)" style="flex:1;padding:.55rem;background:#fff;color:var(--purple3);border:1.6px solid var(--purple3);border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;line-height:1.5">🕊 過去の私と照らし合わせて分析する</button>
