@@ -3251,9 +3251,17 @@ section.active{display:block}
     <div id="ai-person-info" style="font-size:.78rem;color:var(--text2);background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.2);border-radius:8px;padding:.6rem .8rem;margin-bottom:.8rem;line-height:1.7"></div>
     <textarea class="ai-kantei-textarea" id="ai-prompt-text" readonly></textarea>
     <div style="display:flex;gap:.7rem;margin-top:.8rem;flex-wrap:wrap">
-      <button id="ai-copy-btn" onclick="copyAiPrompt()" style="flex:1;padding:.5rem;background:linear-gradient(135deg,var(--purple3),var(--purple2));color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer">📋 コピーする</button>
+      <button id="ai-copy-btn" onclick="copyAiPrompt()" style="flex:1;padding:.5rem;background:linear-gradient(135deg,var(--purple3),var(--purple2));color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer">📋 コピーする</button><button type="button" id="zw-help-copy" onclick="zwToggleHelp('copy')" aria-label="このプロンプトの説明" title="このプロンプトの説明" style="width:34px;flex:0 0 34px;padding:.5rem 0;background:#fff;color:var(--purple3);border:1.6px solid var(--purple3);border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;line-height:1">？</button>
       <button onclick="closeAiKanteiOverlay()" style="padding:.5rem 1rem;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:.82rem;cursor:pointer">閉じる</button>
     </div>
+  <style>@media (max-width:430px){#ai-copy-btn{flex:1 1 calc(100% - 42px)!important}}</style>
+  <div id="zw-help-copy-box" style="display:none;margin-top:.6rem;padding:.65rem .75rem;background:#faf5eb;border-left:3px solid var(--purple3);border-radius:6px;font-size:.73rem;color:var(--text2);line-height:1.8"></div>
+  <div style="display:flex;gap:.7rem;margin-top:.7rem;align-items:stretch">
+    <button type="button" id="zw-ai-past-btn" onclick="zwCopyAiWithPast(this)" style="flex:1;padding:.55rem;background:#fff;color:var(--purple3);border:1.6px solid var(--purple3);border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;line-height:1.5">🕊 過去の私と照らし合わせて分析する</button>
+    <button type="button" id="zw-help-past" onclick="zwToggleHelp('past')" aria-label="この機能の説明" title="この機能の説明" style="width:34px;flex:0 0 34px;padding:.5rem 0;background:#fff;color:var(--purple3);border:1.6px solid var(--purple3);border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;line-height:1">？</button>
+  </div>
+  <div id="zw-help-past-box" style="display:none;margin-top:.6rem;padding:.65rem .75rem;background:#faf5eb;border-left:3px solid var(--purple3);border-radius:6px;font-size:.73rem;color:var(--text2);line-height:1.8"></div>
+  <p style="margin:.5rem 0 0;font-size:.72rem;color:var(--text2);line-height:1.65">ChatGPTに過去の会話がある方におすすめ。最近の自分の変化と紫微斗数の運気を照らし合わせて分析します。</p>
   </div>
 </div>
 
@@ -18249,6 +18257,102 @@ function openAndScrollAcc(id){
 })();
 </script>
 
+
+<script>
+/* ============================================================
+   追加：過去の会話と照らし合わせる AI鑑定プロンプト  2026-10-22 追加
+   ・既存の AI鑑定プロンプト生成（#ai-prompt-text）はそのまま使う
+   ・命盤計算・大限・流年・小限・流月・四化・運気スコアには一切触れない
+   ============================================================ */
+(function(){
+  var ZW_PAST = "追加分析｜これまでの私 × 紫微斗数\n\n上記の「紫微斗数 簡易AI鑑定」に加えて、このChatGPTで参照できる私との過去の会話・最近のチャット内容・記憶・時系列的な変化を使い、「実際の私の変化」と「紫微斗数の運気」を照らし合わせた追加分析をしてください。\n\nこの追加分析では、上記の紫微斗数データをそのまま使用してください。\n生年月日や最近の出来事などを、すでに確認できる場合は再入力を求めないでください。\n\n分析は必ず、\n① 過去の会話から自己分析\n→ ② 紫微斗数を独立して分析\n→ ③ 両者を照合\n→ ④ 時系列の流れを比較\n→ ⑤ これからの活用方法を提案\n→ ⑥ 総合分析\nの順番で行ってください。\n\n1．過去の会話だけから「今の私」を分析\n\nまず、この段階では上記の紫微斗数の結果に現実を合わせず、参照できる私との過去の会話・記憶・最近のチャット内容だけから分析してください。\n可能であれば直近3ヶ月程度まで遡り、\n\n* 最近よく話しているテーマ\n* 仕事・活動・学びの変化\n* 興味や関心の変化\n* 新しく始めたこと\n* やめたこと・減ったこと\n* 迷っていること\n* 同時進行していることの増減\n* 人間関係・家庭・生活についての変化\n* お金や将来について考えていること\n* 体調・睡眠・休息について実際に話していること\n* 感情や心理面について実際に話していること\n* 繰り返し登場している悩みやテーマ\n* 大きく方向性が変わった時期\n\nなどから、重要な変化を抽出してください。\n\n特に、\n「3ヶ月前 → 2ヶ月前 → 1ヶ月前 → 現在」\nという時間の流れの中で、\n「何が増えたか」\n「何が減ったか」\n「何に関心が移ったか」\n「どこで流れが変わったか」\nを分析してください。\n\n会話日時や時間帯、会話量など、実際に確認できる情報がある場合は補助材料として使用して構いません。\nただし、確認できない正確なChatGPTの利用時間・スクリーンタイム・利用頻度などを推測で数値化しないでください。\n\n過去の会話を十分に参照できない場合は、推測で過去の状態を作らず、\n「確認できる会話の範囲では」\nと明記してください。\n\n2．紫微斗数だけから現在の運気を分析\n\n次に、1で行った自己分析とは一度切り離して、上記に記載されている紫微斗数データだけから運気を分析してください。\n以下の順番を基本としてください。\n\n1. 現在の大限\n2. 今年の太歳・小限\n3. 先月の流月\n4. 今月の流月\n5. 来月の流月\n6. 主星・四化・運気スコア\n\n大限は「現在の人生に流れている長期的なテーマ」、\n太歳・小限は「今年意識されやすいテーマ」、\n流月は「その月ごとに表れやすいテーマ」\nとして読み解いてください。\n\n宮名は文字通りの意味だけに限定せず、紫微斗数で一般的に考えられる象意まで含めてください。\nたとえば、\n\n* 子女宮：子どもだけでなく、創作・作品・生み出すもの・育成など\n* 官禄宮：仕事だけでなく、社会的役割・キャリア・仕事のあり方など\n* 田宅宮：家だけでなく、生活基盤・居場所・所有・活動拠点など\n* 奴僕宮：友人だけでなく、仲間・顧客・協力者・コミュニティなど\n\nとして読むことができます。\n\n運気スコアだけで吉凶を判断せず、宮・星・四化などを含めて総合的に分析してください。\n\n3．「実際の私」と「紫微斗数」を照らし合わせる\n\nここで初めて、1の自己分析と2の紫微斗数分析を比較してください。\n重要なテーマについて、以下の4段階で示してください。\n\n◎ 強く重なる\n実際の変化と紫微斗数のテーマが明確に重なっている\n\n○ 一部重なる\n関連性は見られるものの、完全には一致していない\n\n△ 判断できない\n過去の会話や情報が不足しており判断できない\n\n↔ 異なる\n実際には、紫微斗数とは別のテーマの方が強く表れている\n\n一致させることを目的にしないでください。\nたとえば「今月が官禄宮だから、仕事が忙しくなっているはず」と推測してはいけません。\n実際の会話から仕事に関する活動が増えていることが確認できた場合にのみ、\n「実際の会話では○月頃から仕事に関する活動が増えています。一方、紫微斗数では同時期に官禄宮が流月となっているため、この部分は強く重なって見えます」\nというように、\n「現実側の根拠＋紫微斗数側の根拠」\nをセットで説明してください。\n\n本人が話していない出来事・感情・心理状態を作らないでください。\n\n4．3ヶ月の流れを時系列で比較\n\n実際の私の、\n「3ヶ月前 → 2ヶ月前 → 1ヶ月前 → 現在」\nという変化と、\n紫微斗数の、\n「先月 → 今月 → 来月」\nという流れを比較してください。\n\nテーマの移動が実際に確認できる場合は、流れとしてわかりやすく説明してください。\nまた、\n「実際の変化が紫微斗数の流月より少し早く現れている」\n「今のところ次月のテーマは現実には確認できない」\nなど、時期にズレがある場合もそのまま伝えてください。\n\n来月については未来なので、まだ起きていない出来事を事実として扱わないでください。\n\n5．これからの過ごし方\n\n現実の状態と紫微斗数の両方を踏まえて、\n「今、優先するとよいこと」\n「今は減らす・保留してもよいこと」\n「来月に向けて意識するとよいこと」\nを、それぞれ3〜5項目程度で具体的に提案してください。\n\n「運気が良い＝もっと行動する」とは限りません。\n実際の会話に、疲労・睡眠不足・体調不良・活動過多・強いストレスなどが確認できる場合は、それを無視して活動量を増やすよう勧めないでください。\n\n必要に応じて、\n「続ける」\n「深める」\n「整理する」\n「減らす」\n「休む」\n「保留する」\n「人に頼る」\n「環境を整える」\nなども、運気を活用する行動として提案してください。\n\n6．総合分析｜3ヶ月前の私から、今の私へ\n\n最後に、\n\n* 3ヶ月前と現在では何が変わったのか\n* その変化はいつ頃から始まったように見えるか\n* 今はどんな転換点にいるように見えるか\n* 紫微斗数では、その変化をどのように捉えられるか\n* 次の1ヶ月をどのように使うとよさそうか\n\nをまとめてください。\n\n実際の本人の行動・選択・努力を中心に置き、紫微斗数を「自分の現在地や変化を理解するための補助的な視点」として使用してください。\n\n分析上の重要ルール\n\n* 紫微斗数に合わせて過去の出来事を解釈し直さない\n* 「当たっている」という結論ありきで分析しない\n* 一致しない部分もそのまま伝える\n* 過去の会話にない事実を作らない\n* 情報が不足している場合は不足していると伝える\n* 本人の心理状態を決めつけない\n* 医学的・心理学的な診断を行わない\n* 紫微斗数が出来事の原因であるかのように表現しない\n* 未来を断定しない\n* 「〜しやすい」「〜がテーマになりやすい」「〜として活用するとよさそう」などの表現を使う\n* 専門用語には必要に応じて簡単な説明を加える\n\n過去の会話を十分に参照できない場合\n\n過去の会話を参照できない、または3ヶ月分の情報が不足している場合は、そのことを最初に伝えてください。\nその場合でも、紫微斗数データから過去の本人の状態を推測して作り上げないでください。\n確認できる範囲だけで分析し、必要であれば最後に、\n「より詳しく照らし合わせたい場合は、この1〜3ヶ月で印象に残っている出来事や変化を教えてください」\nと案内してください。";
+  function fallbackCopy(text){
+    var ta=document.createElement('textarea');
+    ta.value=text;
+    ta.setAttribute('readonly','');
+    ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;opacity:0;font-size:16px';
+    document.body.appendChild(ta);
+    var ok=false;
+    try{
+      ta.focus(); ta.select();
+      try{ ta.setSelectionRange(0, text.length); }catch(e){}
+      ok=document.execCommand('copy');
+    }catch(e){ ok=false; }
+    if(ta.parentNode) ta.parentNode.removeChild(ta);
+    return ok;
+  }
+  function flash(btn, msg){
+    if(!btn) return;
+    var prev=btn.textContent;
+    btn.textContent=msg;
+    setTimeout(function(){ btn.textContent=prev; }, 1800);
+  }
+  window.zwCopyAiWithPast=function(btn){
+    var ta=document.getElementById('ai-prompt-text');
+    var base=ta? String(ta.value||'').replace(/\s+$/,'') : '';
+    if(!base){ alert('AI鑑定プロンプトがまだ作られていません。先に命盤を作成してからお試しください。'); return; }
+    var text = base + '\n\n\n' + ZW_PAST;
+    var done=function(){ flash(btn, '\u2705 コピーしました'); };
+    var ng=function(){ if(!fallbackCopy(text)){ alert('コピーできませんでした。もう一度お試しください。'); } else { done(); } };
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done, ng);
+        return;
+      }
+    }catch(e){}
+    ng();
+  };
+
+  /* --- 追加UI：ボタン名の分かりやすい表示と「？」説明 --- */
+  var ZW_T = {"unseiLabel":"📋 今年の運気の鑑定プロンプトをコピー","meibanLabel":"📋 性格・才能の鑑定プロンプトをコピー","unseiHelp":"<b>今年の運気を読むためのお願い文です。</b><br>この中には、お名前・生年月日・命宮の主星などの基本情報に加えて、<b>今の大限（10年の流れ）</b>、<b>今年の小限・太歳（今年のテーマ）</b>、<b>運気スコア</b>が入っています。<br>コピーしてChatGPTなどに貼り付けると、「今年 どんな流れの中にいるのか」を文章で説明してもらえます。","meibanHelp":"<b>生まれ持った性質を読むためのお願い文です。</b><br>この中には、お名前・生年月日・五行局などの基本情報と、<b>命宮を中心とした三方四正（命宮・財帛宮・遷移宮・官禄宮）の星</b>が入っています。<br>コピーしてChatGPTなどに貼り付けると、「生まれ持った性格・才能・向いている分野」を文章で説明してもらえます。","pastHelp":"<b>上のプロンプトに、もうひとつお願いを足してコピーします。</b><br>ChatGPTがあなたとの過去の会話を覚えている場合、その内容と紫微斗数の運気を照らし合わせて、「この3ヶ月で実際に何が変わったか」「紫微斗数の流れと重なっているか」を分析してもらえます。<br>過去の会話がない場合は、AIが「確認できませんでした」と伝えたうえで、分かる範囲で鑑定します。<br><span style=\"color:#96702F\">※ はじめてお使いの方や、ChatGPT以外に貼る場合は、上のボタンだけで大丈夫です。</span>"};
+  function zwKind(){
+    var t=document.getElementById('ai-overlay-title');
+    var s=t? String(t.textContent||'') : '';
+    if(s.indexOf('運気')>=0) return 'unsei';
+    var ta=document.getElementById('ai-prompt-text');
+    if(ta && String(ta.value||'').indexOf('# 紫微斗数 簡易AI鑑定')===0) return 'unsei';
+    return 'meiban';
+  }
+  function zwApplyLabel(){
+    var b=document.getElementById('ai-copy-btn');
+    if(!b) return;
+    var cur=(b.textContent||'').trim();
+    if(cur.indexOf('コピーしました')>=0) return;   /* コピー直後の表示は邪魔しない */
+    var want=(zwKind()==='unsei')? ZW_T.unseiLabel : ZW_T.meibanLabel;
+    if(cur!==want) b.textContent=want;
+  }
+  window.zwToggleHelp=function(which){
+    var id=(which==='past')?'zw-help-past-box':'zw-help-copy-box';
+    var box=document.getElementById(id);
+    if(!box) return;
+    if(which!=='past'){ box.innerHTML=(zwKind()==='unsei')? ZW_T.unseiHelp : ZW_T.meibanHelp; }
+    else { box.innerHTML=ZW_T.pastHelp; }
+    var open=(box.style.display!=='none');
+    box.style.display= open? 'none' : 'block';
+    var btn=document.getElementById(which==='past'?'zw-help-past':'zw-help-copy');
+    if(btn){ btn.setAttribute('aria-expanded', open?'false':'true'); }
+  };
+  function zwHideHelp(){
+    ['zw-help-copy-box','zw-help-past-box'].forEach(function(id){
+      var b=document.getElementById(id); if(b) b.style.display='none';
+    });
+  }
+  function zwWatch(){
+    var ov=document.getElementById('ai-kantei-overlay');
+    var b=document.getElementById('ai-copy-btn');
+    if(!ov||!b||!window.MutationObserver) return;
+    try{
+      new MutationObserver(function(){ zwHideHelp(); setTimeout(zwApplyLabel,0); })
+        .observe(ov,{attributes:true,attributeFilter:['style','class']});
+      new MutationObserver(function(){ setTimeout(zwApplyLabel,0); })
+        .observe(b,{childList:true,characterData:true,subtree:true});
+    }catch(e){}
+    zwApplyLabel();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',zwWatch);
+  else zwWatch();
+})();
+</script>
 </body>
 </html>
   
