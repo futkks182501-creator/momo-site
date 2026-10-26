@@ -3251,13 +3251,16 @@ section.active{display:block}
     <div id="ai-person-info" style="font-size:.78rem;color:var(--text2);background:rgba(124,58,237,.07);border:1px solid rgba(124,58,237,.2);border-radius:8px;padding:.6rem .8rem;margin-bottom:.8rem;line-height:1.7"></div>
     <textarea class="ai-kantei-textarea" id="ai-prompt-text" readonly></textarea>
     <div style="display:flex;gap:.7rem;margin-top:.8rem;flex-wrap:wrap">
-      <button id="ai-copy-btn" onclick="copyAiPrompt()" style="flex:1;padding:.5rem;background:linear-gradient(135deg,var(--purple3),var(--purple2));color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer">📋 コピーする</button>
+      <button id="ai-copy-btn" onclick="copyAiPrompt()" style="flex:1;padding:.5rem;background:linear-gradient(135deg,var(--purple3),var(--purple2));color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer">📋 コピーする</button><button type="button" id="zw-help-copy" onclick="zwToggleHelp('copy')" aria-label="このプロンプトの説明" title="このプロンプトの説明" style="width:34px;flex:0 0 34px;padding:.5rem 0;background:#fff;color:var(--purple3);border:1.6px solid var(--purple3);border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;line-height:1">？</button>
       <button onclick="closeAiKanteiOverlay()" style="padding:.5rem 1rem;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:.82rem;cursor:pointer">閉じる</button>
     </div>
-  <div style="margin-top:.7rem">
-    <button type="button" id="zw-ai-past-btn" onclick="zwCopyAiWithPast(this)" style="width:100%;padding:.55rem;background:#fff;color:var(--purple3);border:1.6px solid var(--purple3);border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;line-height:1.5">🕊 過去の私と照らし合わせて分析する</button>
-    <p style="margin:.45rem 0 0;font-size:.72rem;color:var(--text2);line-height:1.65">ChatGPTに過去の会話がある方におすすめ。最近の自分の変化と紫微斗数の運気を照らし合わせて分析します。</p>
+  <div id="zw-help-copy-box" style="display:none;margin-top:.6rem;padding:.65rem .75rem;background:#faf5eb;border-left:3px solid var(--purple3);border-radius:6px;font-size:.73rem;color:var(--text2);line-height:1.8"></div>
+  <div style="display:flex;gap:.7rem;margin-top:.7rem;align-items:stretch">
+    <button type="button" id="zw-ai-past-btn" onclick="zwCopyAiWithPast(this)" style="flex:1;padding:.55rem;background:#fff;color:var(--purple3);border:1.6px solid var(--purple3);border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;line-height:1.5">🕊 過去の私と照らし合わせて分析する</button>
+    <button type="button" id="zw-help-past" onclick="zwToggleHelp('past')" aria-label="この機能の説明" title="この機能の説明" style="width:34px;flex:0 0 34px;padding:.5rem 0;background:#fff;color:var(--purple3);border:1.6px solid var(--purple3);border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;line-height:1">？</button>
   </div>
+  <div id="zw-help-past-box" style="display:none;margin-top:.6rem;padding:.65rem .75rem;background:#faf5eb;border-left:3px solid var(--purple3);border-radius:6px;font-size:.73rem;color:var(--text2);line-height:1.8"></div>
+  <p style="margin:.5rem 0 0;font-size:.72rem;color:var(--text2);line-height:1.65">ChatGPTに過去の会話がある方におすすめ。最近の自分の変化と紫微斗数の運気を照らし合わせて分析します。</p>
   </div>
 </div>
 
@@ -18298,6 +18301,55 @@ function openAndScrollAcc(id){
     }catch(e){}
     ng();
   };
+
+  /* --- 追加UI：ボタン名の分かりやすい表示と「？」説明 --- */
+  var ZW_T = {"unseiLabel":"📋 今年の運気の鑑定プロンプトをコピー","meibanLabel":"📋 性格・才能の鑑定プロンプトをコピー","unseiHelp":"<b>今年の運気を読むためのお願い文です。</b><br>この中には、お名前・生年月日・命宮の主星などの基本情報に加えて、<b>今の大限（10年の流れ）</b>、<b>今年の小限・太歳（今年のテーマ）</b>、<b>運気スコア</b>が入っています。<br>コピーしてChatGPTなどに貼り付けると、「今年 どんな流れの中にいるのか」を文章で説明してもらえます。","meibanHelp":"<b>生まれ持った性質を読むためのお願い文です。</b><br>この中には、お名前・生年月日・五行局などの基本情報と、<b>命宮を中心とした三方四正（命宮・財帛宮・遷移宮・官禄宮）の星</b>が入っています。<br>コピーしてChatGPTなどに貼り付けると、「生まれ持った性格・才能・向いている分野」を文章で説明してもらえます。","pastHelp":"<b>上のプロンプトに、もうひとつお願いを足してコピーします。</b><br>ChatGPTがあなたとの過去の会話を覚えている場合、その内容と紫微斗数の運気を照らし合わせて、「この3ヶ月で実際に何が変わったか」「紫微斗数の流れと重なっているか」を分析してもらえます。<br>過去の会話がない場合は、AIが「確認できませんでした」と伝えたうえで、分かる範囲で鑑定します。<br><span style=\"color:#96702F\">※ はじめてお使いの方や、ChatGPT以外に貼る場合は、上のボタンだけで大丈夫です。</span>"};
+  function zwKind(){
+    var t=document.getElementById('ai-overlay-title');
+    var s=t? String(t.textContent||'') : '';
+    if(s.indexOf('運気')>=0) return 'unsei';
+    var ta=document.getElementById('ai-prompt-text');
+    if(ta && String(ta.value||'').indexOf('# 紫微斗数 簡易AI鑑定')===0) return 'unsei';
+    return 'meiban';
+  }
+  function zwApplyLabel(){
+    var b=document.getElementById('ai-copy-btn');
+    if(!b) return;
+    var cur=(b.textContent||'').trim();
+    if(cur.indexOf('コピーしました')>=0) return;   /* コピー直後の表示は邪魔しない */
+    var want=(zwKind()==='unsei')? ZW_T.unseiLabel : ZW_T.meibanLabel;
+    if(cur!==want) b.textContent=want;
+  }
+  window.zwToggleHelp=function(which){
+    var id=(which==='past')?'zw-help-past-box':'zw-help-copy-box';
+    var box=document.getElementById(id);
+    if(!box) return;
+    if(which!=='past'){ box.innerHTML=(zwKind()==='unsei')? ZW_T.unseiHelp : ZW_T.meibanHelp; }
+    else { box.innerHTML=ZW_T.pastHelp; }
+    var open=(box.style.display!=='none');
+    box.style.display= open? 'none' : 'block';
+    var btn=document.getElementById(which==='past'?'zw-help-past':'zw-help-copy');
+    if(btn){ btn.setAttribute('aria-expanded', open?'false':'true'); }
+  };
+  function zwHideHelp(){
+    ['zw-help-copy-box','zw-help-past-box'].forEach(function(id){
+      var b=document.getElementById(id); if(b) b.style.display='none';
+    });
+  }
+  function zwWatch(){
+    var ov=document.getElementById('ai-kantei-overlay');
+    var b=document.getElementById('ai-copy-btn');
+    if(!ov||!b||!window.MutationObserver) return;
+    try{
+      new MutationObserver(function(){ zwHideHelp(); setTimeout(zwApplyLabel,0); })
+        .observe(ov,{attributes:true,attributeFilter:['style','class']});
+      new MutationObserver(function(){ setTimeout(zwApplyLabel,0); })
+        .observe(b,{childList:true,characterData:true,subtree:true});
+    }catch(e){}
+    zwApplyLabel();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',zwWatch);
+  else zwWatch();
 })();
 </script>
 </body>
