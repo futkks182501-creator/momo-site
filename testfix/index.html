@@ -18472,6 +18472,9 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 var qs=new URLSearchParams(location.search);
 if(qs.get("classic")==="1") return;
 if(qs.get("simple")!=="1") return;
+if(document.readyState!=="complete"){window.addEventListener("load",boot);}else{boot();}
+return;
+function boot(){
 var SH=[["子時","23-01",0],["丑時","01-03",2],["寅時","03-05",4],["卯時","05-07",6],["辰時","07-09",8],["巳時","09-11",10],["午時","11-13",12],["未時","13-15",14],["申時","15-17",16],["酉時","17-19",18],["戌時","19-21",20],["亥時","21-23",22]];
 function el(t,a,h){var e=document.createElement(t);if(a)for(var k in a)e.setAttribute(k,a[k]);if(h!=null)e.innerHTML=h;return e;}
 var bgs=el("div",{id:"zw3-bgs"},'<div id="zw3-bg1"></div><div id="zw3-bg2"></div><div id="zw3-veil"></div>');
@@ -18626,6 +18629,7 @@ function sync(){var h=document.getElementById("home");if(!h)return;if(h.classLis
 var secs=document.querySelectorAll("section");
 for(var i=0;i<secs.length;i++){new MutationObserver(function(){sync();}).observe(secs[i],{attributes:true,attributeFilter:["class"]});}
 zw3On();sync();
+}
 })();
 </script>
 </body>
