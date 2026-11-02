@@ -18361,7 +18361,7 @@ var PAST_LABEL="🕊 過去の私と照らし合わせて分析する";
 var PAST_HELP="いま表示しているプロンプトに、過去の会話をふまえて分析してほしいという指示をまとめてコピーします。ChatGPTなどで前にお話しした内容が残っている方におすすめです。はじめての方は、先に左のコピーボタンをお試しください。";
 var NOTE="ChatGPTに過去の会話がある方におすすめ。最近の自分の変化と紫微斗数の運気を照らし合わせて分析します。";
 var CFG=[
-{sec:"free-ai-section",btn:"free-ai-copy-btn",label:"📋 性格・才能のかんたん鑑定プロンプトをコピー",help:"あなたの命盤から、性格や才能の傾向を読み解くための文章を作ってコピーします。ChatGPTなどに貼り付けて送ると、その内容で鑑定してもらえます。",get:function(){var t=document.getElementById("free-ai-textarea");return t?String(t.value||t.textContent||""):"";}},
+{sec:"free-ai-section",btn:"free-ai-copy-btn",label:"📋 性格・才能のかんたん鑑定プロンプトをコピー",help:"あなたの命盤から、性格や才能の傾向を読み解くための文章を作ってコピーします。ChatGPTなどに貼り付けて送ると、その内容で鑑定してもらえます。",get:function(){var b=document.getElementById("free-ai-body");if(b&&b.textContent&&b.textContent.trim())return b.textContent;var t=document.getElementById("free-ai-textarea");return t?String(t.value||t.textContent||""):"";}},
 {sec:"free-unsei-ai-section",btn:"free-unsei-copy-btn",label:"📋 今月の運気の鑑定プロンプトをコピー",help:"今月の運気を読み解くための文章を作ってコピーします。ChatGPTなどに貼り付けて送ると、今月のラッキーカラーやアンラッキーワードを占ってもらえます。",get:function(){var b=document.getElementById("free-unsei-ai-body");return String(window._freeUnseiPrompt||(b?b.textContent:"")||"");}}
 ];
 var BOXCSS="display:none;margin-top:.5rem;padding:.6rem .8rem;background:#faf5eb;border-left:3px solid var(--purple3);border-radius:6px;font-size:.82rem;line-height:1.7;color:#4a3b52";
