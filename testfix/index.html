@@ -18606,8 +18606,9 @@ wrap.appendChild(more);
 var ON=true;
 function zw3On(){ON=true;document.body.classList.add("zw3");}
 function zw3Off(){ON=false;document.body.classList.remove("zw3");document.body.classList.remove("zw3-dark");}
+function zw3Sus(){document.body.classList.remove("zw3");document.body.classList.remove("zw3-dark");}
 window.zw3Off=zw3Off;window.zw3On=zw3On;
-function go(sec){zw3Off();if(typeof showSection==="function")showSection(sec);}
+function go(sec){zw3Sus();if(typeof showSection==="function")showSection(sec);}
 function zw3Generate(){
   var n=document.getElementById("inp-name");if(n)n.value=inName.value;
   var y=document.getElementById("inp-y"),m=document.getElementById("inp-m"),d=document.getElementById("inp-d");
@@ -18621,7 +18622,7 @@ function zw3Generate(){
   var hh=parseInt((inTime.value||"12:00").split(":")[0],10);
   if(typeof syncShichenFromHour==="function"){try{syncShichenFromHour(hh);}catch(e){}}
   var rr=document.getElementById("inp-rungetsu");if(rr){rr.checked=ck.checked;rr.dispatchEvent(new Event("change",{bubbles:true}));}
-  zw3Off();
+  zw3Sus();
   if(typeof showSection==="function")showSection("calc");
   setTimeout(function(){ if(typeof calculate==="function"){try{calculate();}catch(e){}} },120);
 }
