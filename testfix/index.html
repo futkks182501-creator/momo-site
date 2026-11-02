@@ -1263,78 +1263,120 @@ section.active{display:block}
 <style id="zw3-css">
 body.zw3 nav{display:none!important}
 body.zw3 #home{display:none!important}
+body.zw3.zw3-own section.active{display:none!important}
 #zw3-top{display:none}
 body.zw3 #zw3-top{display:block}
 #zw3-top,#zw3-top *{box-sizing:border-box;font-family:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif}
+#zw3-top{--ink:#43352a;--ink2:#6d5c4c;--gold:#b08a46;--gold2:#8a6a2f;--momo:#c9637f;--line:rgba(176,138,70,.40);--card:rgba(255,252,246,.80);--cardB:rgba(255,250,241,.90);position:relative;z-index:1;min-height:100vh;color:#43352a;line-height:1.95}
 #zw3-bgs{position:fixed;inset:0;z-index:0;display:none}
 body.zw3 #zw3-bgs{display:block}
-#zw3-bg1,#zw3-bg2{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity .6s}
-#zw3-bg1{background-image:url("zw3-bg-pink.jpg"),linear-gradient(160deg,#e9d6c6,#cdb9a6 45%,#9fae9a);opacity:1}
-#zw3-bg2{background-image:url("zw3-bg-brown.jpg"),linear-gradient(160deg,#4a3528,#3a3326 55%,#2e3a2c);opacity:0}
-#zw3-veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(62,48,34,.30),rgba(62,48,34,.46));transition:background .6s}
+#zw3-bg1,#zw3-bg2{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity .7s ease}
+#zw3-bg1{background-image:url("zw3-bg-pink.jpg");opacity:1}
+#zw3-bg2{background-image:url("zw3-bg-brown.jpg");opacity:0}
+#zw3-veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,250,243,.42),rgba(246,236,224,.52));transition:background .7s}
 body.zw3.zw3-dark #zw3-bg1{opacity:0}body.zw3.zw3-dark #zw3-bg2{opacity:1}
-body.zw3.zw3-dark #zw3-veil{background:linear-gradient(180deg,rgba(26,18,12,.55),rgba(26,18,12,.66))}
-#zw3-top{position:relative;z-index:1;min-height:100vh;color:#f3ead9}
-#zw3-hd{position:sticky;top:0;z-index:30;background:rgba(40,30,22,.80);backdrop-filter:blur(9px);border-bottom:1px solid rgba(201,166,106,.38)}
-#zw3-hd .in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:4px;padding:9px 12px}
-#zw3-logo{font-size:1rem;letter-spacing:.18em;color:#e6cf9a;white-space:nowrap;margin-right:6px}
+body.zw3.zw3-dark #zw3-veil{background:linear-gradient(180deg,rgba(28,19,13,.56),rgba(28,19,13,.68))}
+body.zw3.zw3-dark #zw3-top{color:#f2e6d4}
+#zw3-hd{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,rgba(255,251,245,.90),rgba(255,251,245,.78));backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+body.zw3-dark #zw3-hd{background:linear-gradient(180deg,rgba(36,25,17,.92),rgba(36,25,17,.80));border-bottom-color:rgba(214,178,120,.34)}
+#zw3-hd .in{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:2px;padding:10px 14px}
+#zw3-logo{font-size:.98rem;letter-spacing:.3em;color:var(--gold2);white-space:nowrap;margin-right:12px}
+body.zw3-dark #zw3-logo{color:#e8cf9d}
 #zw3-hd .sp{flex:1}
-.zw3-nb{font:inherit;font-size:.86rem;color:#f0e4ce;background:transparent;border:0;cursor:pointer;padding:10px 11px;border-radius:9px;white-space:nowrap;min-height:44px}
-.zw3-nb:hover{background:rgba(201,166,106,.16)}
-.zw3-nb.cta{background:linear-gradient(135deg,#b4794f,#8d5e3c);color:#fff9ee;border:1px solid rgba(230,207,154,.5)}
-.zw3-nb.ic{font-size:1.1rem;padding:10px 12px}
-#zw3-hd .grp{display:flex;align-items:center;gap:2px}
+.zw3-nb{font:inherit;font-size:.86rem;color:#43352a;background:transparent;border:0;cursor:pointer;padding:10px 12px;border-radius:8px;white-space:nowrap;min-height:44px}
+body.zw3-dark .zw3-nb{color:#eeddc6}
+.zw3-nb:hover{color:var(--gold2)}
+.zw3-nb.cta{color:#fffaf2;background:linear-gradient(135deg,#c9637f,#9c4a6e);border:1px solid rgba(255,255,255,.35);box-shadow:0 4px 14px rgba(156,74,110,.28)}
+.zw3-nb.ic{font-size:1.12rem}
+#zw3-hd .grp{display:flex;align-items:center}
 @media(max-width:900px){#zw3-hd .grp.pc{display:none}}
-.zw3-pop{position:absolute;top:100%;right:0;min-width:min(660px,94vw);background:rgba(38,28,20,.97);border:1px solid rgba(201,166,106,.4);border-radius:14px;padding:16px;display:none;box-shadow:0 18px 44px rgba(0,0,0,.45)}
-.zw3-pop.on{display:block}
-.zw3-pop .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-@media(max-width:700px){.zw3-pop .cols{grid-template-columns:1fr}}
-.zw3-pop h5{margin:0 0 7px;font-size:.76rem;letter-spacing:.14em;color:#e6cf9a;font-weight:600;border-bottom:1px solid rgba(201,166,106,.3);padding-bottom:5px}
-.zw3-pop button{display:block;width:100%;text-align:left;font:inherit;font-size:.88rem;color:#f0e4ce;background:transparent;border:0;cursor:pointer;padding:10px 8px;border-radius:8px;min-height:42px}
-.zw3-pop button:hover{background:rgba(201,166,106,.16)}
-.zw3-pop .lock{font-size:.66rem;color:#c9a66a;margin-left:6px}
 .zw3-wrapp{position:relative}
+.zw3-pop{position:absolute;top:calc(100% + 6px);right:0;min-width:min(640px,92vw);background:rgba(255,252,246,.985);border:1px solid var(--line);border-radius:14px;padding:18px;display:none;box-shadow:0 20px 48px rgba(80,55,30,.26);z-index:5}
+.zw3-pop.on{display:block}
+.zw3-pop .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:700px){.zw3-pop .cols{grid-template-columns:1fr}}
+.zw3-pop h5{margin:0 0 8px;font-size:.74rem;letter-spacing:.16em;color:var(--gold2);font-weight:600;border-bottom:1px solid var(--line);padding-bottom:6px}
+.zw3-pop button{display:block;width:100%;text-align:left;font:inherit;font-size:.88rem;color:#43352a;background:transparent;border:0;cursor:pointer;padding:9px 8px;border-radius:7px;min-height:40px}
+.zw3-pop button:hover{background:rgba(176,138,70,.12)}
+.zw3-pop .lock{font-size:.64rem;color:var(--gold2);margin-left:6px}
 #zw3-dr{position:fixed;inset:0;z-index:40;display:none}
 #zw3-dr.on{display:block}
-#zw3-dr .sc{position:absolute;inset:0;background:rgba(0,0,0,.5)}
-#zw3-dr .pn{position:absolute;top:0;right:0;bottom:0;width:min(320px,86vw);background:rgba(34,25,18,.98);border-left:1px solid rgba(201,166,106,.4);padding:16px;overflow:auto}
-#zw3-dr .pn h5{margin:14px 0 6px;font-size:.72rem;letter-spacing:.14em;color:#e6cf9a;border-bottom:1px solid rgba(201,166,106,.26);padding-bottom:5px}
-#zw3-dr .pn button,#zw3-dr .pn a{display:block;width:100%;text-align:left;font:inherit;font-size:.9rem;color:#f0e4ce;background:transparent;border:0;cursor:pointer;padding:12px 8px;border-radius:8px;text-decoration:none;min-height:46px}
-#zw3-dr .pn .staff{border-top:1px solid rgba(201,166,106,.26);margin-top:16px;padding-top:6px}
-#zw3-dr .pn .staff button{color:#d8c49b;font-size:.84rem}
-#zw3-top .wrap{max-width:760px;margin:0 auto;padding:26px 16px 80px}
-#zw3-top .hero{text-align:center;padding:26px 6px 10px}
-#zw3-top .hero .mk{font-size:.68rem;letter-spacing:.44em;color:#e6cf9a;margin-bottom:12px}
-#zw3-top .hero h1{font-size:1.5rem;margin:0 0 12px;letter-spacing:.1em;font-weight:600;color:#fdf4e2}
-#zw3-top .hero p{margin:0 auto;max-width:31em;font-size:.9rem;line-height:2;color:#e3d6c0;text-align:left}
-#zw3-top .card{background:rgba(32,24,17,.60);border:1px solid rgba(201,166,106,.34);border-radius:16px;padding:20px 17px;backdrop-filter:blur(5px);box-shadow:0 10px 30px rgba(0,0,0,.26)}
+#zw3-dr .sc{position:absolute;inset:0;background:rgba(40,26,16,.42)}
+#zw3-dr .pn{position:absolute;top:0;right:0;bottom:0;width:min(320px,86vw);background:rgba(255,252,246,.985);border-left:1px solid var(--line);padding:16px;overflow:auto}
+#zw3-dr h5{margin:16px 0 6px;font-size:.72rem;letter-spacing:.16em;color:var(--gold2);border-bottom:1px solid var(--line);padding-bottom:6px}
+#zw3-dr .pn button,#zw3-dr .pn a{display:block;width:100%;text-align:left;font:inherit;font-size:.9rem;color:#43352a;background:transparent;border:0;cursor:pointer;padding:12px 8px;border-radius:8px;text-decoration:none;min-height:46px}
+#zw3-dr .staff{border-top:1px solid var(--line);margin-top:18px;padding-top:4px}
+#zw3-dr .staff button{color:var(--ink2);font-size:.83rem}
+#zw3-top .wrap{max-width:720px;margin:0 auto;padding:26px 16px 96px}
+#zw3-top .hero{text-align:center;padding:34px 6px 14px}
+#zw3-top .hero .mk{font-size:.66rem;letter-spacing:.5em;color:var(--gold2);margin-bottom:14px}
+body.zw3-dark #zw3-top .hero .mk{color:#e8cf9d}
+#zw3-top .hero h1{font-size:1.56rem;margin:0 0 14px;letter-spacing:.14em;font-weight:600}
+#zw3-top .hero p{margin:0 auto;max-width:30em;font-size:.88rem;color:var(--ink2);text-align:left}
+#zw3-top .rule{width:62px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:18px auto 0}
+#zw3-top .steps{display:flex;justify-content:center;margin:20px 0 22px;font-size:.73rem;color:var(--ink2)}
+#zw3-top .steps div{display:flex;align-items:center;gap:7px;padding:0 10px}
+#zw3-top .steps i{width:21px;height:21px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-style:normal;font-size:.69rem;background:rgba(255,255,255,.7)}
+#zw3-top .steps div.on i{background:var(--gold);border-color:var(--gold);color:#fff}
+#zw3-top .steps div.on{color:var(--gold2);font-weight:600}
+body.zw3-dark #zw3-top .steps{color:#cdb9a3}
+body.zw3-dark #zw3-top .steps i{background:rgba(255,255,255,.1);border-color:rgba(214,178,120,.4)}
+body.zw3-dark #zw3-top .steps div.on{color:#e8cf9d}
+#zw3-top .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 19px;box-shadow:0 10px 30px rgba(110,75,40,.14);backdrop-filter:blur(4px)}
+body.zw3-dark #zw3-top .card{background:rgba(42,28,18,.60);border-color:rgba(214,178,120,.30);box-shadow:0 12px 34px rgba(0,0,0,.3)}
 #zw3-top .card+.card,#zw3-top details{margin-top:14px}
-#zw3-top .ct{font-size:1rem;font-weight:600;letter-spacing:.06em;margin:0 0 16px;text-align:center;color:#f3dfb6}
-#zw3-top label{display:block;font-size:.8rem;color:#ddcdb4;margin:0 0 6px}
+#zw3-top .ct{font-size:1rem;font-weight:600;letter-spacing:.08em;margin:0 0 18px;text-align:center;color:var(--gold2)}
+body.zw3-dark #zw3-top .ct{color:#f0d9ab}
+#zw3-top label{display:block;font-size:.79rem;color:var(--ink2);margin:0 0 6px}
 #zw3-top .row{display:flex;gap:8px;margin-bottom:15px;align-items:center}
 #zw3-top .row.ymd select{flex:1;min-width:0}
-#zw3-top select,#zw3-top input[type=text],#zw3-top input[type=time]{font:inherit;font-size:1rem;padding:12px 10px;border:1px solid rgba(201,166,106,.42);border-radius:10px;background:rgba(255,250,240,.93);color:#3b2d21;width:100%;min-height:48px}
-#zw3-top .unit{font-size:.84rem;color:#ddcdb4;flex:0 0 auto}
+#zw3-top select,#zw3-top input[type=text],#zw3-top input[type=time]{font:inherit;font-size:1rem;padding:12px 10px;border:1px solid var(--line);border-radius:10px;background:#fffdf8;color:#43352a;width:100%;min-height:48px}
+#zw3-top .unit{font-size:.84rem;color:var(--ink2);flex:0 0 auto}
 #zw3-top .sh{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}
 @media(min-width:700px){#zw3-top .sh{grid-template-columns:repeat(6,1fr)}}
-#zw3-top .sh button{font:inherit;cursor:pointer;padding:8px 2px;border-radius:10px;border:1px solid rgba(201,166,106,.42);background:rgba(255,250,240,.90);color:#3b2d21;min-height:52px;line-height:1.3}
+#zw3-top .sh button{font:inherit;cursor:pointer;padding:8px 2px;border-radius:10px;border:1px solid var(--line);background:#fffdf8;color:#43352a;min-height:52px;line-height:1.3}
 #zw3-top .sh button b{display:block;font-size:.94rem}
-#zw3-top .sh button span{display:block;font-size:.63rem;color:#6b5a46}
-#zw3-top .sh button.sel{background:linear-gradient(135deg,#b4794f,#8d5e3c);border-color:#e6cf9a;color:#fff8ea}
-#zw3-top .sh button.sel span{color:rgba(255,248,234,.84)}
+#zw3-top .sh button span{display:block;font-size:.63rem;color:var(--ink2)}
+#zw3-top .sh button.sel{background:linear-gradient(135deg,#c9637f,#9c4a6e);border-color:transparent;color:#fffaf2}
+#zw3-top .sh button.sel span{color:rgba(255,250,242,.86)}
 #zw3-top .ortime{display:flex;align-items:center;gap:9px;margin-bottom:14px}
-#zw3-top .ortime span{font-size:.8rem;color:#ddcdb4;flex:0 0 auto}
-#zw3-top .chk{display:flex;gap:9px;font-size:.86rem;margin-bottom:9px;align-items:flex-start}
+#zw3-top .ortime span{font-size:.8rem;color:var(--ink2);flex:0 0 auto}
+#zw3-top .chk{display:flex;gap:9px;font-size:.85rem;margin-bottom:9px;align-items:flex-start}
 #zw3-top .chk input{width:20px;height:20px;min-height:0;margin-top:4px}
-#zw3-top .hint{font-size:.72rem;line-height:1.75;color:#e0d1b8;background:rgba(201,166,106,.12);border:1px solid rgba(201,166,106,.3);border-radius:10px;padding:9px 11px;margin:0 0 16px}
-#zw3-top .big{display:block;width:100%;min-height:58px;border:1px solid rgba(230,207,154,.55);border-radius:999px;cursor:pointer;font:inherit;font-size:1.05rem;font-weight:600;letter-spacing:.08em;color:#fff8ea;background:linear-gradient(135deg,#b4794f,#8d5e3c);box-shadow:0 8px 20px rgba(0,0,0,.3)}
+#zw3-top .hint{font-size:.71rem;line-height:1.8;color:var(--ink2);background:rgba(176,138,70,.09);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 18px}
+#zw3-top .big{display:block;width:100%;min-height:58px;border:1px solid rgba(255,255,255,.4);border-radius:999px;cursor:pointer;font:inherit;font-size:1.04rem;font-weight:600;letter-spacing:.1em;color:#fffaf2;background:linear-gradient(135deg,#c9637f,#9c4a6e);box-shadow:0 10px 24px rgba(156,74,110,.3)}
 #zw3-top .big:active{transform:translateY(1px)}
-#zw3-top .note{font-size:.72rem;color:#cdbda4;text-align:center;margin-top:14px;line-height:1.8}
-#zw3-top details{border:1px solid rgba(201,166,106,.32);border-radius:14px;background:rgba(32,24,17,.52);overflow:hidden}
-#zw3-top summary{cursor:pointer;list-style:none;padding:16px 18px;font-size:.95rem;font-weight:600;color:#f3dfb6}
+#zw3-top .note{font-size:.71rem;color:var(--ink2);text-align:center;margin-top:16px;line-height:1.85}
+body.zw3-dark #zw3-top .note{color:#c6b29d}
+#zw3-top details{border:1px solid var(--line);border-radius:16px;background:rgba(255,252,246,.66);overflow:hidden}
+#zw3-top summary{cursor:pointer;list-style:none;padding:17px 19px;font-size:.94rem;font-weight:600;color:var(--gold2)}
 #zw3-top summary::-webkit-details-marker{display:none}
-#zw3-top .db{padding:0 18px 18px;font-size:.88rem;line-height:2;color:#e6dac6}
+#zw3-top .db{padding:0 19px 19px;font-size:.87rem;line-height:2.05}
 #zw3-top .db p{margin:0 0 14px}
+#zw3-top .know{display:grid;gap:10px}
+@media(min-width:640px){#zw3-top .know{grid-template-columns:1fr 1fr}}
+#zw3-top .know div{display:flex;gap:11px;align-items:flex-start;background:rgba(255,252,246,.8);border:1px solid var(--line);border-radius:12px;padding:12px 13px}
+#zw3-top .pbtn{display:flex;align-items:center;gap:15px;width:100%;text-align:left;cursor:pointer;font:inherit;padding:21px 19px;margin:0 0 13px;border-radius:18px;border:1px solid var(--line);background:var(--cardB);box-shadow:0 10px 26px rgba(110,75,40,.14);position:relative;color:#43352a}
+#zw3-top .pbtn .ic{font-size:1.85rem;line-height:1;flex:0 0 auto}
+#zw3-top .pbtn .tx{flex:1;min-width:0}
+#zw3-top .pbtn .nm{font-size:1.2rem;font-weight:600;letter-spacing:.09em;display:block}
+#zw3-top .pbtn .sb{font-size:.8rem;color:var(--ink2);margin-top:3px;display:block}
+#zw3-top .pbtn .go{font-size:.73rem;color:var(--gold2);white-space:nowrap}
+#zw3-top .pbtn.done{border-color:rgba(176,138,70,.7)}
+#zw3-top .pbtn.done:after{content:"読了";position:absolute;top:11px;right:13px;font-size:.64rem;color:#fff;background:var(--gold);padding:2px 9px;border-radius:999px;letter-spacing:.08em}
+#zw3-top .prog{text-align:center;font-size:.79rem;color:var(--ink2);margin:0 0 18px}
+#zw3-top .disc{display:block;width:100%;cursor:pointer;font:inherit;font-size:.93rem;padding:16px;border-radius:14px;border:1px dashed var(--line);background:rgba(255,252,246,.6);color:#43352a;margin-top:2px}
+#zw3-mb{display:none;margin-top:12px}
+#zw3-mb .palace{font-size:.62rem}
+#zw3-top .rt{text-align:center}
+#zw3-top .rt .ic{font-size:2.15rem}
+#zw3-top .rt .nm{font-size:1.42rem;font-weight:600;letter-spacing:.12em;margin-top:6px;color:#f7e4c2}
+#zw3-top .rt .sb{font-size:.82rem;color:#d7c3ac;margin-top:2px}
+#zw3-top .nav2{display:flex;gap:10px;margin-top:22px}
+#zw3-top .nav2 button{flex:1;font:inherit;font-size:.9rem;padding:15px 8px;border-radius:999px;cursor:pointer;min-height:50px;border:1px solid rgba(214,178,120,.45);background:rgba(255,255,255,.09);color:#f2e6d4}
+#zw3-top .nav2 button.pri{background:linear-gradient(135deg,#c9637f,#9c4a6e);border:0;color:#fffaf2;font-weight:600}
+#zw3-rdbox{margin-top:4px}
+@media(min-width:720px){#zw3-top .hero h1{font-size:2rem}#zw3-top .pbtn .nm{font-size:1.3rem}}
 </style>
 </head>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -18476,160 +18518,213 @@ if(document.readyState!=="complete"){window.addEventListener("load",boot);}else{
 return;
 function boot(){
 var SH=[["子時","23-01",0],["丑時","01-03",2],["寅時","03-05",4],["卯時","05-07",6],["辰時","07-09",8],["巳時","09-11",10],["午時","11-13",12],["未時","13-15",14],["申時","15-17",16],["酉時","17-19",18],["戌時","19-21",20],["亥時","21-23",22]];
+var FREE=[{n:"命宮",ic:"\uD83C\uDF19",sub:"あなたの本質",lead:"この人生で、あなたが何者であるか"},{n:"夫妻宮",ic:"\uD83D\uDC97",sub:"恋愛・結婚",lead:"どんな人と縁が深いのか"},{n:"官禄宮",ic:"\uD83D\uDD25",sub:"仕事・才能",lead:"社会のなかで、どう輝くか"}];
 function el(t,a,h){var e=document.createElement(t);if(a)for(var k in a)e.setAttribute(k,a[k]);if(h!=null)e.innerHTML=h;return e;}
-var bgs=el("div",{id:"zw3-bgs"},'<div id="zw3-bg1"></div><div id="zw3-bg2"></div><div id="zw3-veil"></div>');
-document.body.appendChild(bgs);
-var topEl=el("div",{id:"zw3-top"});document.body.appendChild(topEl);
-var hd=el("header",{id:"zw3-hd"});
-var inr=el("div",{"class":"in"});
-inr.appendChild(el("div",{id:"zw3-logo"},"紫 微 斗 数"));
-var g=el("div",{"class":"grp pc"});
-function nb(label,fn,cls){var b=el("button",{type:"button","class":"zw3-nb"+(cls?" "+cls:"")},label);b.onclick=fn;return b;}
-function col(title,items){var c=el("div");c.appendChild(el("h5",null,title));items.forEach(function(it){var b=el("button",{type:"button"},it[0]+(it[2]?' <span class="lock">鑑定士・管理人のみ</span>':""));b.onclick=function(){closePops();it[1]();};c.appendChild(b);});return c;}
-function togglePop(id){var p=document.getElementById(id);var was=p.classList.contains("on");closePops();if(!was)p.classList.add("on");}
+function nb(l,fn,cls){var b=el("button",{type:"button","class":"zw3-nb"+(cls?" "+cls:"")},l);b.onclick=fn;return b;}
+function col(t,items){var c=el("div");c.appendChild(el("h5",null,t));items.forEach(function(it){var b=el("button",{type:"button"},it[0]+(it[2]?' <span class="lock">鑑定士・管理人のみ</span>':""));b.onclick=function(){closePops();it[1]();};c.appendChild(b);});return c;}
 function closePops(){var a=document.querySelectorAll(".zw3-pop");for(var i=0;i<a.length;i++)a[i].classList.remove("on");}
-g.appendChild(nb("ホーム",function(){go("home");}));
-g.appendChild(nb("命盤を作る",function(){var f=document.getElementById("zw3-form");if(f)f.scrollIntoView({behavior:"smooth",block:"start"});},"cta"));
-var wp=el("div",{"class":"zw3-wrapp"});
-wp.appendChild(nb("星を知る \u25BE",function(){togglePop("zw3-pop-star");}));
-var pop=el("div",{id:"zw3-pop-star","class":"zw3-pop"});
-var cols=el("div",{"class":"cols"});
+function togglePop(id){var e=document.getElementById(id),w=e.classList.contains("on");closePops();if(!w)e.classList.add("on");}
+var bgs=el("div",{id:"zw3-bgs"},'<div id="zw3-bg1"></div><div id="zw3-bg2"></div><div id="zw3-veil"></div>');document.body.appendChild(bgs);
+var topEl=el("div",{id:"zw3-top"});document.body.appendChild(topEl);
+var hd=el("header",{id:"zw3-hd"});var inr=el("div",{"class":"in"});
+inr.appendChild(el("div",{id:"zw3-logo"},"紫微斗数"));
+var g=el("div",{"class":"grp pc"});
+g.appendChild(nb("ホーム",function(){toS1();}));
+g.appendChild(nb("命盤を作る",function(){toForm();},"cta"));
+var wp=el("div",{"class":"zw3-wrapp"});wp.appendChild(nb("星を知る \u25BE",function(){togglePop("zw3-pop-star");}));
+var pop=el("div",{id:"zw3-pop-star","class":"zw3-pop"});var cols=el("div",{"class":"cols"});
 cols.appendChild(col("星から知る",[["14の主星",function(){go("stars");}],["四化星",function(){showConceptModal("shika");}],["桃花星",function(){showConceptModal("tokasei");}]]));
 cols.appendChild(col("命盤を知る",[["十二宮",function(){go("palaces");}],["十二の宮（概要）",function(){showConceptModal("juniku");}],["五行局",function(){showConceptModal("gogyo");}],["大限・太歳",function(){showConceptModal("daigen");}]]));
-var intro=[["紫微斗数とは",function(){var d=document.getElementById("zw3-intro");if(d){d.open=true;d.scrollIntoView({behavior:"smooth",block:"start"});}}],["このサイトでわかること",function(){var d=document.getElementById("zw3-know");if(d){d.open=true;d.scrollIntoView({behavior:"smooth",block:"start"});}}]];
-if(typeof isKante==="function"&&isKante()) intro.push(["基礎知識",function(){go("basics");},1]);
-cols.appendChild(col("はじめての紫微斗数",intro));
+var it3=[["紫微斗数とは",function(){toS1();openD("zw3-intro");}],["このサイトでわかること",function(){toS1();openD("zw3-know");}]];
+if(typeof isKante==="function"&&isKante())it3.push(["基礎知識",function(){go("basics");},1]);
+cols.appendChild(col("はじめての紫微斗数",it3));
 pop.appendChild(cols);wp.appendChild(pop);g.appendChild(wp);
 g.appendChild(nb("お知らせ",function(){go("oshirase");}));
 g.appendChild(nb("お問い合わせ",function(){go("contact");}));
-var wp2=el("div",{"class":"zw3-wrapp"});
-wp2.appendChild(nb("鑑定MENU \u25BE",function(){togglePop("zw3-pop-kan");}));
-var pop2=el("div",{id:"zw3-pop-kan","class":"zw3-pop"});
-var c2=el("div",{"class":"cols"});
-var kitems=[["相性",function(){go("aisei");}],["運気",function(){go("shinkyu");}]];
-if(typeof isKante==="function"&&isKante()) kitems.push(["結婚",function(){go("kekkon");},1]);
-c2.appendChild(col("鑑定メニュー",kitems));
-pop2.appendChild(c2);wp2.appendChild(pop2);g.appendChild(wp2);
+var wp2=el("div",{"class":"zw3-wrapp"});wp2.appendChild(nb("鑑定MENU \u25BE",function(){togglePop("zw3-pop-kan");}));
+var pop2=el("div",{id:"zw3-pop-kan","class":"zw3-pop",style:"min-width:260px"});var c2=el("div",{"class":"cols",style:"grid-template-columns:1fr"});
+var ki=[["相性",function(){go("aisei");}],["運気",function(){go("shinkyu");}]];
+if(typeof isKante==="function"&&isKante())ki.push(["結婚",function(){go("kekkon");},1]);
+c2.appendChild(col("鑑定メニュー",ki));pop2.appendChild(c2);wp2.appendChild(pop2);g.appendChild(wp2);
 inr.appendChild(g);inr.appendChild(el("div",{"class":"sp"}));
 inr.appendChild(nb("\u2630",function(){document.getElementById("zw3-dr").classList.toggle("on");},"ic"));
 hd.appendChild(inr);topEl.appendChild(hd);
-document.addEventListener("click",function(ev){if(ev.target&&ev.target.closest&&!ev.target.closest(".zw3-wrapp"))closePops();},true);
-var dr=el("div",{id:"zw3-dr"});
-var sc=el("div",{"class":"sc"});sc.onclick=function(){dr.classList.remove("on");};
-var pn=el("div",{"class":"pn"});
-pn.appendChild(nb("\u2715 とじる",function(){dr.classList.remove("on");}));
-function dsec(t){pn.appendChild(el("h5",null,t));}
-function di(label,fn){var b=el("button",{type:"button"},label);b.onclick=function(){dr.classList.remove("on");fn();};pn.appendChild(b);}
-dsec("メニュー");
-di("ホーム",function(){go("home");});
-di("命盤を作る",function(){var f=document.getElementById("zw3-form");if(f)f.scrollIntoView({behavior:"smooth",block:"start"});});
-di("14の主星",function(){go("stars");});
-di("十二宮",function(){go("palaces");});
-di("四化星",function(){showConceptModal("shika");});
-di("桃花星",function(){showConceptModal("tokasei");});
-di("五行局",function(){showConceptModal("gogyo");});
-di("大限・太歳",function(){showConceptModal("daigen");});
-di("相性",function(){go("aisei");});
-di("運気",function(){go("shinkyu");});
-di("お知らせ",function(){go("oshirase");});
-di("お問い合わせ",function(){go("contact");});
-dsec("そのほか");
-di("サイト情報",function(){go("siteinfo");});
-di("ブログ",function(){go("blog");});
-var ln=document.getElementById("nav-line-mobile");
-if(ln&&ln.getAttribute("href")){var a=el("a",{href:ln.getAttribute("href"),target:"_blank",rel:"noopener"},"\uD83D\uDCF2 LINE");pn.appendChild(a);}
-di("紫微斗数をもっと知る（従来のTOP）",function(){zw3Off();go("home");});
-var st=el("div",{"class":"staff"});pn.appendChild(st);
-st.appendChild(el("h5",null,"鑑定士・管理人の方"));
-function si(label,role){var b=el("button",{type:"button"},label);b.onclick=function(){dr.classList.remove("on");if(typeof showLoginOverlay==="function"){showLoginOverlay(null);if(typeof setAuthRole==="function")setAuthRole(role);}};st.appendChild(b);}
-si("\uD83D\uDD10 鑑定士ログイン","kante");
-si("\u2699\uFE0F 管理人ログイン","admin");
-if(typeof getCurrentRole==="function"&&getCurrentRole()!=="public"){var lo=el("button",{type:"button"},"ログアウト");lo.onclick=function(){dr.classList.remove("on");if(typeof showLogoutConfirm==="function")showLogoutConfirm();};st.appendChild(lo);}
-if(typeof isKante==="function"&&isKante()){var k1=el("button",{type:"button"},"\uD83D\uDD10 鑑定士ページ");k1.onclick=function(){dr.classList.remove("on");go("kanteishi");};st.appendChild(k1);}
-if(typeof isAdmin==="function"&&isAdmin()){var k2=el("button",{type:"button"},"\u2699\uFE0F 管理ページ");k2.onclick=function(){dr.classList.remove("on");go("admin");};st.appendChild(k2);}
-dr.appendChild(sc);dr.appendChild(pn);topEl.appendChild(dr);
-var wrap=el("div",{"class":"wrap"});topEl.appendChild(wrap);
-var hero=el("div",{"class":"hero"});
-hero.appendChild(el("div",{"class":"mk"},"紫 微 斗 数"));
-var h1t=(document.querySelector("#home h1")||{}).textContent||"紫微斗数命盤鑑定";
-hero.appendChild(el("h1",null,h1t.replace(/\s+/g," ").trim()));
-var hl=document.querySelector("#home h1");var lead="";
-if(hl){var nx=hl.nextElementSibling;while(nx&&!lead){if(nx.textContent.trim().length>20)lead=nx.textContent.replace(/\s+/g," ").trim();nx=nx.nextElementSibling;}}
+document.addEventListener("click",function(e){if(e.target&&e.target.closest&&!e.target.closest(".zw3-wrapp"))closePops();},true);
+var dr=el("div",{id:"zw3-dr"});var sc=el("div",{"class":"sc"});sc.onclick=function(){dr.classList.remove("on");};
+var pn=el("div",{"class":"pn"});dr.appendChild(sc);dr.appendChild(pn);topEl.appendChild(dr);
+function buildDrawer(){
+ pn.innerHTML="";
+ function di(l,fn){var b=el("button",{type:"button"},l);b.onclick=function(){dr.classList.remove("on");fn();};pn.appendChild(b);}
+ function ds(t){pn.appendChild(el("h5",null,t));}
+ di("\u2715 とじる",function(){});
+ ds("メニュー");
+ di("ホーム",function(){toS1();});
+ di("命盤を作る",function(){toForm();});
+ di("14の主星",function(){go("stars");});
+ di("十二宮",function(){go("palaces");});
+ di("四化星",function(){showConceptModal("shika");});
+ di("桃花星",function(){showConceptModal("tokasei");});
+ di("五行局",function(){showConceptModal("gogyo");});
+ di("大限・太歳",function(){showConceptModal("daigen");});
+ if(typeof isKante==="function"&&isKante())di("基礎知識",function(){go("basics");});
+ di("相性",function(){go("aisei");});
+ di("運気",function(){go("shinkyu");});
+ if(typeof isKante==="function"&&isKante())di("結婚",function(){go("kekkon");});
+ di("お知らせ",function(){go("oshirase");});
+ di("お問い合わせ",function(){go("contact");});
+ ds("そのほか");
+ di("サイト情報",function(){go("siteinfo");});
+ di("ブログ",function(){go("blog");});
+ var ln=document.getElementById("nav-line-mobile");
+ if(ln&&ln.getAttribute("href")){var a=el("a",{href:ln.getAttribute("href"),target:"_blank",rel:"noopener"},"\uD83D\uDCF2 LINE");pn.appendChild(a);}
+ di("紫微斗数をもっと知る（従来のTOP）",function(){zw3Off();go("home");});
+ var st=el("div",{"class":"staff"});pn.appendChild(st);
+ st.appendChild(el("h5",null,"鑑定士・管理人の方"));
+ function si(l,role){var b=el("button",{type:"button"},l);b.onclick=function(){dr.classList.remove("on");if(typeof showLoginOverlay==="function"){showLoginOverlay(null);if(typeof setAuthRole==="function")setAuthRole(role);}};st.appendChild(b);}
+ var role=(typeof getCurrentRole==="function")?getCurrentRole():"public";
+ if(role==="public"){si("\uD83D\uDD10 鑑定士ログイン","kante");si("\u2699\uFE0F 管理人ログイン","admin");}
+ else{
+  if(typeof isKante==="function"&&isKante()){var k1=el("button",{type:"button"},"\uD83D\uDD10 鑑定士ページ");k1.onclick=function(){dr.classList.remove("on");go("kanteishi");};st.appendChild(k1);}
+  if(typeof isAdmin==="function"&&isAdmin()){var k2=el("button",{type:"button"},"\u2699\uFE0F 管理ページ");k2.onclick=function(){dr.classList.remove("on");go("admin");};st.appendChild(k2);}
+  var lo=el("button",{type:"button"},"ログアウト");lo.onclick=function(){dr.classList.remove("on");if(typeof showLogoutConfirm==="function")showLogoutConfirm();};st.appendChild(lo);
+ }
+}
+var lastRole=null;
+function refreshRole(){var r=(typeof getCurrentRole==="function")?getCurrentRole():"public";if(r===lastRole)return;lastRole=r;buildDrawer();rebuildPops();}
+function rebuildPops(){
+ var c1=pop.querySelector(".cols");if(c1){c1.innerHTML="";
+  c1.appendChild(col("星から知る",[["14の主星",function(){go("stars");}],["四化星",function(){showConceptModal("shika");}],["桃花星",function(){showConceptModal("tokasei");}]]));
+  c1.appendChild(col("命盤を知る",[["十二宮",function(){go("palaces");}],["十二の宮（概要）",function(){showConceptModal("juniku");}],["五行局",function(){showConceptModal("gogyo");}],["大限・太歳",function(){showConceptModal("daigen");}]]));
+  var a3=[["紫微斗数とは",function(){toS1();openD("zw3-intro");}],["このサイトでわかること",function(){toS1();openD("zw3-know");}]];
+  if(typeof isKante==="function"&&isKante())a3.push(["基礎知識",function(){go("basics");},1]);
+  c1.appendChild(col("はじめての紫微斗数",a3));}
+ var c3=pop2.querySelector(".cols");if(c3){c3.innerHTML="";
+  var k2=[["相性",function(){go("aisei");}],["運気",function(){go("shinkyu");}]];
+  if(typeof isKante==="function"&&isKante())k2.push(["結婚",function(){go("kekkon");},1]);
+  c3.appendChild(col("鑑定メニュー",k2));}
+}
+setInterval(refreshRole,900);
+var s1=el("section",{id:"zw3-s1"});var w1=el("div",{"class":"wrap"});s1.appendChild(w1);topEl.appendChild(s1);
+var hero=el("div",{"class":"hero"});hero.appendChild(el("div",{"class":"mk"},"紫 微 斗 数"));
+var h1n=document.querySelector("#home h1");
+hero.appendChild(el("h1",null,h1n?h1n.textContent.replace(/\s+/g," ").trim():"紫微斗数命盤鑑定"));
+var lead="";if(h1n){var nx=h1n.nextElementSibling;while(nx&&!lead){if(nx.textContent.trim().length>20)lead=nx.textContent.replace(/\s+/g," ").trim();nx=nx.nextElementSibling;}}
 if(lead)hero.appendChild(el("p",null,lead));
-wrap.appendChild(hero);
-var card=el("div",{"class":"card",id:"zw3-form"});
+hero.appendChild(el("div",{"class":"rule"}));w1.appendChild(hero);
+function steps(n){var d=el("div",{"class":"steps"});var L=["命盤の入力","命盤","鑑定を読む"];for(var i=0;i<3;i++){var x=el("div",{"class":(i===n?"on":"")},"<i>"+(i+1)+"</i>"+L[i]);d.appendChild(x);}return d;}
+w1.appendChild(steps(0));
+var card=el("div",{"class":"card",id:"zw3-form"});w1.appendChild(card);
 card.appendChild(el("p",{"class":"ct"},"\uD83D\uDD2F 命盤の入力"));
 function lab(t){card.appendChild(el("label",null,t));}
-lab("お名前");
-var rowN=el("div",{"class":"row"});var inName=el("input",{type:"text"});rowN.appendChild(inName);card.appendChild(rowN);
-lab("生年月日（西暦）");
-var rowY=el("div",{"class":"row ymd"});
-function cloneOpts(src,dst){if(!src)return;for(var i=0;i<src.options.length;i++){var o=document.createElement("option");o.value=src.options[i].value;o.text=src.options[i].text;dst.appendChild(o);}dst.value=src.value;}
+function cop(src,dst){if(!src)return;for(var i=0;i<src.options.length;i++){var o=document.createElement("option");o.value=src.options[i].value;o.text=src.options[i].text;dst.appendChild(o);}dst.value=src.value;}
+lab("お名前");var rn=el("div",{"class":"row"});var inName=el("input",{type:"text"});rn.appendChild(inName);card.appendChild(rn);
+lab("生年月日（西暦）");var ry=el("div",{"class":"row ymd"});
 var sy=document.createElement("select"),sm=document.createElement("select"),sd=document.createElement("select");
-cloneOpts(document.getElementById("inp-y"),sy);cloneOpts(document.getElementById("inp-m"),sm);cloneOpts(document.getElementById("inp-d"),sd);
-rowY.appendChild(sy);rowY.appendChild(el("span",{"class":"unit"},"年"));rowY.appendChild(sm);rowY.appendChild(el("span",{"class":"unit"},"月"));rowY.appendChild(sd);rowY.appendChild(el("span",{"class":"unit"},"日"));
-card.appendChild(rowY);
-lab("性別");
-var rowG=el("div",{"class":"row"});var sg=document.createElement("select");cloneOpts(document.getElementById("inp-gender"),sg);rowG.appendChild(sg);card.appendChild(rowG);
-lab("出生時刻");
-var shw=el("div",{"class":"sh"});var curSh=null;
-SH.forEach(function(x){var b=el("button",{type:"button"},"<b>"+x[0]+"</b><span>"+x[1]+"</span>");
-b.onclick=function(){var a=shw.querySelectorAll("button");for(var i=0;i<a.length;i++)a[i].classList.remove("sel");b.classList.add("sel");curSh=x[2];var hh=("0"+x[2]).slice(-2);inTime.value=hh+":00";};shw.appendChild(b);});
+cop(document.getElementById("inp-y"),sy);cop(document.getElementById("inp-m"),sm);cop(document.getElementById("inp-d"),sd);
+ry.appendChild(sy);ry.appendChild(el("span",{"class":"unit"},"年"));ry.appendChild(sm);ry.appendChild(el("span",{"class":"unit"},"月"));ry.appendChild(sd);ry.appendChild(el("span",{"class":"unit"},"日"));card.appendChild(ry);
+lab("性別");var rg=el("div",{"class":"row"});var sg=document.createElement("select");cop(document.getElementById("inp-gender"),sg);rg.appendChild(sg);card.appendChild(rg);
+lab("出生時刻");var shw=el("div",{"class":"sh"});
+SH.forEach(function(x){var b=el("button",{type:"button"},"<b>"+x[0]+"</b><span>"+x[1]+"</span>");b.onclick=function(){var a=shw.querySelectorAll("button");for(var i=0;i<a.length;i++)a[i].classList.remove("sel");b.classList.add("sel");inTime.value=("0"+x[2]).slice(-2)+":00";};shw.appendChild(b);});
 card.appendChild(shw);
-var ro=el("div",{"class":"ortime"});ro.appendChild(el("span",null,"または時刻指定："));
-var inTime=el("input",{type:"time"});ro.appendChild(inTime);card.appendChild(ro);
+var ro=el("div",{"class":"ortime"});ro.appendChild(el("span",null,"または時刻指定："));var inTime=el("input",{type:"time"});ro.appendChild(inTime);card.appendChild(ro);
 var srcT=document.getElementById("inp-time");if(srcT&&srcT.value)inTime.value=srcT.value;
 var lr=el("label",{"class":"chk"});var ck=el("input",{type:"checkbox"});lr.appendChild(ck);lr.appendChild(el("span",null,"閏月（うるうつき）生まれ"));card.appendChild(lr);
-var rg=document.getElementById("inp-rungetsu");
-var hintTxt="";var hn=rg?rg.closest("div"):null;
-if(hn){var t=hn.parentElement?hn.parentElement.textContent:"";var mm=t.match(/\uD83D\uDCCC[^\n]{10,160}/);if(mm)hintTxt=mm[0].replace(/\s+/g," ").trim();}
+var rgx=document.getElementById("inp-rungetsu");var hintTxt="";
+if(rgx){var hb=rgx.closest("div");if(hb&&hb.parentElement){var mm=hb.parentElement.textContent.match(/\uD83D\uDCCC[^\n]{10,170}/);if(mm)hintTxt=mm[0].replace(/\s+/g," ").trim();}}
 if(hintTxt)card.appendChild(el("p",{"class":"hint"},hintTxt));
-var gen=el("button",{type:"button","class":"big"},"\u2728 命盤を生成する");
-gen.onclick=function(){zw3Generate();};card.appendChild(gen);
-var noteT="";var gb=null;var allb=document.querySelectorAll("#calc button");for(var i=0;i<allb.length;i++){if(/命盤を生成/.test(allb[i].textContent)){gb=allb[i];break;}}
-if(gb&&gb.parentElement){var mt=gb.parentElement.textContent.match(/\u203B[^\n]{10,140}/);if(mt)noteT=mt[0].replace(/\s+/g," ").trim();}
-if(noteT)card.appendChild(el("p",{"class":"note"},noteT));
-wrap.appendChild(card);
-function mkDetails(id,title,html){var d=el("details",{id:id});var s=el("summary",null,title);var b=el("div",{"class":"db"},html);d.appendChild(s);d.appendChild(b);return d;}
-var introHTML="";var kh=document.getElementById("home");
-if(kh){var ps=kh.querySelectorAll("p");var buf=[];for(var i=0;i<ps.length&&buf.length<6;i++){var tt=ps[i].textContent.replace(/\s+/g," ").trim();if(tt.length>=28&&tt.indexOf("\u2192")!==0)buf.push("<p>"+tt+"</p>");}introHTML=buf.join("");}
-if(introHTML)wrap.appendChild(mkDetails("zw3-intro","紫微斗数とは？　〜 初めての方へ 〜",introHTML));
-var knowHTML="";if(kh){var hx=null;var all=kh.querySelectorAll("*");for(var i=0;i<all.length;i++){if(all[i].children.length===0&&/このサイトでわかること/.test(all[i].textContent)){hx=all[i];break;}}
-if(hx){var box=hx.parentElement;for(var k=0;k<3&&box;k++){if(box.textContent.length>260)break;box=box.parentElement;}if(box){var lines=[];var nodes=box.querySelectorAll("*");for(var i=0;i<nodes.length;i++){if(nodes[i].children.length===0){var t2=nodes[i].textContent.replace(/\s+/g," ").trim();if(t2.length>=14&&t2.indexOf("このサイト")<0)lines.push("<p>"+t2+"</p>");}}knowHTML=lines.slice(0,14).join("");}}}
-if(knowHTML)wrap.appendChild(mkDetails("zw3-know","\u2726 このサイトでわかること",knowHTML));
-var more=el("div",{"class":"card"});
-more.appendChild(el("p",{"class":"ct"},"紫微斗数をもっと知る"));
-var mb=el("button",{type:"button","class":"big"},"従来のTOPページを見る");
-mb.onclick=function(){zw3Off();go("home");};more.appendChild(mb);
-more.appendChild(el("p",{"class":"note"},"これまでのTOPページ（14の主星・十二の宮・四化星・大限太歳・五行局・桃花星へのリンク）はそのまま残っています。"));
-wrap.appendChild(more);
-var ON=true;
+var gen=el("button",{type:"button","class":"big"},"\u2728 命盤を生成する");gen.onclick=function(){zw3Generate();};card.appendChild(gen);
+var gb=null,ab=document.querySelectorAll("#calc button");for(var i=0;i<ab.length;i++){if(/命盤を生成/.test(ab[i].textContent)){gb=ab[i];break;}}
+if(gb&&gb.parentElement){var mt=gb.parentElement.textContent.match(/\u203B[^\n]{10,150}/);if(mt)card.appendChild(el("p",{"class":"note"},mt[0].replace(/\s+/g," ").trim()));}
+function mkD(id,t,h){var d=el("details",{id:id});d.appendChild(el("summary",null,t));d.appendChild(el("div",{"class":"db"},h));return d;}
+var kh=document.getElementById("home"),introH="";
+if(kh){var ps=kh.querySelectorAll("p"),bf=[];for(var i=0;i<ps.length&&bf.length<6;i++){var t2=ps[i].textContent.replace(/\s+/g," ").trim();if(t2.length>=28)bf.push("<p>"+t2+"</p>");}introH=bf.join("");}
+if(introH)w1.appendChild(mkD("zw3-intro","紫微斗数とは？　〜 初めての方へ 〜",introH));
+var knowH="";if(kh){var hx=null,al=kh.querySelectorAll("*");for(var i=0;i<al.length;i++){if(al[i].children.length===0&&/このサイトでわかること/.test(al[i].textContent)){hx=al[i];break;}}
+if(hx){var bx=hx.parentElement;for(var k=0;k<3&&bx;k++){if(bx.textContent.length>260)break;bx=bx.parentElement;}
+if(bx){var ls=[],nd=bx.querySelectorAll("*");for(var i=0;i<nd.length;i++){if(nd[i].children.length===0){var t3=nd[i].textContent.replace(/\s+/g," ").trim();if(t3.length>=14&&t3.indexOf("このサイト")<0)ls.push("<p>"+t3+"</p>");}}knowH=ls.slice(0,14).join("");}}}
+if(knowH)w1.appendChild(mkD("zw3-know","\u2726 このサイトでわかること",knowH));
+var s2=el("section",{id:"zw3-s2",style:"display:none"});var w2=el("div",{"class":"wrap"});s2.appendChild(w2);topEl.appendChild(s2);
+var h2=el("div",{"class":"hero"});h2.appendChild(el("div",{"class":"mk"},"命 盤 が で き ま し た"));h2.appendChild(el("h1",null,"まず、この3つから"));h2.appendChild(el("div",{"class":"rule"}));w2.appendChild(h2);
+w2.appendChild(steps(1));
+var prog=el("p",{"class":"prog",id:"zw3-prog"},"まだ読んでいません（0 / 3）");w2.appendChild(prog);
+var pbtns={};
+FREE.forEach(function(f){var b=el("button",{type:"button","class":"pbtn"},'<span class="ic">'+f.ic+'</span><span class="tx"><span class="nm">'+f.n+'</span><span class="sb">'+f.sub+" — "+f.lead+'</span></span><span class="go">タップして読む \u203A</span>');b.onclick=function(){openP(f.n);};pbtns[f.n]=b;w2.appendChild(b);});
+var disc=el("button",{type:"button","class":"disc",id:"zw3-mbt"},"\u25BE 命盤ぜんぶを見る（12宮）");w2.appendChild(disc);
+var mb=el("div",{id:"zw3-mb"});w2.appendChild(mb);
+mb.appendChild(el("p",{"class":"note"},"桃色の枠が、無料で読める3つの宮（命宮・夫妻宮・官禄宮）です。"));
+disc.onclick=function(){var o=mb.style.display==="block";if(o){mb.style.display="none";disc.innerHTML="\u25BE 命盤ぜんぶを見る（12宮）";restoreGrid();}else{mb.style.display="block";disc.innerHTML="\u25B4 命盤ぜんぶを見る（12宮）";borrowGrid();}};
+var s3=el("section",{id:"zw3-s3",style:"display:none"});var w3=el("div",{"class":"wrap"});s3.appendChild(w3);topEl.appendChild(s3);
+w3.appendChild(steps(2));
+var rcard=el("div",{"class":"card"});w3.appendChild(rcard);
+var rt=el("div",{"class":"rt"});rcard.appendChild(rt);
+var rIc=el("div",{"class":"ic"});var rNm=el("div",{"class":"nm"});var rSb=el("div",{"class":"sb"});
+rt.appendChild(rIc);rt.appendChild(rNm);rt.appendChild(rSb);
+var rbox=el("div",{id:"zw3-rdbox"});rcard.appendChild(rbox);
+var nav2=el("div",{"class":"nav2"});var bBack=el("button",{type:"button"},"\u2039 3つの宮に戻る");var bNext=el("button",{type:"button","class":"pri"},"次を読む \u203A");
+bBack.onclick=function(){toS2();};bNext.onclick=function(){nextP();};
+nav2.appendChild(bBack);nav2.appendChild(bNext);rcard.appendChild(nav2);
+var gridHome=null,panelHome=null;
+function borrowGrid(){var gr=document.getElementById("meiban-grid");if(!gr)return;if(!gridHome)gridHome={p:gr.parentNode,n:gr.nextSibling};mb.insertBefore(gr,mb.firstChild);}
+function restoreGrid(){var gr=document.getElementById("meiban-grid");if(gr&&gridHome&&gridHome.p){gridHome.p.insertBefore(gr,gridHome.n);}}
+function borrowPanel(){var pe=document.getElementById("palace-inline-panel");if(!pe)return;if(!panelHome)panelHome={p:pe.parentNode,n:pe.nextSibling};rbox.appendChild(pe);pe.style.display="block";}
+function restorePanel(){var pe=document.getElementById("palace-inline-panel");if(pe&&panelHome&&panelHome.p){panelHome.p.insertBefore(pe,panelHome.n);}}
+function findIdx(name){var cells=document.querySelectorAll("#meiban-grid .palace");for(var i=0;i<cells.length;i++){var t=cells[i].textContent.replace(/\s+/g,"");if(t.indexOf(name)>=0){var oc=String(cells[i].getAttribute("onclick")||"");var m=oc.match(/showPalacePanel\((\d+)\)/);if(m)return parseInt(m[1],10);return i;}}return -1;}
+var ON=true,cur=null,done={};
+function setScreen(n){s1.style.display=(n===1?"block":"none");s2.style.display=(n===2?"block":"none");s3.style.display=(n===3?"block":"none");
+ document.body.classList.toggle("zw3-dark",n===3);window.scrollTo(0,0);}
+function own(on){document.body.classList.toggle("zw3-own",!!on);}
 function zw3On(){ON=true;document.body.classList.add("zw3");}
-function zw3Off(){ON=false;document.body.classList.remove("zw3");document.body.classList.remove("zw3-dark");}
-function zw3Sus(){document.body.classList.remove("zw3");document.body.classList.remove("zw3-dark");}
-window.zw3Off=zw3Off;window.zw3On=zw3On;
-function go(sec){zw3Sus();if(typeof showSection==="function")showSection(sec);}
+function zw3Sus(){document.body.classList.remove("zw3");document.body.classList.remove("zw3-dark");document.body.classList.remove("zw3-own");}
+function zw3Off(){ON=false;zw3Sus();}
+window.zw3Off=zw3Off;
+function toS1(){restoreGrid();restorePanel();zw3On();own(false);setScreen(1);if(typeof showSection==="function")showSection("home");}
+function toS2(){restorePanel();zw3On();own(true);setScreen(2);}
+function toForm(){toS1();setTimeout(function(){var f=document.getElementById("zw3-form");if(f)f.scrollIntoView({behavior:"smooth",block:"start"});},80);}
+function openD(id){var d=document.getElementById(id);if(d){d.open=true;setTimeout(function(){d.scrollIntoView({behavior:"smooth",block:"start"});},80);}}
+function go(sec){restoreGrid();restorePanel();zw3Sus();if(typeof showSection==="function")showSection(sec);}
 function zw3Generate(){
-  var n=document.getElementById("inp-name");if(n)n.value=inName.value;
-  var y=document.getElementById("inp-y"),m=document.getElementById("inp-m"),d=document.getElementById("inp-d");
-  if(y){y.value=sy.value;y.dispatchEvent(new Event("change",{bubbles:true}));}
-  if(m){m.value=sm.value;m.dispatchEvent(new Event("change",{bubbles:true}));}
-  if(d){d.value=sd.value;d.dispatchEvent(new Event("change",{bubbles:true}));}
-  if(typeof ymdSync==="function"){try{ymdSync();}catch(e){}}
-  var gsel=document.getElementById("inp-gender");if(gsel){gsel.value=sg.value;gsel.dispatchEvent(new Event("change",{bubbles:true}));}
-  var t=document.getElementById("inp-time");
-  if(t){t.value=inTime.value||"12:00";t.dispatchEvent(new Event("change",{bubbles:true}));t.dispatchEvent(new Event("input",{bubbles:true}));}
-  var hh=parseInt((inTime.value||"12:00").split(":")[0],10);
-  if(typeof syncShichenFromHour==="function"){try{syncShichenFromHour(hh);}catch(e){}}
-  var rr=document.getElementById("inp-rungetsu");if(rr){rr.checked=ck.checked;rr.dispatchEvent(new Event("change",{bubbles:true}));}
-  zw3Sus();
-  if(typeof showSection==="function")showSection("calc");
-  setTimeout(function(){ if(typeof calculate==="function"){try{calculate();}catch(e){}} },120);
+ var n=document.getElementById("inp-name");if(n)n.value=inName.value;
+ var y=document.getElementById("inp-y"),m=document.getElementById("inp-m"),d=document.getElementById("inp-d");
+ if(y){y.value=sy.value;y.dispatchEvent(new Event("change",{bubbles:true}));}
+ if(m){m.value=sm.value;m.dispatchEvent(new Event("change",{bubbles:true}));}
+ if(d){d.value=sd.value;d.dispatchEvent(new Event("change",{bubbles:true}));}
+ if(typeof ymdSync==="function"){try{ymdSync();}catch(e){}}
+ var gx=document.getElementById("inp-gender");if(gx){gx.value=sg.value;gx.dispatchEvent(new Event("change",{bubbles:true}));}
+ var t=document.getElementById("inp-time");
+ if(t){t.value=inTime.value||"12:00";t.dispatchEvent(new Event("change",{bubbles:true}));t.dispatchEvent(new Event("input",{bubbles:true}));}
+ var hh=parseInt((inTime.value||"12:00").split(":")[0],10);
+ if(typeof syncShichenFromHour==="function"){try{syncShichenFromHour(hh);}catch(e){}}
+ var rr=document.getElementById("inp-rungetsu");if(rr){rr.checked=ck.checked;rr.dispatchEvent(new Event("change",{bubbles:true}));}
+ if(typeof showSection==="function")showSection("calc");
+ zw3On();own(true);
+ setTimeout(function(){
+   if(typeof calculate==="function"){try{calculate();}catch(e){}}
+   setTimeout(function(){done={};refreshProg();setScreen(2);},400);
+ },120);
 }
-function sync(){var h=document.getElementById("home");if(!h)return;if(h.classList.contains("active")){if(!ON)return;document.body.classList.add("zw3");}else{document.body.classList.remove("zw3");}}
+function openP(name){
+ var idx=findIdx(name);
+ if(idx<0){alert("命盤がまだ作られていません。先に命盤を生成してください。");return;}
+ if(typeof showPalacePanel!=="function"){alert("解説を開けませんでした。");return;}
+ try{showPalacePanel(idx);}catch(e){}
+ cur=name;done[name]=true;
+ var f=null;FREE.forEach(function(x){if(x.n===name)f=x;});
+ rIc.textContent=f?f.ic:"";rNm.textContent=name;rSb.textContent=f?(f.sub+" — "+f.lead):"";
+ var i=-1;FREE.forEach(function(x,k){if(x.n===name)i=k;});
+ var nx=FREE[i+1];
+ bNext.innerHTML=nx?("次を読む \u203A  "+nx.ic+" "+nx.n):"3つ読み終えました";
+ bNext.onclick=nx?function(){openP(nx.n);}:function(){toS2();};
+ refreshProg();
+ setTimeout(function(){borrowPanel();setScreen(3);},220);
+}
+function nextP(){var i=-1;FREE.forEach(function(x,k){if(x.n===cur)i=k;});var nx=FREE[i+1];if(nx)openP(nx.n);else toS2();}
+function refreshProg(){var c=0;FREE.forEach(function(f){if(done[f.n]){pbtns[f.n].classList.add("done");c++;}else{pbtns[f.n].classList.remove("done");}});
+ prog.textContent=c===0?"まだ読んでいません（0 / 3）":(c===3?"3つとも読み終えました（3 / 3）":"読んだ宮："+c+" / 3");}
+function sync(){var h=document.getElementById("home");if(!h)return;if(document.body.classList.contains("zw3-own"))return;
+ if(h.classList.contains("active")){if(ON)document.body.classList.add("zw3");}else{document.body.classList.remove("zw3");}}
 var secs=document.querySelectorAll("section");
 for(var i=0;i<secs.length;i++){new MutationObserver(function(){sync();}).observe(secs[i],{attributes:true,attributeFilter:["class"]});}
-zw3On();sync();
+buildDrawer();refreshRole();zw3On();own(false);setScreen(1);sync();
 }
 })();
 </script>
