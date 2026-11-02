@@ -1376,6 +1376,8 @@ body.zw3-dark #zw3-top .note{color:#c6b29d}
 #zw3-top .nav2 button{flex:1;font:inherit;font-size:.9rem;padding:15px 8px;border-radius:999px;cursor:pointer;min-height:50px;border:1px solid rgba(214,178,120,.45);background:rgba(255,255,255,.09);color:#f2e6d4}
 #zw3-top .nav2 button.pri{background:linear-gradient(135deg,#c9637f,#9c4a6e);border:0;color:#fffaf2;font-weight:600}
 #zw3-rdbox{margin-top:4px}
+#zw3-top footer{margin-top:28px;background:transparent!important;border-top:1px solid var(--line)}
+body.zw3-dark #zw3-top footer{border-top-color:rgba(214,178,120,.28)}
 @media(min-width:720px){#zw3-top .hero h1{font-size:2rem}#zw3-top .pbtn .nm{font-size:1.3rem}}
 </style>
 </head>
@@ -18663,7 +18665,9 @@ var rbox=el("div",{id:"zw3-rdbox"});rcard.appendChild(rbox);
 var nav2=el("div",{"class":"nav2"});var bBack=el("button",{type:"button"},"\u2039 3つの宮に戻る");var bNext=el("button",{type:"button","class":"pri"},"次を読む \u203A");
 bBack.onclick=function(){toS2();};bNext.onclick=function(){nextP();};
 nav2.appendChild(bBack);nav2.appendChild(bNext);rcard.appendChild(nav2);
-var gridHome=null,panelHome=null;
+var gridHome=null,panelHome=null,footHome=null;
+function borrowFoot(){var fe=document.querySelector("body > footer")||document.querySelector("footer");if(!fe)return;if(!footHome)footHome={p:fe.parentNode,n:fe.nextSibling};topEl.appendChild(fe);}
+function restoreFoot(){var fe=document.querySelector("footer");if(fe&&footHome&&footHome.p){footHome.p.insertBefore(fe,footHome.n);}}
 function borrowGrid(){var gr=document.getElementById("meiban-grid");if(!gr)return;if(!gridHome)gridHome={p:gr.parentNode,n:gr.nextSibling};mb.insertBefore(gr,mb.firstChild);}
 function restoreGrid(){var gr=document.getElementById("meiban-grid");if(gr&&gridHome&&gridHome.p){gridHome.p.insertBefore(gr,gridHome.n);}}
 function borrowPanel(){var pe=document.getElementById("palace-inline-panel");if(!pe)return;if(!panelHome)panelHome={p:pe.parentNode,n:pe.nextSibling};rbox.appendChild(pe);pe.style.display="block";}
@@ -18673,8 +18677,8 @@ var ON=true,cur=null,done={};
 function setScreen(n){s1.style.display=(n===1?"block":"none");s2.style.display=(n===2?"block":"none");s3.style.display=(n===3?"block":"none");
  document.body.classList.toggle("zw3-dark",n===3);window.scrollTo(0,0);}
 function own(on){document.body.classList.toggle("zw3-own",!!on);}
-function zw3On(){ON=true;document.body.classList.add("zw3");}
-function zw3Sus(){document.body.classList.remove("zw3");document.body.classList.remove("zw3-dark");document.body.classList.remove("zw3-own");}
+function zw3On(){ON=true;document.body.classList.add("zw3");borrowFoot();}
+function zw3Sus(){restoreFoot();document.body.classList.remove("zw3");document.body.classList.remove("zw3-dark");document.body.classList.remove("zw3-own");}
 function zw3Off(){ON=false;zw3Sus();}
 window.zw3Off=zw3Off;
 function toS1(){restoreGrid();restorePanel();zw3On();own(false);setScreen(1);if(typeof showSection==="function")showSection("home");}
