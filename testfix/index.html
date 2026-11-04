@@ -18593,7 +18593,7 @@ hero.appendChild(el("div",{"class":"rule"}));w1.appendChild(hero);
 w1.appendChild(steps(0));
 var card=el("div",{"class":"card",id:"zw3-form"});w1.appendChild(card);
 function cop(src,dst){if(!src)return;for(var i=0;i<src.options.length;i++){var o=document.createElement("option");o.value=src.options[i].value;o.text=src.options[i].text;dst.appendChild(o);}dst.value=src.value;}
-function fld(lab,node){var d=el("div",{"class":"f"});d.appendChild(el("label",null,lab));var r=el("div",{"class":"row"});if(node.length){node.forEach(function(x){r.appendChild(x);});}else{r.appendChild(node);}d.appendChild(r);card.appendChild(d);return d;}
+function fld(lab,node){var d=el("div",{"class":"f"});d.appendChild(el("label",null,lab));var r=el("div",{"class":"row"});if(Array.isArray(node)){node.forEach(function(x){r.appendChild(x);});}else{r.appendChild(node);}d.appendChild(r);card.appendChild(d);return d;}
 var inName=el("input",{type:"text"});fld("お名前",inName);
 var sy=document.createElement("select"),sm=document.createElement("select"),sd=document.createElement("select");
 cop(document.getElementById("inp-y"),sy);cop(document.getElementById("inp-m"),sm);cop(document.getElementById("inp-d"),sd);
