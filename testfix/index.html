@@ -1279,10 +1279,11 @@ body.zw3.zw3-dark #zw3-veil{background:rgba(26,17,11,.58)}
 body.zw3.zw3-dark #zw3-top{color:#f3e7d6}
 #zw3-hd{position:sticky;top:0;z-index:20;backdrop-filter:blur(10px);background:linear-gradient(180deg,rgba(255,251,245,.88),rgba(255,251,245,.66));border-bottom:1px solid var(--line)}
 body.zw3-dark #zw3-hd{background:linear-gradient(180deg,rgba(32,21,14,.90),rgba(32,21,14,.72));border-bottom-color:rgba(214,178,120,.26)}
-#zw3-hd .in{max-width:560px;margin:0 auto;padding:13px 20px;display:flex;align-items:center;gap:12px}
+#zw3-hd .in{max-width:1180px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:12px}
 #zw3-hd .lg{flex:1;font-size:.92rem;letter-spacing:.3em;color:var(--gold2);white-space:nowrap}
 body.zw3-dark #zw3-hd .lg{color:#e3c894}
-#zw3-hd .mn{font:inherit;font-size:1.15rem;line-height:1;background:transparent;border:0;cursor:pointer;color:var(--gold2);padding:8px 4px;min-height:40px}
+#zw3-hd .mn{font:inherit;font-size:1.5rem;line-height:1;background:transparent;border:1px solid transparent;border-radius:10px;cursor:pointer;color:var(--gold2);width:48px;height:48px;min-height:48px;display:grid;place-items:center;flex:0 0 auto;margin-right:-6px}
+#zw3-hd .mn:hover{background:rgba(176,138,70,.12);border-color:var(--line)}
 body.zw3-dark #zw3-hd .mn{color:#e3c894}
 #zw3-dr{position:fixed;inset:0;z-index:40;display:none}#zw3-dr.on{display:block}
 #zw3-dr .sc{position:absolute;inset:0;background:rgba(40,26,16,.44)}
@@ -1341,7 +1342,7 @@ body.zw3-dark #zw3-top .note{color:#bfab95}
 #zw3-top .prog{text-align:center;font-size:.74rem;color:var(--ink2);margin:0 0 22px;letter-spacing:.06em}
 #zw3-top .disc{display:block;width:100%;cursor:pointer;font-size:.86rem;letter-spacing:.06em;padding:17px;border-radius:15px;border:1px dashed var(--line);background:rgba(255,252,247,.5);color:var(--ink2);margin-top:8px}
 #zw3-mb{display:none;margin-top:16px;width:100vw;max-width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);padding:0 16px 6px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
-#zw3-mb .meiban-grid{min-width:1000px!important;grid-template-rows:repeat(4,minmax(180px,auto))!important;align-items:stretch;margin:0!important}
+#zw3-mb .meiban-grid{min-width:1000px!important;max-width:1052px!important;grid-template-rows:repeat(4,minmax(180px,auto))!important;align-items:stretch;margin:0 auto!important}
 #zw3-mb .palace{min-height:180px!important;height:auto!important;overflow:visible!important;padding:.6rem .7rem 1.5rem!important}
 #zw3-mb .palace-center{height:auto!important;overflow:visible!important;padding:.7rem .8rem!important}
 #zw3-mb .p-header{margin-bottom:.35rem!important;padding-bottom:.3rem!important;flex-wrap:nowrap!important;gap:4px!important}
@@ -1361,6 +1362,14 @@ body.zw3-dark #zw3-top .note{color:#bfab95}
 #zw3-top .trow{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
 #zw3-top .trow button{font-size:.76rem;letter-spacing:.04em;color:var(--ink);cursor:pointer;padding:10px 14px;min-height:42px;border-radius:999px;border:1px solid var(--line);background:rgba(255,252,247,.76)}
 #zw3-top .trow button:hover{background:rgba(255,248,238,.92);border-color:rgba(176,138,70,.55)}
+#zw3-s3 .wrap{max-width:560px}
+@media(min-width:900px){#zw3-s3 .wrap{max-width:960px;padding-left:28px;padding-right:28px}#zw3-s3 .card{padding:34px 30px}}
+#zw3-rdbox{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#zw3-rdbox *{max-width:100%;word-break:break-word;overflow-wrap:anywhere}
+#zw3-rdbox #palace-inline-panel{margin-top:0!important;background:rgba(255,252,245,.97)!important;border:1px solid rgba(176,138,70,.3)!important;border-radius:14px!important;padding:22px 20px!important;box-shadow:none!important}
+@media(min-width:900px){#zw3-rdbox #palace-inline-panel{padding:28px 26px!important}}
+#zw3-rdbox #palace-inline-body{font-size:.95rem;line-height:2.15}
+#zw3-rdbox #palace-inline-body p{font-size:.95rem;line-height:2.15}
 #zw3-top .rt{text-align:center;margin-bottom:26px}
 #zw3-top .rt .ic{font-size:2.3rem}
 #zw3-top .rt .nm{font-size:1.5rem;font-weight:600;letter-spacing:.18em;margin-top:8px;color:#f8e6c6}
