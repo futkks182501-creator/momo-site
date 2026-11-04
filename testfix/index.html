@@ -1364,6 +1364,10 @@ body.zw3-dark #zw3-top .note{color:#bfab95}
 #zw3-top .tools{margin-top:30px}
 #zw3-top .tools h4{font-size:.72rem;letter-spacing:.14em;color:var(--gold2);font-weight:600;margin:0 0 10px;text-align:center}
 #zw3-top .tools h4+.trow{margin-bottom:22px}
+#zw3-top .tools h4{margin-top:4px}
+#zw3-top .tnote{font-size:.68rem;line-height:1.85;color:var(--ink2);text-align:center;margin:-4px 0 12px;padding:0 6px}
+body.zw3-dark #zw3-top .tnote{color:#bfab95}
+#zw3-top .trow+h4{margin-top:26px}
 #zw3-top .trow{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
 #zw3-top .trow button{font-size:.76rem;letter-spacing:.04em;color:var(--ink);cursor:pointer;padding:10px 14px;min-height:42px;border-radius:999px;border:1px solid var(--line);background:rgba(255,252,247,.76)}
 #zw3-top .trow button:hover{background:rgba(255,248,238,.92);border-color:rgba(176,138,70,.55)}
@@ -18659,27 +18663,41 @@ disc.onclick=function(){var o=mb.style.display==="block";if(o){mb.style.display=
 var tools=el("div",{"class":"tools"});w2.appendChild(tools);
 function trow(title){tools.appendChild(el("h4",null,title));var r=el("div",{"class":"trow"});tools.appendChild(r);return r;}
 function tb(row,label,fn,pro){var b=el("button",{type:"button"},label+(pro?' <span class="zw3-pro">鑑定士・管理人</span>':""));b.onclick=fn;row.appendChild(b);return b;}
-var rowA=trow("この命盤でできること");
 function onCalc(fn){return function(){restoreGrid();restorePanel();zw3Sus();if(typeof showSection==="function")showSection("calc");setTimeout(function(){try{fn();}catch(e){}},260);};}
-tb(rowA,"命盤を画像保存",onCalc(function(){if(typeof downloadMeiban==="function")downloadMeiban();}));
-tb(rowA,"A4印刷・PDF保存",onCalc(function(){if(typeof zwPrintMeiban==="function")zwPrintMeiban();}));
-tb(rowA,"この命盤を保存",onCalc(function(){if(typeof saveCurrentChart==="function")saveCurrentChart();}));
-tb(rowA,"データの書き出し・読み込み",onCalc(function(){var e=document.getElementById("dbk-export")||null;if(typeof dbkExport==="function"){} var t=document.querySelector("#calc [onclick*=dbkExport]");if(t)t.scrollIntoView({behavior:"smooth",block:"center"});}));
-var rowK=null;
-var rowB=trow("もっと詳しく読む");
-tb(rowB,"命盤の基本鑑定",onCalc(function(){if(typeof openAndScrollAcc==="function")openAndScrollAcc("basic");}));
-tb(rowB,"今年の運勢",onCalc(function(){if(typeof openAndScrollAcc==="function")openAndScrollAcc("unsei");}));
-tb(rowB,"AI鑑定プロンプト",onCalc(function(){if(typeof openAndScrollAcc==="function")openAndScrollAcc("ai");}));
-tb(rowB,"前世・魂の鑑定",onCalc(function(){if(typeof openAndScrollAcc==="function")openAndScrollAcc("zensei");}));
-tb(rowB,"先祖・家系鑑定",onCalc(function(){if(typeof openAndScrollAcc==="function")openAndScrollAcc("senzo");}));
-tb(rowB,"相性診断",function(){go("aisei");});
-tb(rowB,"運気グラフ",function(){go("shinkyu");});
-var proRow=el("div",{"class":"trow",id:"zw3-prorow",style:"display:none"});
-tools.appendChild(el("h4",{id:"zw3-proh",style:"display:none"},"鑑定士・管理人の機能"));tools.appendChild(proRow);
+function tnote(t){tools.appendChild(el("p",{"class":"tnote"},t));}
+function clickId(id){var b=document.getElementById(id);if(b){b.click();return true;}return false;}
+function clickPast(sec){var bs=document.querySelectorAll("#"+sec+" button");for(var i2=0;i2<bs.length;i2++){if(/過去の私/.test(bs[i2].textContent)){bs[i2].click();return true;}}return false;}
+function needChart(){alert("プロンプトがまだ作られていません。先に命盤を作成してください。");}
+tools.appendChild(el("h4",null,"無料で使えるAI鑑定｜ログイン不要"));
+tnote("ChatGPTなどに貼り付けて使えます。無料版で読める範囲のデータを使います。");
+var rowF=el("div",{"class":"trow"});tools.appendChild(rowF);
+tb(rowF,"性格・才能のかんたん鑑定プロンプト",function(){if(!clickId("free-ai-copy-btn"))needChart();});
+tb(rowF,"　↳ 過去の私と照らし合わせて分析する",function(){if(!clickPast("free-ai-section"))needChart();});
+tb(rowF,"今月の運気の鑑定プロンプト",function(){if(!clickId("free-unsei-copy-btn"))needChart();});
+tb(rowF,"　↳ 過去の私と照らし合わせて分析する",function(){if(!clickPast("free-unsei-ai-section"))needChart();});
+tools.appendChild(el("h4",null,"命盤の保存・出力"));
+tnote("どなたでもご利用いただけます。");
+var rowS=el("div",{"class":"trow"});tools.appendChild(rowS);
+tb(rowS,"この命盤を保存",onCalc(function(){if(typeof saveCurrentChart==="function")saveCurrentChart();}));
+tb(rowS,"命盤を画像保存",onCalc(function(){if(typeof downloadMeiban==="function")downloadMeiban();}));
+tb(rowS,"A4印刷・PDF保存",onCalc(function(){if(typeof zwPrintMeiban==="function")zwPrintMeiban();}));
+tb(rowS,"データの書き出し・読み込み",onCalc(function(){var t=document.querySelector("#calc [onclick*=dbkExport]");if(t)t.scrollIntoView({behavior:"smooth",block:"center"});}));
+var proH=el("h4",{id:"zw3-proh",style:"display:none"},"鑑定士専用");tools.appendChild(proH);
+var proN=el("p",{"class":"tnote",id:"zw3-pron",style:"display:none"},"通常の鑑定士・管理人の方に表示されます。鑑定士用のデータをそのまま使います。追加分析（過去の私と照らし合わせる）は、開いたプロンプト画面の中にあります。");tools.appendChild(proN);
+var proRow=el("div",{"class":"trow",id:"zw3-prorow",style:"display:none"});tools.appendChild(proRow);
+tb(proRow,"鑑定士用 性格・才能のAI鑑定プロンプト",onCalc(function(){if(typeof showKanteReadingOverlay==="function")showKanteReadingOverlay();}));
+tb(proRow,"鑑定士用 今年の運気のAI鑑定プロンプト",onCalc(function(){if(typeof showAiKanteiOverlay==="function")showAiKanteiOverlay();}));
 tb(proRow,"結婚鑑定",function(){go("kekkon");});
-tb(proRow,"鑑定士専用AI鑑定プロンプト",onCalc(function(){if(typeof showKanteReadingOverlay==="function")showKanteReadingOverlay();}));
-tb(proRow,"鑑定士専用 運気AI鑑定プロンプト",onCalc(function(){if(typeof showAiKanteiOverlay==="function")showAiKanteiOverlay();}));
 tb(proRow,"運気一覧のA4印刷",function(){go("shinkyu");});
+tools.appendChild(el("h4",null,"そのほかの鑑定"));
+tnote("はじめの部分は無料で読めます。続きは鑑定士・管理人のログインが必要です。相性診断と運気グラフはどなたでもご利用いただけます。");
+var rowO=el("div",{"class":"trow"});tools.appendChild(rowO);
+tb(rowO,"命盤の基本鑑定",onCalc(function(){if(typeof openAndScrollAcc==="function")openAndScrollAcc("basic");}));
+tb(rowO,"今年の運勢",onCalc(function(){if(typeof openAndScrollAcc==="function")openAndScrollAcc("unsei");}));
+tb(rowO,"前世・魂の鑑定",onCalc(function(){if(typeof openAndScrollAcc==="function")openAndScrollAcc("zensei");}));
+tb(rowO,"先祖・家系鑑定",onCalc(function(){if(typeof openAndScrollAcc==="function")openAndScrollAcc("senzo");}));
+tb(rowO,"相性診断",function(){go("aisei");});
+tb(rowO,"運気グラフ",function(){go("shinkyu");});
 var s3=el("section",{id:"zw3-s3",style:"display:none"});var w3=el("div",{"class":"wrap"});s3.appendChild(w3);topEl.appendChild(s3);
 w3.appendChild(steps(2));
 var rc=el("div",{"class":"card"});w3.appendChild(rc);
@@ -18742,7 +18760,7 @@ function openP(name){
 function refreshProg(){var c=0;FREE.forEach(function(f){if(done[f.n]){pbtn[f.n].classList.add("done");c++;}else{pbtn[f.n].classList.remove("done");}});prog.textContent=c+" / 3";}
 var lastR=null;
 function roleSync(){var r=R();if(r===lastR)return;lastR=r;dBuild();lginSync();
- var show=K();document.getElementById("zw3-prorow").style.display=show?"flex":"none";document.getElementById("zw3-proh").style.display=show?"block":"none";}
+ var show=K();document.getElementById("zw3-prorow").style.display=show?"flex":"none";document.getElementById("zw3-proh").style.display=show?"block":"none";var pn2=document.getElementById("zw3-pron");if(pn2)pn2.style.display=show?"block":"none";}
 setInterval(roleSync,900);
 function sync(){var h=document.getElementById("home");if(!h)return;if(document.body.classList.contains("zw3-own"))return;
  if(h.classList.contains("active")){if(ON){document.body.classList.add("zw3");borrowFoot();}}else{document.body.classList.remove("zw3");}}
