@@ -1284,6 +1284,11 @@ body.zw3-dark #zw3-hd{background:linear-gradient(180deg,rgba(32,21,14,.90),rgba(
 body.zw3-dark #zw3-hd .lg{color:#e3c894}
 #zw3-hd .mn{font:inherit;font-size:1.5rem;line-height:1;background:transparent;border:1px solid transparent;border-radius:10px;cursor:pointer;color:var(--gold2);width:48px;height:48px;min-height:48px;display:grid;place-items:center;flex:0 0 auto;margin-right:-6px}
 #zw3-hd .mn:hover{background:rgba(176,138,70,.12);border-color:var(--line)}
+#zw3-hd .lgin{font:inherit;font-size:.74rem;letter-spacing:.06em;color:var(--gold2);background:rgba(255,252,247,.72);border:1px solid var(--line);border-radius:999px;padding:9px 15px;min-height:40px;cursor:pointer;white-space:nowrap;flex:0 0 auto}
+#zw3-hd .lgin:hover{background:rgba(255,248,238,.95)}
+body.zw3-dark #zw3-hd .lgin{color:#e8cf9d;background:rgba(255,255,255,.08);border-color:rgba(214,178,120,.4)}
+#zw3-hd .lgin.on{background:linear-gradient(135deg,var(--momo),#9c4a6e);color:#fff;border-color:transparent}
+@media(max-width:430px){#zw3-hd .in{padding:9px 12px;gap:6px}#zw3-hd .lg{font-size:.76rem;letter-spacing:.14em}#zw3-hd .lgin{font-size:.68rem;padding:8px 11px}#zw3-hd .mn{width:44px;height:44px;min-height:44px;font-size:1.35rem}}
 body.zw3-dark #zw3-hd .mn{color:#e3c894}
 #zw3-dr{position:fixed;inset:0;z-index:40;display:none}#zw3-dr.on{display:block}
 #zw3-dr .sc{position:absolute;inset:0;background:rgba(40,26,16,.44)}
@@ -18550,7 +18555,7 @@ var topEl=el("div",{id:"zw3-top"});document.body.appendChild(topEl);
 var hd=el("header",{id:"zw3-hd"});var inr=el("div",{"class":"in"});
 inr.appendChild(el("div",{"class":"lg"},"紫微斗数命盤鑑定"));
 var mn=el("button",{type:"button","class":"mn","aria-label":"メニュー"},"\u2630");mn.onclick=function(){drw.classList.add("on");};
-inr.appendChild(mn);hd.appendChild(inr);topEl.appendChild(hd);
+var lgin=el("button",{type:"button","class":"lgin"},"鑑定士ログイン");var lginMode="login";lgin.onclick=function(){if(lginMode==="login"){if(typeof showLoginOverlay==="function"){showLoginOverlay(null);if(typeof setAuthRole==="function")setAuthRole("kante");}}else if(lginMode==="admin"){go("admin");}else{go("kanteishi");}};function lginSync(){var rr=R();if(rr==="public"){lginMode="login";lgin.textContent="鑑定士ログイン";lgin.classList.remove("on");}else if(A()){lginMode="admin";lgin.textContent="管理ページ";lgin.classList.add("on");}else{lginMode="kante";lgin.textContent="鑑定士ページ";lgin.classList.add("on");}}inr.appendChild(lgin);inr.appendChild(mn);hd.appendChild(inr);topEl.appendChild(hd);
 var drw=el("div",{id:"zw3-dr"});var dsc=el("div",{"class":"sc"});dsc.onclick=function(){drw.classList.remove("on");};
 var dpn=el("div",{"class":"pn"});drw.appendChild(dsc);drw.appendChild(dpn);topEl.appendChild(drw);
 function dBuild(){
@@ -18736,7 +18741,7 @@ function openP(name){
 }
 function refreshProg(){var c=0;FREE.forEach(function(f){if(done[f.n]){pbtn[f.n].classList.add("done");c++;}else{pbtn[f.n].classList.remove("done");}});prog.textContent=c+" / 3";}
 var lastR=null;
-function roleSync(){var r=R();if(r===lastR)return;lastR=r;dBuild();
+function roleSync(){var r=R();if(r===lastR)return;lastR=r;dBuild();lginSync();
  var show=K();document.getElementById("zw3-prorow").style.display=show?"flex":"none";document.getElementById("zw3-proh").style.display=show?"block":"none";}
 setInterval(roleSync,900);
 function sync(){var h=document.getElementById("home");if(!h)return;if(document.body.classList.contains("zw3-own"))return;
