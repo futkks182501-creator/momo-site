@@ -18626,6 +18626,7 @@ function cards(keyword,limit){if(!kh)return "";var hx=null,al=kh.querySelectorAl
  if(!hx)return "";var bx=hx.parentElement;for(var k=0;k<4&&bx;k++){if(bx.textContent.length>300)break;bx=bx.parentElement;}
  if(!bx)return "";var nd=bx.querySelectorAll("*"),ls=[];
  for(var i=0;i<nd.length;i++){if(nd[i].children.length===0){var t=nd[i].textContent.replace(/\s+/g," ").trim();if(t.length>=12&&t.indexOf(keyword)<0)ls.push("<p>"+t+"</p>");}}
+ if(!ls.length){var tt=bx.textContent.replace(/\s+/g," ").replace(keyword,"").trim();if(tt.indexOf("\u30fb")>=0){ls=tt.split("\u30fb").filter(function(x){return x.trim().length>6;}).map(function(x){return "<p>\u30fb"+x.trim()+"</p>";});}else if(tt.length>10){ls=["<p>"+tt+"</p>"];}}
  return ls.slice(0,limit).join("");}
 var kn=cards("このサイトでわかること",14);if(kn)mkD("紫微斗数でわかること",kn);
 var df=cards("一般的な読み解き方との違い",12);if(df)mkD("一般的な読み解き方との違い",df);
