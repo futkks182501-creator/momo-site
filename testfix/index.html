@@ -18668,11 +18668,13 @@ function tnote(t){tools.appendChild(el("p",{"class":"tnote"},t));}
 function clickId(id){var b=document.getElementById(id);if(b){b.click();return true;}return false;}
 function clickPast(sec){var bs=document.querySelectorAll("#"+sec+" button");for(var i2=0;i2<bs.length;i2++){if(/過去の私/.test(bs[i2].textContent)){bs[i2].click();return true;}}return false;}
 function needChart(){alert("プロンプトがまだ作られていません。先に命盤を作成してください。");}
+function freeAiReady(){var b=document.getElementById("free-ai-body");return !!(b&&b.textContent.replace(/\s+/g,"").length>40);}
+function freeAiMsg(){if(K()){alert("鑑定士・管理人でログイン中は、無料版の「性格・才能」プロンプトは作成されません。下の「鑑定士専用」にある、鑑定士用の性格・才能のAI鑑定プロンプトをご利用ください。");}else{needChart();}}
 tools.appendChild(el("h4",null,"無料で使えるAI鑑定｜ログイン不要"));
 tnote("ChatGPTなどに貼り付けて使えます。無料版で読める範囲のデータを使います。");
 var rowF=el("div",{"class":"trow"});tools.appendChild(rowF);
-tb(rowF,"性格・才能のかんたん鑑定プロンプト",function(){if(!clickId("free-ai-copy-btn"))needChart();});
-tb(rowF,"　↳ 過去の私と照らし合わせて分析する",function(){if(!clickPast("free-ai-section"))needChart();});
+tb(rowF,"性格・才能のかんたん鑑定プロンプト",function(){if(!freeAiReady()){freeAiMsg();return;}if(!clickId("free-ai-copy-btn"))needChart();});
+tb(rowF,"　↳ 過去の私と照らし合わせて分析する",function(){if(!freeAiReady()){freeAiMsg();return;}if(!clickPast("free-ai-section"))needChart();});
 tb(rowF,"今月の運気の鑑定プロンプト",function(){if(!clickId("free-unsei-copy-btn"))needChart();});
 tb(rowF,"　↳ 過去の私と照らし合わせて分析する",function(){if(!clickPast("free-unsei-ai-section"))needChart();});
 tools.appendChild(el("h4",null,"命盤の保存・出力"));
